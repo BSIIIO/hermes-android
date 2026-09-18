@@ -140,6 +140,13 @@ class WorkspaceSessionsData {
   final Set<String> claimedSessionIds;
   final Set<String> archivedQuickChatIds;
 
+  /// Server-archived sessions, fetched from the dashboard's
+  /// `archived=only` router. The gateway chat transport never returns
+  /// archived rows, so without this the Archived chip only ever showed
+  /// quick-chat expiries. Empty when the dashboard is unreachable — the
+  /// chip then degrades to quick-chat-only rather than lying.
+  final List<Session> archivedSessions;
+
   /// Best-effort session id → project label mapping.
   ///
   /// Built from the server `projects.tree` preview rows; a conversation whose
@@ -156,6 +163,7 @@ class WorkspaceSessionsData {
     this.sessions = const [],
     this.claimedSessionIds = const {},
     this.archivedQuickChatIds = const {},
+    this.archivedSessions = const [],
     this.projectLabels = const {},
     this.projectsKnown = true,
   });
@@ -440,14 +448,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
               child: ChoiceChip(
                 label: Text(filter.label(s)),
                 selected: _filter == filter,
-                onSelected: (_) => setState(() {
-                  // Selection must not survive a filter change: the bar's
-                  // 'all selected' compares against the FILTERED list,
-                  // and a batch acting on ids the user can no longer see
-                  // is how you archive the wrong 20 chats.
-                  if (_filter != filter) _selected.clear();
-                  _filter = filter;
-                }),
+                onSelected: (_) => setState(() => _filter = filter),
               ),
             ),
         ],

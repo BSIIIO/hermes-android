@@ -90,9 +90,6 @@ Map<String, String> _reasoningEffortLabels(AppStrings s) => <String, String>{
 
 enum _ResponseTransport { none, rest, desktop }
 
-const _legacyTransportNotice =
-    'Background recovery unavailable — legacy transport';
-
 /// Notice for a gateway that cleanly does not offer the durable turn-recovery
 /// contract (stock Hermes). The chat is fully usable on the live JSON-RPC
 /// transport; only background recovery is absent, so this reads as a
