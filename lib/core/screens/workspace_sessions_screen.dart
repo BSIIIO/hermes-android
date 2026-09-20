@@ -48,6 +48,12 @@ enum ChatDateBucket {
 /// How long "Recent" means in the Chats browser.
 const Duration kRecentChatsWindow = Duration(days: 7);
 
+/// Gateway sessions that no human files: cron runs, kanban workers, one-shots.
+const Set<String> kMachineSessionSources = {'cron', 'kanban', 'oneshot'};
+
+bool isMachineSession(Session session) =>
+    kMachineSessionSources.contains(session.source);
+
 /// Assigns a conversation to its date bucket, by calendar day.
 ChatDateBucket chatDateBucket(DateTime now, double lastActiveSeconds) {
   final activity = DateTime.fromMillisecondsSinceEpoch(
@@ -74,6 +80,7 @@ List<Session> filterChats({
   Set<String> archivedQuickChatIds = const {},
   String query = '',
   DateTime? now,
+  bool projectsKnown = true,
 }) {
   final current = now ?? DateTime.now();
   final normalized = query.trim().toLowerCase();
@@ -83,11 +90,20 @@ List<Session> filterChats({
   final filtered = [
     for (final session in sessions)
       if (switch (filter) {
-            WorkspaceChatsFilter.all => true,
-            WorkspaceChatsFilter.recent => session.lastActive >= recentCutoff,
-            WorkspaceChatsFilter.unassigned => !claimedSessionIds.contains(
-              session.id,
-            ),
+            WorkspaceChatsFilter.all => !session.archived,
+            WorkspaceChatsFilter.recent =>
+              !session.archived && session.lastActive >= recentCutoff,
+            WorkspaceChatsFilter.unassigned =>
+              // When the claim map is unknown (projects.tree timed out),
+              // every chat would pass as 'unassigned' — a lie that turns
+              // the whole archive into filing noise. Show none instead;
+              // the UI surfaces the read failure.
+              projectsKnown &&
+              !session.archived &&
+              !isMachineSession(session) &&
+              !claimedSessionIds.contains(
+                session.id,
+              ),
             WorkspaceChatsFilter.archived =>
               session.archived || archivedQuickChatIds.contains(session.id),
           } &&
@@ -130,11 +146,18 @@ class WorkspaceSessionsData {
   /// project is unknown stays honest as "Unassigned" in the UI.
   final Map<String, String> projectLabels;
 
+  /// Whether the claim map above actually reflects the server. False when
+  /// `projects.tree` timed out or failed: an empty `claimedSessionIds` then
+  /// means "unknown", not "nothing is filed", and the Unassigned chip must
+  /// say so instead of presenting the whole archive as unfiled noise.
+  final bool projectsKnown;
+
   const WorkspaceSessionsData({
     this.sessions = const [],
     this.claimedSessionIds = const {},
     this.archivedQuickChatIds = const {},
     this.projectLabels = const {},
+    this.projectsKnown = true,
   });
 }
 
@@ -253,6 +276,8 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
                 if (id != session.id) id,
             },
             projectLabels: data.projectLabels,
+            archivedSessions: data.archivedSessions,
+            projectsKnown: data.projectsKnown,
           );
           _promoting.remove(session.id);
         });
@@ -303,14 +328,28 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
 
   Widget _buildLoaded(WorkspaceSessionsData data) {
     final s = AppStrings.of(context);
+    // The embedded browser filters over the union of the gateway's active
+    // list and the dashboard's archived list: the Archived chip needs the
+    // archived rows, and every other chip explicitly excludes
+    // `session.archived`, so the union cannot leak them into All/Recent/
+    // Unassigned. The two lists come from different backends at
+    // different instants, so dedupe by id — the archived copy wins for
+    // a session archived between the two fetches.
+    final archivedIds = data.archivedSessions.map((s) => s.id).toSet();
+    final unionSessions = <Session>[
+      for (final s in data.sessions)
+        if (!archivedIds.contains(s.id)) s,
+      ...data.archivedSessions,
+    ];
     final sessions = widget.embedded
         ? filterChats(
-            sessions: data.sessions,
+            sessions: unionSessions,
             filter: _filter,
             claimedSessionIds: data.claimedSessionIds,
             archivedQuickChatIds: data.archivedQuickChatIds,
             query: _query,
             now: _now,
+            projectsKnown: data.projectsKnown,
           )
         : filterWorkspaceSessions(
             sessions: data.sessions,
@@ -473,7 +512,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
                         label: projectLabel,
                         icon: Icons.folder_outlined,
                       )
-                    else
+                    else if (data.projectsKnown)
                       _MetaChip(
                         label: s.workspaceSessionsUnassigned,
                         icon: Icons.inbox_outlined,
