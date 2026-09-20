@@ -681,13 +681,16 @@ class ApiClient {
   Future<List<Map<String, dynamic>>> getMessages(
     String sessionId, {
     String? profile,
+    Duration timeout = requestTimeout,
   }) async {
     final scope = profile?.trim();
     final query = scope == null || scope.isEmpty ? '' : '?profile=$scope';
-    final res = await _http.get(
-      Uri.parse('$baseUrl/api/sessions/$sessionId/messages$query'),
-      headers: _headers,
-    );
+    final res = await _http
+        .get(
+          Uri.parse('$baseUrl/api/sessions/$sessionId/messages$query'),
+          headers: _headers,
+        )
+        .timeout(timeout);
     if (res.statusCode != 200) {
       throw Exception('HTTP ${res.statusCode}: ${res.body}');
     }
@@ -698,10 +701,12 @@ class ApiClient {
 
   Future<void> deleteSession(String sessionId) async {
     final encodedId = Uri.encodeComponent(sessionId);
-    final res = await _http.delete(
-      Uri.parse('$baseUrl/api/sessions/$encodedId'),
-      headers: _headers,
-    );
+    final res = await _http
+        .delete(
+          Uri.parse('$baseUrl/api/sessions/$encodedId'),
+          headers: _headers,
+        )
+        .timeout(requestTimeout);
     // Treat a stale local row as already synced: the remote no longer has it,
     // so the UI can safely remove it from history.
     if (res.statusCode == 404) return;
@@ -713,10 +718,12 @@ class ApiClient {
   // ── Models ───────────────────────────────────────────────────────────
 
   Future<List<String>> getModels() async {
-    final res = await _http.get(
-      Uri.parse('$baseUrl/v1/models'),
-      headers: _headers,
-    );
+    final res = await _http
+        .get(
+          Uri.parse('$baseUrl/v1/models'),
+          headers: _headers,
+        )
+        .timeout(requestTimeout);
     if (res.statusCode != 200) {
       return ['hermes-agent'];
     }
@@ -769,19 +776,23 @@ class ApiClient {
   // ── Generic HTTP helpers (for Dashboard API compatibility) ────────────
 
   Future<Map<String, dynamic>> apiGet(String endpoint) async {
-    final res = await _http.get(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: _headers,
-    );
+    final res = await _http
+        .get(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: _headers,
+        )
+        .timeout(requestTimeout);
     if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
     return jsonDecode(res.body) as Map<String, dynamic>;
   }
 
   Future<List<dynamic>> apiGetList(String endpoint) async {
-    final res = await _http.get(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: _headers,
-    );
+    final res = await _http
+        .get(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: _headers,
+        )
+        .timeout(requestTimeout);
     if (res.statusCode != 200) throw Exception('HTTP ${res.statusCode}');
     return jsonDecode(res.body) as List<dynamic>;
   }
@@ -790,11 +801,13 @@ class ApiClient {
     String endpoint, {
     Map<String, dynamic>? body,
   }) async {
-    final res = await _http.post(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: _headers,
-      body: body != null ? jsonEncode(body) : null,
-    );
+    final res = await _http
+        .post(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: _headers,
+          body: body != null ? jsonEncode(body) : null,
+        )
+        .timeout(requestTimeout);
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw Exception('HTTP ${res.statusCode}');
     }
@@ -802,10 +815,12 @@ class ApiClient {
   }
 
   Future<void> apiDelete(String endpoint) async {
-    final res = await _http.delete(
-      Uri.parse('$baseUrl/$endpoint'),
-      headers: _headers,
-    );
+    final res = await _http
+        .delete(
+          Uri.parse('$baseUrl/$endpoint'),
+          headers: _headers,
+        )
+        .timeout(requestTimeout);
     if (res.statusCode < 200 || res.statusCode >= 300) {
       throw Exception('HTTP ${res.statusCode}');
     }
@@ -1029,16 +1044,20 @@ class GatewayChatClient {
               // reported the cancellation).
               if (stream.cancelled || !identical(_liveStream, stream)) return;
               buffer += chunk;
-              while (buffer.contains('\n\n')) {
-                final eventEnd = buffer.indexOf('\n\n');
-                final frame = buffer.substring(0, eventEnd);
-                buffer = buffer.substring(eventEnd + 2);
+              // SSE frames end on a blank line: LF-only or CRLF-only per
+              // the spec. A CRLF-emitting proxy would otherwise never
+              // match and the stream would look frozen until the end.
+              var boundary = RegExp(r'\r?\n\r?\n').firstMatch(buffer);
+              while (boundary != null) {
+                final frame = buffer.substring(0, boundary.start);
+                buffer = buffer.substring(boundary.end);
 
                 final token = parseSseFrame(
                   frame,
                   onToolProgress: onToolProgress,
                 );
                 if (token != null && token.isNotEmpty) onToken(token);
+                boundary = RegExp(r'\r?\n\r?\n').firstMatch(buffer);
               }
             },
             onError: (Object error, StackTrace stackTrace) {
@@ -1170,69 +1189,85 @@ class DashboardClient {
   Future<String> _getCookie() {
     final cached = _cookie;
     if (cached != null) return Future.value(cached);
-    return _cookieInFlight ??= _login();
+    final inFlight = _cookieInFlight;
+    if (inFlight != null) return inFlight;
+    final future = _login();
+    _cookieInFlight = future;
+    // Only clear OUR slot on completion. An unconditional clear in the
+    // login's own finally could null a NEWER login's slot when a 401
+    // elsewhere triggered _resetAuth() and a replacement login started
+    // while this one was still running — re-opening the thundering herd
+    // against the dashboard's login rate limiter that this guard exists
+    // to prevent.
+    future.whenComplete(() {
+      if (identical(_cookieInFlight, future)) _cookieInFlight = null;
+    }).ignore();
+    return future;
   }
 
   /// Logs in against the `basic` password provider and caches the session
   /// cookie. Throws on failure (bad credentials → 401, etc.).
   Future<String> _login() async {
-    try {
-      final res = await _http.post(
-        Uri.parse('$_baseUrl/auth/password-login'),
-        headers: const {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'provider': 'basic',
-          'username': _username,
-          'password': _password,
-        }),
-      );
-      if (res.statusCode == 401) {
-        throw Exception('Dashboard login failed: invalid username or password');
-      }
-      if (res.statusCode != 200) {
-        throw Exception('Dashboard login failed: HTTP ${res.statusCode}');
-      }
-      final setCookie = res.headers['set-cookie'] ?? '';
-      // The `http` package folds multiple Set-Cookie headers into one
-      // comma-joined string; cookie expiry dates also contain commas, so match
-      // the access-token cookie by name and take its value up to the first
-      // delimiter. Handles the bare name plus the __Host-/__Secure- prefixes
-      // Hermes uses on HTTPS binds.
-      final match = RegExp(
-        r'((?:__Host-|__Secure-)?hermes_session_at)=([^;,\s]+)',
-      ).firstMatch(setCookie);
-      if (match == null) {
-        throw Exception(
-          'Dashboard login succeeded but no session cookie found',
-        );
-      }
-      _cookie = '${match.group(1)}=${match.group(2)}';
-      return _cookie!;
-    } finally {
-      _cookieInFlight = null;
+    final res = await _http
+        .post(
+          Uri.parse('$_baseUrl/auth/password-login'),
+          headers: const {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'provider': 'basic',
+            'username': _username,
+            'password': _password,
+          }),
+        )
+        .timeout(ApiClient.requestTimeout);
+    if (res.statusCode == 401) {
+      throw Exception('Dashboard login failed: invalid username or password');
     }
+    if (res.statusCode != 200) {
+      throw Exception('Dashboard login failed: HTTP ${res.statusCode}');
+    }
+    final setCookie = res.headers['set-cookie'] ?? '';
+    // The `http` package folds multiple Set-Cookie headers into one
+    // comma-joined string; cookie expiry dates also contain commas, so match
+    // the access-token cookie by name and take its value up to the first
+    // delimiter. Handles the bare name plus the __Host-/__Secure- prefixes
+    // Hermes uses on HTTPS binds.
+    final match = RegExp(
+      r'((?:__Host-|__Secure-)?hermes_session_at)=([^;,\s]+)',
+    ).firstMatch(setCookie);
+    if (match == null) {
+      throw Exception(
+        'Dashboard login succeeded but no session cookie found',
+      );
+    }
+    _cookie = '${match.group(1)}=${match.group(2)}';
+    return _cookie!;
   }
 
   /// Returns the SPA session token, reusing a cached value or an in-flight fetch.
   Future<String> _getToken() {
     final cached = _token;
     if (cached != null) return Future.value(cached);
-    return _tokenInFlight ??= _fetchToken();
+    final inFlight = _tokenInFlight;
+    if (inFlight != null) return inFlight;
+    final future = _fetchToken();
+    _tokenInFlight = future;
+    future.whenComplete(() {
+      if (identical(_tokenInFlight, future)) _tokenInFlight = null;
+    }).ignore();
+    return future;
   }
 
   Future<String> _fetchToken() async {
-    try {
-      final res = await _http.get(Uri.parse('$_baseUrl/'));
-      if (res.statusCode != 200) throw Exception('Dashboard not reachable');
-      final match = RegExp(
-        r'window\.__HERMES_SESSION_TOKEN__="([^"]+)";',
-      ).firstMatch(res.body);
-      if (match == null) throw Exception('Session token not found');
-      _token = match.group(1)!;
-      return _token!;
-    } finally {
-      _tokenInFlight = null;
-    }
+    final res = await _http
+        .get(Uri.parse('$_baseUrl/'))
+        .timeout(ApiClient.requestTimeout);
+    if (res.statusCode != 200) throw Exception('Dashboard not reachable');
+    final match = RegExp(
+      r'window\.__HERMES_SESSION_TOKEN__="([^"]+)";',
+    ).firstMatch(res.body);
+    if (match == null) throw Exception('Session token not found');
+    _token = match.group(1)!;
+    return _token!;
   }
 
   Future<Map<String, String>> _authHeaders() async {
@@ -1258,10 +1293,12 @@ class DashboardClient {
   /// Hermes Desktop gateway. The HTTP API cookie stays in this client; only the
   /// ticket is passed to the WebSocket URL.
   Future<String> mintWebSocketTicket({bool retried = false}) async {
-    final res = await _http.post(
-      Uri.parse('$_baseUrl/api/auth/ws-ticket'),
-      headers: await _authHeaders(),
-    );
+    final res = await _http
+        .post(
+          Uri.parse('$_baseUrl/api/auth/ws-ticket'),
+          headers: await _authHeaders(),
+        )
+        .timeout(ApiClient.requestTimeout);
     if (res.statusCode == 401 && !retried) {
       _resetAuth();
       return mintWebSocketTicket(retried: true);
@@ -1296,7 +1333,7 @@ class DashboardClient {
     final uri = Uri.parse(
       '$_baseUrl/api/$endpoint',
     ).replace(queryParameters: queryParameters);
-    final res = await _http.get(uri, headers: headers);
+    final res = await _http.get(uri, headers: headers).timeout(ApiClient.requestTimeout);
     if (res.statusCode == 401 && !retried) {
       _resetAuth();
       return apiGet(endpoint, queryParameters: queryParameters, retried: true);
@@ -1314,7 +1351,7 @@ class DashboardClient {
     final uri = Uri.parse(
       '$_baseUrl/api/$endpoint',
     ).replace(queryParameters: queryParameters);
-    final res = await _http.get(uri, headers: headers);
+    final res = await _http.get(uri, headers: headers).timeout(ApiClient.requestTimeout);
     if (res.statusCode == 401 && !retried) {
       _resetAuth();
       return apiGetBytes(
@@ -1332,10 +1369,12 @@ class DashboardClient {
     bool retried = false,
   }) async {
     final headers = await _authHeaders();
-    final res = await _http.get(
-      Uri.parse('$_baseUrl/api/$endpoint'),
-      headers: headers,
-    );
+    final res = await _http
+        .get(
+          Uri.parse('$_baseUrl/api/$endpoint'),
+          headers: headers,
+        )
+        .timeout(ApiClient.requestTimeout);
     if (res.statusCode == 401 && !retried) {
       _resetAuth();
       return apiGetList(endpoint, retried: true);
@@ -1355,11 +1394,13 @@ class DashboardClient {
     bool retried = false,
   }) async {
     final headers = await _authHeaders();
-    final res = await _http.post(
-      Uri.parse('$_baseUrl/api/$endpoint'),
-      headers: headers,
-      body: body != null ? jsonEncode(body) : null,
-    );
+    final res = await _http
+        .post(
+          Uri.parse('$_baseUrl/api/$endpoint'),
+          headers: headers,
+          body: body != null ? jsonEncode(body) : null,
+        )
+        .timeout(ApiClient.requestTimeout);
     if (res.statusCode == 401 && !retried) {
       _resetAuth();
       return apiPost(endpoint, body: body, retried: true);
@@ -1372,10 +1413,12 @@ class DashboardClient {
 
   Future<void> apiDelete(String endpoint, {bool retried = false}) async {
     final headers = await _authHeaders();
-    final res = await _http.delete(
-      Uri.parse('$_baseUrl/api/$endpoint'),
-      headers: headers,
-    );
+    final res = await _http
+        .delete(
+          Uri.parse('$_baseUrl/api/$endpoint'),
+          headers: headers,
+        )
+        .timeout(ApiClient.requestTimeout);
     if (res.statusCode == 401 && !retried) {
       _resetAuth();
       return apiDelete(endpoint, retried: true);
@@ -1391,11 +1434,13 @@ class DashboardClient {
     bool retried = false,
   }) async {
     final headers = await _authHeaders();
-    final res = await _http.put(
-      Uri.parse('$_baseUrl/api/$endpoint'),
-      headers: headers,
-      body: body != null ? jsonEncode(body) : null,
-    );
+    final res = await _http
+        .put(
+          Uri.parse('$_baseUrl/api/$endpoint'),
+          headers: headers,
+          body: body != null ? jsonEncode(body) : null,
+        )
+        .timeout(ApiClient.requestTimeout);
     if (res.statusCode == 401 && !retried) {
       _resetAuth();
       return apiPut(endpoint, body: body, retried: true);
