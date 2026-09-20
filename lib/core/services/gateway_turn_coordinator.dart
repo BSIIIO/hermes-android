@@ -642,7 +642,15 @@ class GatewayTurnCoordinator {
       return receipt;
     } catch (error) {
       if (error is IOException || error is TimeoutException) {
-        await _markTransportLost(client);
+        // The transport-lost bookkeeping must never replace the original
+        // upload failure the caller needs to classify: a journal error
+        // inside _markTransportLost would mask an IOException as a
+        // storage exception.
+        try {
+          await _markTransportLost(client);
+        } catch (_) {
+          // Best-effort; the original error below is the truth.
+        }
       }
       rethrow;
     }
@@ -813,8 +821,17 @@ class GatewayTurnCoordinator {
             GatewayTurnCoordinatorFailure.invalidResponse,
           );
         }
+        final failure = await _unsupportedReadyFailure(previous);
+        // The clean-absence label must never ride along with pending
+        // durable turns: a stock gateway WITH pending turns is not a
+        // calm "server just doesn't offer recovery" state. The invariant
+        // is clean absence only.
+        final cleanAbsence =
+            failure == GatewayTurnCoordinatorFailure.unsupportedCapability &&
+            _readyLacksRecoveryContractCleanly(ready.failure, readyFrame);
         throw GatewayTurnCoordinatorException(
-          await _unsupportedReadyFailure(previous),
+          failure,
+          stockGateway: cleanAbsence,
         );
       }
       final openResponse = await client.send('session.open', <String, dynamic>{
