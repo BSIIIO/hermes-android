@@ -858,7 +858,12 @@ class WsClient {
         fallbackMessage: 'Unknown error',
       );
     }
-    return result['result']?['session_id'] as String? ?? sessionId;
+    return result['result']?['session_id'] as String? ??
+        (throw StateError(
+          'session.resume succeeded without a session_id — refusing to bind '
+          'the caller-supplied id, which may not be the runtime session the '
+          'gateway resumed.',
+        ));
   }
 
   /// Resumes [sessionId] and keeps the transcript the gateway returns with it.
