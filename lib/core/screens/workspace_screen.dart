@@ -17,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_strings.dart';
 import '../models/attachment_draft.dart';
 import '../models/hermes_project.dart';
+import '../models/projects_tree_overview.dart';
 import '../services/android_share_intent_service.dart';
 import '../services/attachment_draft_service.dart';
 import '../services/bots_gateway_client.dart';
@@ -1180,7 +1181,15 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         final overview = await repository
             .overview(refresh: true)
             .timeout(const Duration(seconds: 8));
-        claimed = overview.scopedSessionIds.toSet();
+        claimed = {
+          // scoped_session_ids is server-computed over EVERY tier including
+          // the synthetic Home bucket, so it names unfiled chats too —
+          // using it raw would make the Unassigned filter permanently
+          // empty. A chat is claimed only when its owner is a real
+          // project, not the Home bucket.
+          for (final entry in overview.sessionProjects.entries)
+            if (entry.value != ProjectsTreeOverview.noProjectId) entry.key,
+        };
         // Best-effort session → project label, from the server's own preview
         // rows. A conversation the overview does not name stays honest as
         // "Unassigned" in the Chats row.
