@@ -31,7 +31,6 @@ class DesktopGatewayClient {
   final String _connectionId;
   final String _baseUrl;
   final DashboardClient _dashboard;
-  final String _documentProfile;
 
   /// Hermes profile the gateway socket should run chats under, or null to
   /// let the server use its own. See [SavedConnection.gatewayProfile].
@@ -77,7 +76,6 @@ class DesktopGatewayClient {
     required this._connectionId,
     required this._baseUrl,
     required this._dashboard,
-    required this._documentProfile,
     this._gatewayProfile,
   });
 
@@ -166,7 +164,6 @@ class DesktopGatewayClient {
         username: connection.dashboardUsername,
         password: connection.dashboardPassword,
       ),
-      documentProfile: documentIntakeProfileForConnection(connection),
       gatewayProfile: connection.gatewayProfile,
     );
   }
@@ -381,6 +378,12 @@ class DesktopGatewayClient {
     _gatewaySessionIds[mobileSessionId] = binding.runtimeSessionId;
     _storedSessionIds[mobileSessionId] = binding.storedSessionId;
   }
+
+  /// The gateway's stored session key bound to a mobile session id, when a
+  /// binding exists. Stored keys address rows in the session DB (move,
+  /// resume); mobile ids do not survive into gateway-side lookups.
+  String? storedSessionKeyFor(String mobileSessionId) =>
+      _storedSessionIds[mobileSessionId];
 
   /// True when [error] says the runtime session id the gateway was handed no
   /// longer exists — the detached/orphan-reap or eviction signature. The
