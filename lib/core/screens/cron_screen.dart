@@ -48,6 +48,7 @@ class _CronScreenState extends State<CronScreen> {
       useHttps: widget.connection.useHttps,
       username: widget.connection.dashboardUsername,
       password: widget.connection.dashboardPassword,
+      gatewayProfile: widget.connection.gatewayProfile,
     );
     _loadJobs();
   }
@@ -65,11 +66,7 @@ class _CronScreenState extends State<CronScreen> {
     });
 
     try {
-      final data = await _client.apiGetList('cron/jobs');
-      final items = <Map<String, dynamic>>[];
-      for (final item in data) {
-        if (item is Map<String, dynamic>) items.add(item);
-      }
+      final items = await _client.getCronJobs();
 
       if (!mounted) return;
       setState(() {
@@ -120,10 +117,9 @@ class _CronScreenState extends State<CronScreen> {
     final jobId = job['id'] as String? ?? '';
     if (jobId.isEmpty) return;
     final paused = _isPaused(job);
-    final action = paused ? 'resume' : 'pause';
 
     try {
-      await _client.apiPost('cron/jobs/$jobId/$action');
+      await _client.setJobPaused(jobId, paused: !paused);
       if (paused) {
         job.remove('paused_at');
         job['state'] = 'active';
@@ -181,7 +177,7 @@ class _CronScreenState extends State<CronScreen> {
     if (confirmed != true) return;
 
     try {
-      await _client.apiDelete('cron/jobs/$jobId');
+      await _client.deleteJob(jobId);
       if (mounted) {
         setState(() => _jobs.removeWhere((j) => j['id'] == jobId));
         ScaffoldMessenger.of(context).showSnackBar(
@@ -205,7 +201,7 @@ class _CronScreenState extends State<CronScreen> {
     final jobId = job['id'] as String? ?? '';
     if (jobId.isEmpty) return;
     try {
-      await _client.apiPost('cron/jobs/$jobId/trigger');
+      await _client.triggerJob(jobId);
       if (mounted) {
         ScaffoldMessenger.of(
           context,
