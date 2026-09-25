@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/app_strings.dart';
 import '../services/text_size_preference.dart';
 
 /// App-wide text-size control. It stores only the selected display preference;
@@ -43,6 +44,7 @@ class _TextSizeSettingsCardState extends State<TextSizeSettingsCard> {
   }
 
   Future<void> _showPicker() {
+    final strings = AppStrings.of(context);
     return showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -55,14 +57,11 @@ class _TextSizeSettingsCardState extends State<TextSizeSettingsCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Text size',
+                  strings.settingsTextSize,
                   style: Theme.of(sheetContext).textTheme.titleLarge,
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Explicit choices adjust Android accessibility text size; '
-                  'System leaves it unchanged.',
-                ),
+                Text(strings.settingsTextSizeDescription),
                 const SizedBox(height: 8),
                 RadioGroup<TextSizePreference>(
                   groupValue: _preference,
@@ -90,17 +89,18 @@ class _TextSizeSettingsCardState extends State<TextSizeSettingsCard> {
 
   @override
   Widget build(BuildContext context) {
+    final strings = AppStrings.of(context);
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Semantics(
-            label: 'Text size: ${_preference.label}',
+            label: '${strings.settingsTextSize}: ${_preference.label}',
             button: true,
             child: ExcludeSemantics(
               child: ListTile(
                 leading: const Icon(Icons.format_size),
-                title: const Text('Text size'),
+                title: Text(strings.settingsTextSize),
                 subtitle: Text(
                   '${_preference.label} — ${_preference.description}',
                 ),
@@ -116,17 +116,15 @@ class _TextSizeSettingsCardState extends State<TextSizeSettingsCard> {
               label: 'Text size preview',
               child: ExcludeSemantics(
                 child: Text(
-                  'Preview',
+                  strings.settingsPreview,
                   style: TextStyle(fontWeight: FontWeight.w600),
                 ),
               ),
             ),
           ),
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
-            child: Text(
-              'Hermes keeps Android accessibility text scaling active.',
-            ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Text(strings.settingsTextSizePreviewBody),
           ),
         ],
       ),
