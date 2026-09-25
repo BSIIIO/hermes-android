@@ -73,7 +73,42 @@ P0 之后，P1/P2 界面**仍然是英文**——这是有意识的交付切分�
 做法：保留 `label`，新增 `localizedLabel(AppStrings strings)`，只有渲染出的
 `NavigationBar` / `NavigationRail` 读后者。**后续 PR 不要改 `label`。**
 
-## 6. 保持英文不自译的词
+## 6. 已被验证的运行时行为（UX 复查结论）
+
+UX 复查提出了三个「会不会咬人」的问题，其中两个当时只能推断。都已用测试锁定，结论如下。
+
+### 6.1 切换语言不会断流、不会丢状态
+
+`HermesAppState.setState` 重建的是 `MaterialApp` 本身，而 `HomeScreen` 是同一个
+widget 类型、没有变化的 `Key` —— Flutter 因此复用 element，`HomeScreenState`、
+`ConnectionManager`、`GatewayTurnApplicationController` 保持**同一个对象**。
+后者持有活跃的 turn 流。
+
+`test/app_language_rebuild_safety_test.dart` 断言切换语言后三者 `same(...)` 不变。
+这与切换主题的行为完全一致（`_ThemeToggle._setMode` 走同一路径）。
+
+推论：我的 PR description 里原本写的「当前 route 重建、未提交的 composer 草稿丢失」
+是**过度警告** —— 只有当你切换语言时正停留在 Settings 之外的某个已入栈 route 上，
+该 route 才会重建。Settings 页面自身切换时不丢任何东西。
+
+### 6.2 Cinzel 不会挡住中文字形，无需回退链
+
+ Cinzel 只出现在 4 个 brand wordmark / 标题调用点（`lib/main.dart` L193、L904，
+`lib/core/screens/session_list_screen.dart` L812、L859），全局 text theme
+里唯一的 `fontFamily` 是 `mono`（`hermes_theme.dart` L112–113），**没有全局拉丁字体族**。
+所以中文走平台字体，不需要 `fontFamilyFallback`。
+
+`test/chinese_glyph_render_test.dart` 把 10 条中文串放进 widget 树并断言零 layout 异常，
+200% 缩放 + 320dp 下同样零异常。这是结构性守卫：将来若有人把 Cinzel 提成全局
+`ThemeData.fontFamily`，这两个测试会开始抛异常，而不是静默退化成方框。
+
+### 6.3 Semantics 已按语言变化
+
+卡片 `Semantics.label` 是 `'${strings.language}: $selected'`，所以中文界面读作
+`语言：简体中文`（`AppStringsZh.languageAccessibilityLabel` 正是为此而设）。
+屏幕阅读器按当前语言播报，不会读错发音。
+
+## 7. 保持英文不自译的词
 
 `Hermes`、`Gateway`、`API Server`、`API Key`、`Android`、`Bearer`、`Cron`、`SSE`、
 `URL`、`Dashboard`、`Provider`、`Model`—— 中文界面里照原样保留。语言档位名
