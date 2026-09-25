@@ -1265,7 +1265,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   /// Same repository move as the quick-chat promotion (explicit assign,
   /// cwd re-home fallback on stock gateways); the only difference is no
   /// quick-chat store bookkeeping — the chat was never a quick chat.
-  Future<void> _moveUnassignedChat(Session session) async {
+  Future<String> _moveUnassignedChat(Session session) async {
     final repository = _repository;
     if (repository == null) {
       throw StateError('Projects are unavailable for this connection');
@@ -1299,9 +1299,14 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     if (reason != null) {
       throw StateError(reason);
     }
+    _chatProjectLabels = Map.unmodifiable({
+      ..._chatProjectLabels,
+      session.id: project.name,
+    });
+    return project.name;
   }
 
-  Future<void> _promoteQuickChat(Session session) async {
+  Future<String> _promoteQuickChat(Session session) async {
     final repository = _repository;
     // Resolved before the first await: both error branches below build a
     // StateError whose message a user can see, and a BuildContext must not be
@@ -1344,6 +1349,11 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         };
       });
     }
+    _chatProjectLabels = Map.unmodifiable({
+      ..._chatProjectLabels,
+      session.id: project.name,
+    });
+    return project.name;
   }
 
   Future<void> _openFiles() async {
