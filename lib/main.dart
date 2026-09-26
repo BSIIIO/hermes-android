@@ -613,7 +613,7 @@ class HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Dashboard / Proxy Settings'),
+          title: Text(s.connDashboardProxySettings),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -621,10 +621,7 @@ class HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Text(
-                    'Used for hosted path prefixes and for the Settings, '
-                    'Memory, Skills and Cron tabs. Leave username/password '
-                    'blank for an open dashboard, or enable proxied mode when '
-                    'your reverse proxy injects dashboard auth.',
+                    s.connProxyIntro,
                     style: TextStyle(color: Colors.grey[600], fontSize: 12),
                   ),
                 ),
@@ -662,9 +659,9 @@ class HomeScreenState extends State<HomeScreen> {
                   ),
                 TextField(
                   controller: gatewayPrefixCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Gateway path prefix',
-                    hintText: 'e.g. /profile/peter',
+                  decoration: InputDecoration(
+                    labelText: s.connGatewayPrefixLabel,
+                    hintText: s.connGatewayPrefixHintProfile,
                   ),
                   autocorrect: false,
                   enabled: !validating,
@@ -672,9 +669,9 @@ class HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: dashboardPrefixCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Dashboard path prefix',
-                    hintText: 'e.g. /dashboard',
+                  decoration: InputDecoration(
+                    labelText: s.connDashboardPrefixLabel,
+                    hintText: s.connDashboardPrefixHint,
                   ),
                   autocorrect: false,
                   enabled: !validating,
@@ -683,10 +680,8 @@ class HomeScreenState extends State<HomeScreen> {
                 SwitchListTile(
                   value: proxied,
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Dashboard behind proxy'),
-                  subtitle: const Text(
-                    'Proxy injects auth; app sends clean requests',
-                  ),
+                  title: Text(s.connDashboardBehindProxy),
+                  subtitle: Text(s.connDashboardBehindProxySub),
                   onChanged: validating
                       ? null
                       : (v) => setDialogState(() => proxied = v),
@@ -694,9 +689,9 @@ class HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 8),
                 TextField(
                   controller: portCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Dashboard Port',
-                    hintText: 'Leave blank for default (9119)',
+                  decoration: InputDecoration(
+                    labelText: s.connDashPortLabel,
+                    hintText: s.connDashPortHint,
                   ),
                   keyboardType: TextInputType.number,
                   enabled: !validating,
@@ -704,8 +699,8 @@ class HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: userCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Username (optional)',
+                  decoration: InputDecoration(
+                    labelText: s.connUsernameOptional,
                   ),
                   autocorrect: false,
                   enabled: !validating,
@@ -713,8 +708,8 @@ class HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 12),
                 TextField(
                   controller: passCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Password (optional)',
+                  decoration: InputDecoration(
+                    labelText: s.connPasswordOptional,
                   ),
                   obscureText: true,
                   enabled: !validating,
@@ -1200,9 +1195,7 @@ class _AddDialogState extends State<_AddDialog> {
   Widget build(BuildContext context) {
     final s = AppStrings.of(context);
     return AlertDialog(
-      title: Text(
-        _isEditing ? s.commonEditConnection : s.commonAddConnection,
-      ),
+      title: Text(_isEditing ? s.commonEditConnection : s.commonAddConnection),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1284,7 +1277,7 @@ class _AddDialogState extends State<_AddDialog> {
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      'Custom proxy and dashboard details',
+                      s.connProxySectionTitle,
                       style: TextStyle(color: Colors.grey[500], fontSize: 13),
                     ),
                   ],
@@ -1295,19 +1288,18 @@ class _AddDialogState extends State<_AddDialog> {
               const SizedBox(height: 8),
               TextField(
                 controller: _gatewayPrefix,
-                decoration: const InputDecoration(
-                  labelText: 'Gateway path prefix',
-                  hintText:
-                      'e.g. /profile/peter (proxy path before /api/ and /v1/)',
+                decoration: InputDecoration(
+                  labelText: s.connGatewayPrefixLabel,
+                  hintText: s.connGatewayPrefixHintProxy,
                 ),
                 autocorrect: false,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _dashboardPrefix,
-                decoration: const InputDecoration(
-                  labelText: 'Dashboard path prefix',
-                  hintText: 'e.g. /dashboard (proxy path before /api/)',
+                decoration: InputDecoration(
+                  labelText: s.connDashboardPrefixLabel,
+                  hintText: s.connDashboardPrefixHintProxy,
                 ),
                 autocorrect: false,
               ),
@@ -1315,52 +1307,48 @@ class _AddDialogState extends State<_AddDialog> {
               SwitchListTile(
                 value: _dashboardProxied,
                 contentPadding: EdgeInsets.zero,
-                title: const Text('Dashboard behind proxy'),
-                subtitle: const Text(
-                  'Nginx injects auth — app sends clean requests',
-                ),
+                title: Text(s.connDashboardBehindProxy),
+                subtitle: Text(s.connDashboardBehindProxySubNginx),
                 onChanged: (v) => setState(() => _dashboardProxied = v),
               ),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
                 child: Text(
-                  'Optional. For the Memory/Cron/Skills/Settings tabs. Leave '
-                  'blank to use the default dashboard port (9119) with no login.',
+                  s.connDashPortOptionalNote,
                   style: TextStyle(color: Colors.grey[600], fontSize: 12),
                 ),
               ),
               TextField(
                 controller: _dashPort,
-                decoration: const InputDecoration(
-                  labelText: 'Dashboard Port',
-                  hintText: 'Leave blank for default (9119)',
+                decoration: InputDecoration(
+                  labelText: s.connDashPortLabel,
+                  hintText: s.connDashPortHint,
                 ),
                 keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _dashUser,
-                decoration: const InputDecoration(
-                  labelText: 'Dashboard Username (optional)',
+                decoration: InputDecoration(
+                  labelText: s.connDashUsernameOptional,
                 ),
                 autocorrect: false,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _dashPass,
-                decoration: const InputDecoration(
-                  labelText: 'Dashboard Password (optional)',
+                decoration: InputDecoration(
+                  labelText: s.connDashPasswordOptional,
                 ),
                 obscureText: true,
               ),
               const SizedBox(height: 12),
               TextField(
                 controller: _desktopGatewayUrl,
-                decoration: const InputDecoration(
-                  labelText: 'Desktop Gateway URL (optional)',
-                  hintText: 'https://hermes-desktop.example.lan',
-                  helperText:
-                      'Enables file attachments through the Desktop remote gateway.',
+                decoration: InputDecoration(
+                  labelText: s.connDesktopGatewayUrl,
+                  hintText: s.connDesktopGatewayUrlHint,
+                  helperText: s.connDesktopGatewayUrlHelper,
                 ),
                 keyboardType: TextInputType.url,
                 autocorrect: false,
@@ -1368,13 +1356,10 @@ class _AddDialogState extends State<_AddDialog> {
               const SizedBox(height: 12),
               TextField(
                 controller: _gatewayProfile,
-                decoration: const InputDecoration(
-                  labelText: 'Hermes profile (optional)',
-                  hintText: 'e.g. sol',
-                  helperText:
-                      'Profile this connection chats as when the dashboard '
-                      'serves several profiles. Leave blank for an isolated '
-                      'per-profile dashboard.',
+                decoration: InputDecoration(
+                  labelText: s.connHermesProfile,
+                  hintText: s.connHermesProfileHint,
+                  helperText: s.connHermesProfileHelper,
                   helperMaxLines: 3,
                 ),
                 autocorrect: false,

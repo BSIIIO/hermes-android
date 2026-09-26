@@ -710,7 +710,10 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         );
       case HermesDestination.more:
         return MorePane(
-          sections: buildMoreSections(dashboardReachable: _dashboardReachable),
+          sections: buildMoreSections(
+            dashboardReachable: _dashboardReachable,
+            s: s,
+          ),
           onSelect: _openMoreEntry,
         );
     }

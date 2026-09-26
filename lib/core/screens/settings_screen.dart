@@ -9,6 +9,7 @@ import '../l10n/app_strings.dart';
 import '../widgets/app_language_card.dart';
 import '../widgets/config_backup_card.dart';
 import '../widgets/text_size_settings_card.dart';
+import '../widgets/theme_mode_card.dart';
 import '../../main.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
@@ -333,7 +334,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
         // ---- Section: Theme ----
         _buildSectionHeader(s.appearance),
-        _ThemeToggle(),
         const SizedBox(height: 8),
         AppLanguageCard(
           preferences: context
@@ -345,6 +345,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
               .findAncestorStateOfType<HermesAppState>()!
               .setAppLanguage(language),
         ),
+        const SizedBox(height: 8),
+        const ThemeModeCard(),
         const SizedBox(height: 8),
         TextSizeSettingsCard(
           preferences: context
@@ -584,65 +586,6 @@ class _VerboseToggleState extends State<_VerboseToggle> {
         secondary: const Icon(Icons.terminal),
         value: _verbose,
         onChanged: _set,
-      ),
-    );
-  }
-}
-
-class _ThemeToggle extends StatefulWidget {
-  @override
-  State<_ThemeToggle> createState() => _ThemeToggleState();
-}
-
-class _ThemeToggleState extends State<_ThemeToggle> {
-  String _mode = 'system';
-
-  @override
-  void initState() {
-    super.initState();
-    _loadMode();
-  }
-
-  Future<void> _loadMode() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() => _mode = prefs.getString('theme_mode') ?? 'system');
-  }
-
-  Future<void> _setMode(String mode) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('theme_mode', mode);
-    if (!mounted) return;
-    setState(() => _mode = mode);
-    final rootCtx = context.findAncestorStateOfType<HermesAppState>();
-    rootCtx?.setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final s = AppStrings.of(context);
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: SegmentedButton<String>(
-        segments: [
-          ButtonSegment(
-            value: 'system',
-            label: Text(s.themeSystem),
-            icon: const Icon(Icons.brightness_auto, size: 18),
-          ),
-          ButtonSegment(
-            value: 'dark',
-            label: Text(s.themeDark),
-            icon: const Icon(Icons.dark_mode, size: 18),
-          ),
-          ButtonSegment(
-            value: 'light',
-            label: Text(s.themeLight),
-            icon: const Icon(Icons.light_mode, size: 18),
-          ),
-        ],
-        selected: {_mode},
-        onSelectionChanged: (s) => _setMode(s.first),
-        style: ButtonStyle(visualDensity: VisualDensity.compact),
       ),
     );
   }

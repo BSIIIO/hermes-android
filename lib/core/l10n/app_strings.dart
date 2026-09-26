@@ -1118,6 +1118,219 @@ abstract class AppStrings {
   /// Label for the thinking-effort section of the model sheet.
   String get chatThinkingEffort;
 
+  // ---- Fixups (phone-tested, P1 batch 6) ----
+
+  /// Text-size option that follows Android accessibility exactly.
+  String get textSizeSystemLabel;
+
+  /// Description of the System text-size option.
+  String get textSizeSystemDescription;
+
+  /// Text-size option: 90%.
+  String get textSizeSmallLabel;
+
+  /// Description of the Small text-size option.
+  String get textSizeSmallDescription;
+
+  /// Text-size option: 100%.
+  String get textSizeDefaultLabel;
+
+  /// Description of the Default text-size option.
+  String get textSizeDefaultDescription;
+
+  /// Text-size option: 115%.
+  String get textSizeLargeLabel;
+
+  /// Description of the Large text-size option.
+  String get textSizeLargeDescription;
+
+  /// Text-size option: 130%.
+  String get textSizeExtraLargeLabel;
+
+  /// Description of the Extra large text-size option.
+  String get textSizeExtraLargeDescription;
+
+  // ---- More pane + Activity (P1 batch 6) ----
+
+  /// A
+  String get moreSectionWorkspace;
+
+  /// c
+  String get moreSectionOrganization;
+
+  /// t
+  String get moreSectionAutomation;
+
+  /// i
+  String get moreSectionSystem;
+
+  /// v
+  String get moreUnassignedChatsTitle;
+
+  /// i
+  String get moreUnassignedChatsSubtitle;
+
+  /// t
+  String get moreArchivedQuickTitle;
+
+  /// y
+  String get moreArchivedQuickSubtitle;
+
+  ///
+  String get moreFilesTitle;
+
+  /// f
+  String get moreFilesSubtitle;
+
+  /// e
+  String get moreAssetsTitle;
+
+  /// e
+  String get moreAssetsSubtitle;
+
+  /// d
+  String get morePinBatchUndoTitle;
+
+  /// :
+  String get morePinBatchUndoSubtitle;
+
+  ///
+  String get moreAiFilingTitle;
+
+  /// u
+  String get moreAiFilingSubtitle;
+
+  /// n
+  String get moreCronTitle;
+
+  /// r
+  String get moreCronSubtitle;
+
+  /// e
+  String get moreSkillsTitle;
+
+  /// a
+  String get moreSkillsSubtitle;
+
+  /// d
+  String get moreMemoryTitle;
+
+  /// a
+  String get moreMemorySubtitle;
+
+  /// b
+  String get moreSettingsTitle;
+
+  /// l
+  String get moreSettingsSubtitle;
+
+  /// e
+  String get moreDashboardTitle;
+
+  ///
+  String get moreDashboardSubtitle;
+
+  /// f
+  String get moreDashboardRequired;
+
+  /// e
+  String get moreGatewayAssetsRequired;
+
+  /// e
+  String get moreGatewayOrganizationRequired;
+
+  /// d
+  String get moreGatewayAiFilingRequired;
+
+  ///
+  String get activityAndCountMore;
+
+  /// e
+  String get activityOfflineBanner;
+
+  /// r
+  String get activityReadFailed;
+
+  /// Activity feed: error-state body explaining how the feed is built.
+  String get activityReadFailedMessage;
+
+  // ---- Connection editor: proxy & dashboard (P1 batch 6) ----
+  /// Custom proxy and dashboard details
+  String get connProxySectionTitle;
+
+  /// Used for hosted path prefixes and for the Settings, Memory, Skills and Cron tabs. Leave username/password blank for an open dashboard, or enable proxied mode when your reverse proxy injects dashboard auth.
+  String get connProxyIntro;
+
+  /// Gateway path prefix
+  String get connGatewayPrefixLabel;
+
+  /// e.g. /profile/peter
+  String get connGatewayPrefixHintProfile;
+
+  /// e.g. /profile/peter (proxy path before /api/ and /v1/)
+  String get connGatewayPrefixHintProxy;
+
+  /// Dashboard path prefix
+  String get connDashboardPrefixLabel;
+
+  /// e.g. /dashboard
+  String get connDashboardPrefixHint;
+
+  /// e.g. /dashboard (proxy path before /api/)
+  String get connDashboardPrefixHintProxy;
+
+  /// Dashboard behind proxy
+  String get connDashboardBehindProxy;
+
+  /// Proxy injects auth; app sends clean requests
+  String get connDashboardBehindProxySub;
+
+  /// Nginx injects auth — app sends clean requests
+  String get connDashboardBehindProxySubNginx;
+
+  /// Dashboard Port
+  String get connDashPortLabel;
+
+  /// Leave blank for default (9119)
+  String get connDashPortHint;
+
+  /// Optional. For the Memory/Cron/Skills/Settings tabs. Leave blank to use the default dashboard port (9119) with no login.
+  String get connDashPortOptionalNote;
+
+  /// Username (optional)
+  String get connUsernameOptional;
+
+  /// Password (optional)
+  String get connPasswordOptional;
+
+  /// Dashboard Username (optional)
+  String get connDashUsernameOptional;
+
+  /// Dashboard Password (optional)
+  String get connDashPasswordOptional;
+
+  /// Desktop Gateway URL (optional)
+  String get connDesktopGatewayUrl;
+
+  /// https://hermes-desktop.example.lan
+  String get connDesktopGatewayUrlHint;
+
+  /// Enables file attachments through the Desktop remote gateway.
+  String get connDesktopGatewayUrlHelper;
+
+  /// Hermes profile (optional)
+  String get connHermesProfile;
+
+  /// e.g. sol
+  String get connHermesProfileHint;
+
+  /// Profile this connection chats as when the dashboard serves several profiles. Leave blank for an isolated per-profile dashboard.
+  String get connHermesProfileHelper;
+
+  /// Dashboard / Proxy Settings
+  String get connDashboardProxySettings;
+
+
   /// Semantics label of the model / scope button.
   String get chatChooseModel;
 
@@ -2252,6 +2465,197 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get chatAttachImageOrFile => 'Attach image or file';
+
+  @override
+  String get textSizeSystemLabel => 'System';
+
+  @override
+  String get textSizeSystemDescription =>
+      'Use Android accessibility text size exactly.';
+
+  @override
+  String get textSizeSmallLabel => 'Small';
+
+  @override
+  String get textSizeSmallDescription => '90% of the Android text size.';
+
+  @override
+  String get textSizeDefaultLabel => 'Default';
+
+  @override
+  String get textSizeDefaultDescription => '100% of the Android text size.';
+
+  @override
+  String get textSizeLargeLabel => 'Large';
+
+  @override
+  String get textSizeLargeDescription => '115% of the Android text size.';
+
+  @override
+  String get textSizeExtraLargeLabel => 'Extra large';
+
+  @override
+  String get textSizeExtraLargeDescription => '130% of the Android text size.';
+
+  @override
+  String get moreSectionWorkspace => 'Workspace';
+  @override
+  String get moreSectionOrganization => 'Organization';
+  @override
+  String get moreSectionAutomation => 'Automation';
+  @override
+  String get moreSectionSystem => 'System';
+  @override
+  String get moreUnassignedChatsTitle => 'Unassigned chats';
+  @override
+  String get moreUnassignedChatsSubtitle =>
+      'Chats that are not assigned to a Project';
+  @override
+  String get moreArchivedQuickTitle => 'Archived quick chats';
+  @override
+  String get moreArchivedQuickSubtitle =>
+      'Review or promote quick chats past their retention period';
+  @override
+  String get moreFilesTitle => 'Files';
+  @override
+  String get moreFilesSubtitle =>
+      'Browse the miniserver folders behind your projects';
+  @override
+  String get moreAssetsTitle => 'Assets';
+  @override
+  String get moreAssetsSubtitle =>
+      'Artifacts, attachments, and generated media';
+  @override
+  String get morePinBatchUndoTitle => 'Pin, batch and undo';
+  @override
+  String get morePinBatchUndoSubtitle =>
+      'Cross-device ordering and reversible bulk organization';
+  @override
+  String get moreAiFilingTitle => 'AI-assisted filing';
+  @override
+  String get moreAiFilingSubtitle =>
+      'Suggest Projects and learn from your corrections';
+  @override
+  String get moreCronTitle => 'Cron';
+  @override
+  String get moreCronSubtitle => 'Scheduled jobs and their last runs';
+  @override
+  String get moreSkillsTitle => 'Skills and tools';
+  @override
+  String get moreSkillsSubtitle => 'What Hermes knows how to do';
+  @override
+  String get moreMemoryTitle => 'Memory';
+  @override
+  String get moreMemorySubtitle => 'Durable facts Hermes keeps about you';
+  @override
+  String get moreSettingsTitle => 'Settings';
+  @override
+  String get moreSettingsSubtitle =>
+      'Connection, appearance, and device preferences';
+  @override
+  String get moreDashboardTitle => 'Open the Hermes dashboard';
+  @override
+  String get moreDashboardSubtitle =>
+      'Everything not yet native, in the authenticated web dashboard';
+  @override
+  String get moreDashboardRequired =>
+      'Needs a reachable Hermes dashboard. Check the host, port, and credentials of this connection.';
+  @override
+  String get moreGatewayAssetsRequired =>
+      'Needs a server-authoritative Assets index in the Hermes Gateway.';
+  @override
+  String get moreGatewayOrganizationRequired =>
+      'Needs durable pin ordering, batch mutation, and undo contracts in the Hermes Gateway.';
+  @override
+  String get moreGatewayAiFilingRequired =>
+      'Needs a correction-aware filing contract in the Hermes Gateway.';
+  @override
+  String get activityAndCountMore => 'and {0} more';
+  @override
+  String get activityOfflineBanner =>
+      'Offline — showing the last known activity.';
+  @override
+  String get activityReadFailed => 'Could not read activity';
+
+  @override
+  String get activityReadFailedMessage =>
+      'Activity reads the durable turn journal to know what Hermes is doing. '
+      'Check that the gateway is reachable, then try again.';
+
+  @override
+  String get connProxySectionTitle => 'Custom proxy and dashboard details';
+
+  @override
+  String get connProxyIntro => 'Used for hosted path prefixes and for the Settings, Memory, Skills and Cron tabs. Leave username/password blank for an open dashboard, or enable proxied mode when your reverse proxy injects dashboard auth.';
+
+  @override
+  String get connGatewayPrefixLabel => 'Gateway path prefix';
+
+  @override
+  String get connGatewayPrefixHintProfile => 'e.g. /profile/peter';
+
+  @override
+  String get connGatewayPrefixHintProxy => 'e.g. /profile/peter (proxy path before /api/ and /v1/)';
+
+  @override
+  String get connDashboardPrefixLabel => 'Dashboard path prefix';
+
+  @override
+  String get connDashboardPrefixHint => 'e.g. /dashboard';
+
+  @override
+  String get connDashboardPrefixHintProxy => 'e.g. /dashboard (proxy path before /api/)';
+
+  @override
+  String get connDashboardBehindProxy => 'Dashboard behind proxy';
+
+  @override
+  String get connDashboardBehindProxySub => 'Proxy injects auth; app sends clean requests';
+
+  @override
+  String get connDashboardBehindProxySubNginx => 'Nginx injects auth — app sends clean requests';
+
+  @override
+  String get connDashPortLabel => 'Dashboard Port';
+
+  @override
+  String get connDashPortHint => 'Leave blank for default (9119)';
+
+  @override
+  String get connDashPortOptionalNote => 'Optional. For the Memory/Cron/Skills/Settings tabs. Leave blank to use the default dashboard port (9119) with no login.';
+
+  @override
+  String get connUsernameOptional => 'Username (optional)';
+
+  @override
+  String get connPasswordOptional => 'Password (optional)';
+
+  @override
+  String get connDashUsernameOptional => 'Dashboard Username (optional)';
+
+  @override
+  String get connDashPasswordOptional => 'Dashboard Password (optional)';
+
+  @override
+  String get connDesktopGatewayUrl => 'Desktop Gateway URL (optional)';
+
+  @override
+  String get connDesktopGatewayUrlHint => 'https://hermes-desktop.example.lan';
+
+  @override
+  String get connDesktopGatewayUrlHelper => 'Enables file attachments through the Desktop remote gateway.';
+
+  @override
+  String get connHermesProfile => 'Hermes profile (optional)';
+
+  @override
+  String get connHermesProfileHint => 'e.g. sol';
+
+  @override
+  String get connHermesProfileHelper => 'Profile this connection chats as when the dashboard serves several profiles. Leave blank for an isolated per-profile dashboard.';
+
+  @override
+  String get connDashboardProxySettings => 'Dashboard / Proxy Settings';
 }
 
 /// Simplified Chinese strings.
@@ -3321,6 +3725,184 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get chatAttachImageOrFile => '附加图片或文件';
+
+  @override
+  String get textSizeSystemLabel => '跟随系统';
+
+  @override
+  String get textSizeSystemDescription => '完全使用 Android 无障碍文字大小。';
+
+  @override
+  String get textSizeSmallLabel => '小';
+
+  @override
+  String get textSizeSmallDescription => 'Android 文字大小的 90%。';
+
+  @override
+  String get textSizeDefaultLabel => '标准';
+
+  @override
+  String get textSizeDefaultDescription => 'Android 文字大小的 100%。';
+
+  @override
+  String get textSizeLargeLabel => '大';
+
+  @override
+  String get textSizeLargeDescription => 'Android 文字大小的 115%。';
+
+  @override
+  String get textSizeExtraLargeLabel => '特大';
+
+  @override
+  String get textSizeExtraLargeDescription => 'Android 文字大小的 130%。';
+
+  @override
+  String get moreSectionWorkspace => '工作区';
+  @override
+  String get moreSectionOrganization => '整理';
+  @override
+  String get moreSectionAutomation => '自动化';
+  @override
+  String get moreSectionSystem => '系统';
+  @override
+  String get moreUnassignedChatsTitle => '未分类的会话';
+  @override
+  String get moreUnassignedChatsSubtitle => '未归入任何项目的会话';
+  @override
+  String get moreArchivedQuickTitle => '已归档的临时会话';
+  @override
+  String get moreArchivedQuickSubtitle => '查看或升级超过保留期的临时会话';
+  @override
+  String get moreFilesTitle => '文件';
+  @override
+  String get moreFilesSubtitle => '浏览项目背后的 miniserver 文件夹';
+  @override
+  String get moreAssetsTitle => '资源';
+  @override
+  String get moreAssetsSubtitle => '产物、附件与生成的媒体';
+  @override
+  String get morePinBatchUndoTitle => '置顶、批量与撤销';
+  @override
+  String get morePinBatchUndoSubtitle => '跨设备排序，可撤销的批量整理';
+  @override
+  String get moreAiFilingTitle => 'AI 辅助归档';
+  @override
+  String get moreAiFilingSubtitle => '推荐项目，并从你的修正中学习';
+  @override
+  String get moreCronTitle => '定时任务';
+  @override
+  String get moreCronSubtitle => '定时任务及其最近运行记录';
+  @override
+  String get moreSkillsTitle => '技能与工具';
+  @override
+  String get moreSkillsSubtitle => 'Hermes 会做什么';
+  @override
+  String get moreMemoryTitle => '记忆';
+  @override
+  String get moreMemorySubtitle => 'Hermes 长期记住的关于你的事实';
+  @override
+  String get moreSettingsTitle => '设置';
+  @override
+  String get moreSettingsSubtitle => '连接、外观与设备偏好';
+  @override
+  String get moreDashboardTitle => '打开 Hermes 仪表盘';
+  @override
+  String get moreDashboardSubtitle => '尚未原生实现的功能，都在需登录的网页仪表盘里';
+  @override
+  String get moreDashboardRequired => '需要可访问的 Hermes 仪表盘。请检查此连接的主机、端口和凭据。';
+  @override
+  String get moreGatewayAssetsRequired =>
+      '需要 Hermes Gateway 提供服务端权威的 Assets 索引。';
+  @override
+  String get moreGatewayOrganizationRequired =>
+      '需要 Hermes Gateway 提供持久的置顶排序、批量变更与撤销契约。';
+  @override
+  String get moreGatewayAiFilingRequired => '需要 Hermes Gateway 提供能感知修正的归档契约。';
+  @override
+  String get activityAndCountMore => '还有 {0} 项';
+  @override
+  String get activityOfflineBanner => '离线 —— 显示最近一次获取到的动态。';
+  @override
+  String get activityReadFailed => '无法读取动态';
+
+  @override
+  String get activityReadFailedMessage =>
+      '动态通过读取持久化的回合日志来了解 Hermes 正在做什么。请确认网关可访问后重试。';
+
+  @override
+  String get connProxySectionTitle => '自定义代理与仪表盘详情';
+
+  @override
+  String get connProxyIntro => '用于托管路径前缀，以及设置、记忆、技能和定时任务这几个页签。公开的仪表盘请把用户名和密码留空；若你的反向代理会注入仪表盘鉴权，请开启代理模式。';
+
+  @override
+  String get connGatewayPrefixLabel => 'Gateway 路径前缀';
+
+  @override
+  String get connGatewayPrefixHintProfile => '例如 /profile/peter';
+
+  @override
+  String get connGatewayPrefixHintProxy => '例如 /profile/peter（/api/ 与 /v1/ 之前的代理路径）';
+
+  @override
+  String get connDashboardPrefixLabel => 'Dashboard 路径前缀';
+
+  @override
+  String get connDashboardPrefixHint => '例如 /dashboard';
+
+  @override
+  String get connDashboardPrefixHintProxy => '例如 /dashboard（/api/ 之前的代理路径）';
+
+  @override
+  String get connDashboardBehindProxy => '仪表盘位于反向代理之后';
+
+  @override
+  String get connDashboardBehindProxySub => '由代理注入鉴权；应用发送干净请求';
+
+  @override
+  String get connDashboardBehindProxySubNginx => '由 Nginx 注入鉴权 —— 应用发送干净请求';
+
+  @override
+  String get connDashPortLabel => 'Dashboard 端口';
+
+  @override
+  String get connDashPortHint => '留空则使用默认端口（9119）';
+
+  @override
+  String get connDashPortOptionalNote => '可选。用于记忆/定时任务/技能/设置这几个页签。留空则使用默认仪表盘端口（9119）且无需登录。';
+
+  @override
+  String get connUsernameOptional => '用户名（可选）';
+
+  @override
+  String get connPasswordOptional => '密码（可选）';
+
+  @override
+  String get connDashUsernameOptional => 'Dashboard 用户名（可选）';
+
+  @override
+  String get connDashPasswordOptional => 'Dashboard 密码（可选）';
+
+  @override
+  String get connDesktopGatewayUrl => 'Desktop Gateway URL（可选）';
+
+  @override
+  String get connDesktopGatewayUrlHint => 'https://hermes-desktop.example.lan';
+
+  @override
+  String get connDesktopGatewayUrlHelper => '通过 Desktop 远程网关启用文件附件。';
+
+  @override
+  String get connHermesProfile => 'Hermes 配置（可选）';
+
+  @override
+  String get connHermesProfileHint => '例如 sol';
+
+  @override
+  String get connHermesProfileHelper => '当仪表盘提供多个配置时，此连接以哪个配置的身份对话。留空则使用独立的按配置隔离的仪表盘。';
+
+  @override
+  String get connDashboardProxySettings => 'Dashboard / 代理设置';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.

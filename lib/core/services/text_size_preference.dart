@@ -1,34 +1,55 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../l10n/app_strings.dart';
+
 /// App-wide, non-secret reading-size choices stored independently of profiles.
 ///
 /// Explicit choices multiply the Android/OS [TextScaler], including its
 /// nonlinear accessibility behavior. The multiplier is deliberately bounded
 /// from 0.90 to 1.30 so the app can offer a predictable adjustment without
 /// disabling the system accessibility setting.
+///
+/// [label] and [description] are resolved through [AppStrings] rather than
+/// held as constants on the enum: this enum is the app's display vocabulary,
+/// and a hardcoded English `'Extra large'` here renders untranslated in the
+/// Chinese picker sheet. [storageValue] stays stable because it is the
+/// persisted key — renaming it would silently reset every user's choice.
 enum TextSizePreference {
-  system('system', 'System', 1.0),
-  small('small', 'Small', 0.90),
-  standard('default', 'Default', 1.0),
-  large('large', 'Large', 1.15),
-  extraLarge('extra_large', 'Extra large', 1.30);
+  system('system', 1.0),
+  small('small', 0.90),
+  standard('default', 1.0),
+  large('large', 1.15),
+  extraLarge('extra_large', 1.30);
 
-  const TextSizePreference(this.storageValue, this.label, this.multiplier);
+  const TextSizePreference(this.storageValue, this.multiplier);
 
   static const preferenceKey = 'app_text_size_preference';
   static const minimumExplicitMultiplier = 0.90;
   static const maximumExplicitMultiplier = 1.30;
 
   final String storageValue;
-  final String label;
   final double multiplier;
 
   bool get followsSystemExactly => this == TextSizePreference.system;
 
-  String get description => followsSystemExactly
-      ? 'Use Android accessibility text size exactly.'
-      : '${(multiplier * 100).round()}% of the Android text size.';
+  /// User-facing name, resolved in the active locale.
+  String label(AppStrings s) => switch (this) {
+    TextSizePreference.system => s.textSizeSystemLabel,
+    TextSizePreference.small => s.textSizeSmallLabel,
+    TextSizePreference.standard => s.textSizeDefaultLabel,
+    TextSizePreference.large => s.textSizeLargeLabel,
+    TextSizePreference.extraLarge => s.textSizeExtraLargeLabel,
+  };
+
+  /// User-facing explanation of the resulting scale, resolved in the locale.
+  String description(AppStrings s) => switch (this) {
+    TextSizePreference.system => s.textSizeSystemDescription,
+    TextSizePreference.small => s.textSizeSmallDescription,
+    TextSizePreference.standard => s.textSizeDefaultDescription,
+    TextSizePreference.large => s.textSizeLargeDescription,
+    TextSizePreference.extraLarge => s.textSizeExtraLargeDescription,
+  };
 
   static TextSizePreference fromStorage(String? value) {
     return TextSizePreference.values.firstWhere(

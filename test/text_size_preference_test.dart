@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/services/connection_manager.dart';
 import 'package:hermes_android/core/services/text_size_preference.dart';
 import 'package:hermes_android/core/widgets/text_size_settings_card.dart';
@@ -55,6 +56,7 @@ void main() {
     tester,
   ) async {
     final prefs = await SharedPreferences.getInstance();
+    const strings = AppStringsEn();
     TextSizePreference? changed;
     final semantics = tester.ensureSemantics();
 
@@ -87,7 +89,9 @@ void main() {
     );
     await tester.tap(find.text('Text size'));
     await tester.pumpAndSettle();
-    final extraLarge = find.text('Extra large');
+    final extraLarge = find.text(
+      TextSizePreference.extraLarge.label(strings),
+    );
     await tester.scrollUntilVisible(extraLarge, 200);
     await tester.tap(extraLarge);
     await tester.pumpAndSettle();

@@ -73,8 +73,8 @@ class _TextSizeSettingsCardState extends State<TextSizeSettingsCard> {
                       for (final preference in TextSizePreference.values)
                         RadioListTile<TextSizePreference>(
                           value: preference,
-                          title: Text(preference.label),
-                          subtitle: Text(preference.description),
+                          title: Text(preference.label(strings)),
+                          subtitle: Text(preference.description(strings)),
                         ),
                     ],
                   ),
@@ -95,14 +95,16 @@ class _TextSizeSettingsCardState extends State<TextSizeSettingsCard> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Semantics(
-            label: '${strings.settingsTextSize}: ${_preference.label}',
+            label:
+                '${strings.settingsTextSize}: ${_preference.label(strings)}',
             button: true,
             child: ExcludeSemantics(
               child: ListTile(
                 leading: const Icon(Icons.format_size),
                 title: Text(strings.settingsTextSize),
                 subtitle: Text(
-                  '${_preference.label} — ${_preference.description}',
+                  '${_preference.label(strings)}'
+                  ' — ${_preference.description(strings)}',
                 ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: _showPicker,
