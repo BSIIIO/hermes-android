@@ -464,6 +464,250 @@ abstract class AppStrings {
 
   /// Confirm button in the branch dialog.
   String get chatsBranchCreate;
+
+  // ---- Projects: list (P1 batch 3) ----
+
+  /// Title of the Projects section.
+  String get projectsTitle;
+
+  /// Section header for archived projects.
+  String get projectsArchived;
+
+  /// Chip marking the currently active project.
+  String get projectsActive;
+
+  /// Tooltip and menu title for the per-project action menu.
+  String get projectsActions;
+
+  /// Menu item renaming a project.
+  String get projectsRename;
+
+  /// Menu item archiving a project.
+  String get projectsArchive;
+
+  /// Menu item restoring an archived project.
+  String get projectsRestore;
+
+  /// Empty state title.
+  String get projectsEmptyTitle;
+
+  /// Empty state message.
+  String get projectsEmptyMessage;
+
+  /// Empty state action label.
+  String get projectsCreateAction;
+
+  /// FAB tooltip creating a project.
+  String get projectsNewProject;
+
+  /// Dialog title creating a project.
+  String get projectsNewDialogTitle;
+
+  /// Dialog confirm button creating a project.
+  String get projectsCreate;
+
+  /// Text field label for a project name.
+  String get projectsNameLabel;
+
+  /// Validation error when the name field is blank.
+  String get projectsNameRequired;
+
+  /// Archive confirmation title; receives the project name.
+  String get projectsArchiveConfirmTitle;
+
+  /// Archive confirmation body.
+  String get projectsArchiveConfirmBody;
+
+  /// Confirm button in the archive dialog.
+  String get projectsArchiveConfirmAction;
+
+  /// Rename dialog title; receives the current name.
+  String get projectsRenameDialogTitle;
+
+  /// Rename dialog confirm button.
+  String get projectsRenameAction;
+
+  /// Error template; receives the verb and the failure text.
+  String get projectsMutationFailed;
+
+  /// Verb for the create mutation inside [projectsMutationFailed].
+  String get projectsActionCreate;
+
+  /// Verb for the rename mutation inside [projectsMutationFailed].
+  String get projectsActionRename;
+
+  /// Verb for the archive mutation inside [projectsMutationFailed].
+  String get projectsActionArchive;
+
+  /// Verb for the restore mutation inside [projectsMutationFailed].
+  String get projectsActionRestore;
+
+  /// Error state title when the gateway cannot be reached.
+  String get projectsUnreachableTitle;
+
+  /// Error state body when the gateway cannot be reached.
+  String get projectsUnreachableMessage;
+
+  /// Banner shown while displaying cached projects.
+  String get projectsOfflineBanner;
+
+  /// Sub-line under a local space card; receives the chat count.
+  String get projectsLocalSpaceSubtitle;
+
+  /// Singular form of the local-space chat count.
+  String get projectsOneChat;
+
+  /// Plural form of the local-space chat count; receives the count.
+  String get projectsChatCount;
+
+  /// Header of the compatibility-mode fallback.
+  String get projectsCompatibilityMode;
+
+  /// Explanation shown under [projectsCompatibilityMode].
+  String get projectsCompatibilityExplanation;
+
+  /// Empty state title when no local spaces exist.
+  String get projectsNoLocalSpacesTitle;
+
+  /// Empty state message when no local spaces exist.
+  String get projectsNoLocalSpacesMessage;
+
+  /// Section header for on-device spaces.
+  String get projectsOnThisDevice;
+
+  /// Action on the Projects header reviewing local spaces.
+  String get projectsReviewLocalSpaces;
+
+  // ---- Projects: detail (P1 batch 3) ----
+
+  /// Title for the dialog moving a conversation.
+  String get projectDetailMoveConversation;
+
+  /// Destination row meaning "no project".
+  String get projectDetailUnassigned;
+
+  /// Snackbar after a successful move; receives the destination label.
+  String get projectDetailMovedTo;
+
+  /// Snackbar when a move fails.
+  String get projectDetailMoveFailed;
+
+  /// Snackbar action retrying a failed operation.
+  String get commonRetryShort;
+
+  /// Rename dialog title; receives the project name.
+  String get projectDetailRenameTitle;
+
+  /// Rename dialog confirm button.
+  String get projectDetailRename;
+
+  /// Archive confirmation title; receives the project name.
+  String get projectDetailArchiveConfirmTitle;
+
+  /// Archive confirmation body.
+  String get projectDetailArchiveConfirmBody;
+
+  /// Archive confirm button.
+  String get projectDetailArchive;
+
+  /// Delete confirmation title; receives the project name.
+  String get projectDetailDeleteConfirmTitle;
+
+  /// Delete confirmation body.
+  String get projectDetailDeleteConfirmBody;
+
+  /// Delete confirm button.
+  String get projectDetailDelete;
+
+  /// Error template for archive / delete; receives the verb.
+  String get projectDetailManageFailed;
+
+  /// Snackbar when deleting fails.
+  String get projectDetailDeleteFailed;
+
+  /// FAB label starting a new chat inside a project.
+  String get projectDetailNewChat;
+
+  /// Section header listing the project's chats.
+  String get projectDetailChats;
+
+  /// Card line summarising the project's conversations.
+  String get projectDetailConversations;
+
+  /// Section header for repositories.
+  String get projectDetailRepositories;
+
+  /// Section header for the project location.
+  String get projectDetailLocation;
+
+  /// Section header for the project folders.
+  String get projectDetailFolders;
+
+  /// Empty state title for folders.
+  String get projectDetailNoFoldersTitle;
+
+  /// Empty state message for folders.
+  String get projectDetailNoFoldersMessage;
+
+  /// Error title when the gateway lacks an assets index.
+  String get projectDetailAssetsUnavailableTitle;
+
+  /// Error message when the gateway lacks an assets index.
+  String get projectDetailAssetsUnavailableMessage;
+
+  /// Empty state title for activity.
+  String get projectDetailNoActivityTitle;
+
+  /// Empty state message for activity.
+  String get projectDetailNoActivityMessage;
+
+  /// Search field hint inside a project.
+  String get projectDetailSearchChats;
+
+  /// Tooltip clearing the project search field.
+  String get projectDetailClearSearch;
+
+  /// Empty state title for a project with no chats.
+  String get projectDetailNoChatsTitle;
+
+  /// Empty state message for a project with no chats.
+  String get projectDetailNoChatsMessage;
+
+  /// Empty state title for a query with no matches; receives the query.
+  String get projectDetailNoMatchesTitle;
+
+  /// Empty state message for a query with no matches; receives the query.
+  String get projectDetailNoMatchesMessage;
+
+  /// Error title when project chats are unavailable on this gateway.
+  String get projectDetailUnsupportedTitle;
+
+  /// Error message when project chats are unavailable on this gateway.
+  String get projectDetailUnsupportedMessage;
+
+  /// Error title when the project cannot be opened.
+  String get projectDetailOpenFailedTitle;
+
+  /// Error message when the project cannot be opened.
+  String get projectDetailOpenFailedMessage;
+
+  /// Banner shown while displaying cached chats.
+  String get projectDetailOfflineBanner;
+
+  /// Tab listing the project's overview.
+  String get projectDetailTabOverview;
+
+  /// Tab listing the project's folders.
+  String get projectDetailTabFiles;
+
+  /// Tab listing the project's assets.
+  String get projectDetailTabAssets;
+
+  /// Tab listing the project's activity.
+  String get projectDetailTabActivity;
+
+  /// Menu item deleting a project.
+  String get projectDetailDeleteProject;
 }
 
 /// English strings.
@@ -896,6 +1140,271 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get chatsBranchCreate => 'Create branch';
+
+  @override
+  String get projectsTitle => 'Projects';
+
+  @override
+  String get projectsArchived => 'Archived';
+
+  @override
+  String get projectsActive => 'Active';
+
+  @override
+  String get projectsActions => 'Project actions';
+
+  @override
+  String get projectsRename => 'Rename project';
+
+  @override
+  String get projectsArchive => 'Archive project';
+
+  @override
+  String get projectsRestore => 'Restore project';
+
+  @override
+  String get projectsEmptyTitle => 'No projects yet';
+
+  @override
+  String get projectsEmptyMessage =>
+      'Projects group related chats, files, and activity, and stay in sync '
+      'with Hermes on your computer.';
+
+  @override
+  String get projectsCreateAction => 'Create a project';
+
+  @override
+  String get projectsNewProject => 'New project';
+
+  @override
+  String get projectsNewDialogTitle => 'New project';
+
+  @override
+  String get projectsCreate => 'Create';
+
+  @override
+  String get projectsNameLabel => 'Name';
+
+  @override
+  String get projectsNameRequired => 'Enter a name';
+
+  @override
+  String get projectsArchiveConfirmTitle => 'Archive {0}?';
+
+  @override
+  String get projectsArchiveConfirmBody =>
+      'The Project will move to Archived. Its chats and files stay intact, '
+      'and you can restore it at any time.';
+
+  @override
+  String get projectsArchiveConfirmAction => 'Archive';
+
+  @override
+  String get projectsRenameDialogTitle => 'Rename {0}';
+
+  @override
+  String get projectsRenameAction => 'Rename';
+
+  @override
+  String get projectsMutationFailed => 'Could not {0} the project: {1}';
+
+  @override
+  String get projectsActionCreate => 'create';
+
+  @override
+  String get projectsActionRename => 'rename';
+
+  @override
+  String get projectsActionArchive => 'archive';
+
+  @override
+  String get projectsActionRestore => 'restore';
+
+  @override
+  String get projectsUnreachableTitle => 'Could not reach Hermes';
+
+  @override
+  String get projectsUnreachableMessage =>
+      'Check that the gateway is running and reachable, then try again.';
+
+  @override
+  String get projectsOfflineBanner => 'Offline — showing the last known projects.';
+
+  @override
+  String get projectsLocalSpaceSubtitle => '{0} · on this device only';
+
+  @override
+  String get projectsOneChat => '1 chat';
+
+  @override
+  String get projectsChatCount => '{0} chats';
+
+  @override
+  String get projectsCompatibilityMode => 'Compatibility mode';
+
+  @override
+  String get projectsCompatibilityExplanation =>
+      'This Hermes gateway is older than server-side projects, so chats stay '
+      'grouped on this device only. Update Hermes to share the same projects '
+      'across your devices.';
+
+  @override
+  String get projectsNoLocalSpacesTitle => 'No spaces on this device';
+
+  @override
+  String get projectsNoLocalSpacesMessage =>
+      'Chats from this gateway are not grouped yet. Grouping stays on this '
+      'phone until the gateway can host projects.';
+
+  @override
+  String get projectsOnThisDevice => 'On this device';
+
+  @override
+  String get projectsReviewLocalSpaces => 'Review local spaces';
+
+  @override
+  String get projectDetailMoveConversation => 'Move conversation';
+
+  @override
+  String get projectDetailUnassigned => 'Unassigned';
+
+  @override
+  String get projectDetailMovedTo => 'Moved to {0}';
+
+  @override
+  String get projectDetailMoveFailed => 'Couldn’t move conversation';
+
+  @override
+  String get commonRetryShort => 'Retry';
+
+  @override
+  String get projectDetailRenameTitle => 'Rename {0}';
+
+  @override
+  String get projectDetailRename => 'Rename';
+
+  @override
+  String get projectDetailArchiveConfirmTitle => 'Archive {0}?';
+
+  @override
+  String get projectDetailArchiveConfirmBody =>
+      'The Project will move to Archived. Its chats and files stay intact, '
+      'and you can restore it later.';
+
+  @override
+  String get projectDetailArchive => 'Archive';
+
+  @override
+  String get projectDetailDeleteConfirmTitle => 'Delete {0}?';
+
+  @override
+  String get projectDetailDeleteConfirmBody =>
+      'This permanently deletes the Project. Chats will not be deleted; '
+      'they’ll return to Unassigned.';
+
+  @override
+  String get projectDetailDelete => 'Delete';
+
+  @override
+  String get projectDetailManageFailed => 'Couldn’t {0} project';
+
+  @override
+  String get projectDetailDeleteFailed => 'Couldn’t delete project';
+
+  @override
+  String get projectDetailNewChat => 'New chat';
+
+  @override
+  String get projectDetailChats => 'Chats';
+
+  @override
+  String get projectDetailConversations => 'Conversations in this project';
+
+  @override
+  String get projectDetailRepositories => 'Repositories';
+
+  @override
+  String get projectDetailLocation => 'Location';
+
+  @override
+  String get projectDetailFolders => 'Folders';
+
+  @override
+  String get projectDetailNoFoldersTitle => 'No folders yet';
+
+  @override
+  String get projectDetailNoFoldersMessage =>
+      'The server has not reported folders for this project yet. Global Files '
+      'stays available from More.';
+
+  @override
+  String get projectDetailAssetsUnavailableTitle => 'Assets unavailable';
+
+  @override
+  String get projectDetailAssetsUnavailableMessage =>
+      'Assets need a server-authoritative Assets index in the Hermes Gateway '
+      'before they can be shown per project.';
+
+  @override
+  String get projectDetailNoActivityTitle => 'No activity yet';
+
+  @override
+  String get projectDetailNoActivityMessage =>
+      'Chats in this project will show their state and last activity here.';
+
+  @override
+  String get projectDetailSearchChats => 'Search chats';
+
+  @override
+  String get projectDetailClearSearch => 'Clear search';
+
+  @override
+  String get projectDetailNoChatsTitle => 'No chats yet';
+
+  @override
+  String get projectDetailNoChatsMessage =>
+      'Chats you start in this project will appear here, on every device '
+      'signed in to this Hermes.';
+
+  @override
+  String get projectDetailNoMatchesTitle => 'No matches';
+
+  @override
+  String get projectDetailNoMatchesMessage =>
+      'No chats in this project match “{0}”.';
+
+  @override
+  String get projectDetailUnsupportedTitle => 'Project chats unavailable';
+
+  @override
+  String get projectDetailUnsupportedMessage =>
+      'This Hermes gateway does not support opening a project yet. Update '
+      'Hermes on the server to browse a project from your phone.';
+
+  @override
+  String get projectDetailOpenFailedTitle => 'Could not open this project';
+
+  @override
+  String get projectDetailOpenFailedMessage =>
+      'Check that the gateway is running and reachable, then try again.';
+
+  @override
+  String get projectDetailOfflineBanner => 'Offline — showing the last known chats';
+
+  @override
+  String get projectDetailTabOverview => 'Overview';
+
+  @override
+  String get projectDetailTabFiles => 'Files';
+
+  @override
+  String get projectDetailTabAssets => 'Assets';
+
+  @override
+  String get projectDetailTabActivity => 'Activity';
+
+  @override
+  String get projectDetailDeleteProject => 'Delete project';
 }
 
 /// Simplified Chinese strings.
@@ -1312,6 +1821,257 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get chatsBranchCreate => '创建分叉';
+
+  @override
+  String get projectsTitle => '项目';
+
+  @override
+  String get projectsArchived => '已归档';
+
+  @override
+  String get projectsActive => '当前';
+
+  @override
+  String get projectsActions => '项目操作';
+
+  @override
+  String get projectsRename => '重命名项目';
+
+  @override
+  String get projectsArchive => '归档项目';
+
+  @override
+  String get projectsRestore => '恢复项目';
+
+  @override
+  String get projectsEmptyTitle => '还没有项目';
+
+  @override
+  String get projectsEmptyMessage =>
+      '项目把相关的会话、文件和动态归到一起，并与电脑上的 Hermes 保持同步。';
+
+  @override
+  String get projectsCreateAction => '创建项目';
+
+  @override
+  String get projectsNewProject => '新建项目';
+
+  @override
+  String get projectsNewDialogTitle => '新建项目';
+
+  @override
+  String get projectsCreate => '创建';
+
+  @override
+  String get projectsNameLabel => '名称';
+
+  @override
+  String get projectsNameRequired => '请输入名称';
+
+  @override
+  String get projectsArchiveConfirmTitle => '归档「{0}」？';
+
+  @override
+  String get projectsArchiveConfirmBody =>
+      '项目将移入「已归档」，其中的会话和文件都会保留，之后可随时恢复。';
+
+  @override
+  String get projectsArchiveConfirmAction => '归档';
+
+  @override
+  String get projectsRenameDialogTitle => '重命名「{0}」';
+
+  @override
+  String get projectsRenameAction => '重命名';
+
+  @override
+  String get projectsMutationFailed => '无法{0}项目：{1}';
+
+  @override
+  String get projectsActionCreate => '创建';
+
+  @override
+  String get projectsActionRename => '重命名';
+
+  @override
+  String get projectsActionArchive => '归档';
+
+  @override
+  String get projectsActionRestore => '恢复';
+
+  @override
+  String get projectsUnreachableTitle => '无法连接到 Hermes';
+
+  @override
+  String get projectsUnreachableMessage =>
+      '请确认网关正在运行且可以访问，然后重试。';
+
+  @override
+  String get projectsOfflineBanner => '离线 — 显示的是上次已知的项目列表。';
+
+  @override
+  String get projectsLocalSpaceSubtitle => '{0} · 仅本机';
+
+  @override
+  String get projectsOneChat => '1 个会话';
+
+  @override
+  String get projectsChatCount => '{0} 个会话';
+
+  @override
+  String get projectsCompatibilityMode => '兼容模式';
+
+  @override
+  String get projectsCompatibilityExplanation =>
+      '此版本的 Hermes 网关早于服务端项目功能，因此会话分组只保留在本机。更新 Hermes 后即可在多台设备间共享同一批项目。';
+
+  @override
+  String get projectsNoLocalSpacesTitle => '本机没有空间';
+
+  @override
+  String get projectsNoLocalSpacesMessage =>
+      '来自此网关的会话尚未分组。在网关支持托管项目之前，分组只保留在本机上。';
+
+  @override
+  String get projectsOnThisDevice => '本机';
+
+  @override
+  String get projectsReviewLocalSpaces => '查看本机空间';
+
+  @override
+  String get projectDetailMoveConversation => '移动会话';
+
+  @override
+  String get projectDetailUnassigned => '未分配';
+
+  @override
+  String get projectDetailMovedTo => '已移动到「{0}」';
+
+  @override
+  String get projectDetailMoveFailed => '无法移动会话';
+
+  @override
+  String get commonRetryShort => '重试';
+
+  @override
+  String get projectDetailRenameTitle => '重命名「{0}」';
+
+  @override
+  String get projectDetailRename => '重命名';
+
+  @override
+  String get projectDetailArchiveConfirmTitle => '归档「{0}」？';
+
+  @override
+  String get projectDetailArchiveConfirmBody =>
+      '项目将移入「已归档」，其中的会话和文件都会保留，之后可随时恢复。';
+
+  @override
+  String get projectDetailArchive => '归档';
+
+  @override
+  String get projectDetailDeleteConfirmTitle => '删除「{0}」？';
+
+  @override
+  String get projectDetailDeleteConfirmBody =>
+      '这将永久删除该项目。会话不会被删除，它们会回到「未分配」。';
+
+  @override
+  String get projectDetailDelete => '删除';
+
+  @override
+  String get projectDetailManageFailed => '无法{0}项目';
+
+  @override
+  String get projectDetailDeleteFailed => '无法删除项目';
+
+  @override
+  String get projectDetailNewChat => '新会话';
+
+  @override
+  String get projectDetailChats => '会话';
+
+  @override
+  String get projectDetailConversations => '此项目中的会话';
+
+  @override
+  String get projectDetailRepositories => '仓库';
+
+  @override
+  String get projectDetailLocation => '位置';
+
+  @override
+  String get projectDetailFolders => '文件夹';
+
+  @override
+  String get projectDetailNoFoldersTitle => '还没有文件夹';
+
+  @override
+  String get projectDetailNoFoldersMessage =>
+      '服务器尚未报告此项目的文件夹。全局「文件」仍可从「更多」进入。';
+
+  @override
+  String get projectDetailAssetsUnavailableTitle => '资源不可用';
+
+  @override
+  String get projectDetailAssetsUnavailableMessage =>
+      '在按项目展示资源之前，需要在 Hermes 网关中建立由服务器维护的资源索引。';
+
+  @override
+  String get projectDetailNoActivityTitle => '还没有动态';
+
+  @override
+  String get projectDetailNoActivityMessage => '此项目中的会话会在这里显示状态和最近活动时间。';
+
+  @override
+  String get projectDetailSearchChats => '搜索会话';
+
+  @override
+  String get projectDetailClearSearch => '清除搜索';
+
+  @override
+  String get projectDetailNoChatsTitle => '还没有会话';
+
+  @override
+  String get projectDetailNoChatsMessage =>
+      '你在此项目中开启的会话会显示在这里，登录同一 Hermes 的每台设备都能看到。';
+
+  @override
+  String get projectDetailNoMatchesTitle => '没有匹配项';
+
+  @override
+  String get projectDetailNoMatchesMessage => '此项目中没有与「{0}」匹配的会话。';
+
+  @override
+  String get projectDetailUnsupportedTitle => '项目会话不可用';
+
+  @override
+  String get projectDetailUnsupportedMessage =>
+      '此版本的 Hermes 网关还不支持打开项目。请在服务器上更新 Hermes，以便从手机浏览项目。';
+
+  @override
+  String get projectDetailOpenFailedTitle => '无法打开此项目';
+
+  @override
+  String get projectDetailOpenFailedMessage => '请确认网关正在运行且可以访问，然后重试。';
+
+  @override
+  String get projectDetailOfflineBanner => '离线 — 显示的是上次已知的会话列表。';
+
+  @override
+  String get projectDetailTabOverview => '概览';
+
+  @override
+  String get projectDetailTabFiles => '文件';
+
+  @override
+  String get projectDetailTabAssets => '资源';
+
+  @override
+  String get projectDetailTabActivity => '动态';
+
+  @override
+  String get projectDetailDeleteProject => '删除项目';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
