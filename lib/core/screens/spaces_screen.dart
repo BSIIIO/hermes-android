@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/session.dart';
+import '../l10n/app_strings.dart';
 import '../services/chat_space_store.dart';
 
 class SpacesScreen extends StatefulWidget {
@@ -38,44 +39,50 @@ class _SpacesScreenState extends State<SpacesScreen> {
     String? error;
     final name = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: const Text('New space'),
-          content: TextField(
-            key: const Key('space-name'),
-            autofocus: true,
-            maxLength: 80,
-            textCapitalization: TextCapitalization.sentences,
-            decoration: InputDecoration(labelText: 'Name', errorText: error),
-            onChanged: (value) => draft = value,
-            onSubmitted: (value) {
-              final normalized = value.trim();
-              if (normalized.isEmpty) {
-                setDialogState(() => error = 'Enter a name');
-              } else {
-                Navigator.pop(dialogContext, normalized);
-              }
-            },
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () {
-                final normalized = draft.trim();
+      builder: (dialogContext) {
+        final s = AppStrings.of(dialogContext);
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            title: Text(s.spacesNewDialogTitle),
+            content: TextField(
+              key: const Key('space-name'),
+              autofocus: true,
+              maxLength: 80,
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                labelText: s.spacesNameLabel,
+                errorText: error,
+              ),
+              onChanged: (value) => draft = value,
+              onSubmitted: (value) {
+                final normalized = value.trim();
                 if (normalized.isEmpty) {
-                  setDialogState(() => error = 'Enter a name');
+                  setDialogState(() => error = s.spacesNameRequired);
                 } else {
                   Navigator.pop(dialogContext, normalized);
                 }
               },
-              child: const Text('Create'),
             ),
-          ],
-        ),
-      ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(dialogContext),
+                child: Text(s.commonCancel),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final normalized = draft.trim();
+                  if (normalized.isEmpty) {
+                    setDialogState(() => error = s.spacesNameRequired);
+                  } else {
+                    Navigator.pop(dialogContext, normalized);
+                  }
+                },
+                child: Text(s.projectsCreate),
+              ),
+            ],
+          ),
+        );
+      },
     );
     if (name == null || !mounted) return;
     try {
@@ -93,28 +100,32 @@ class _SpacesScreenState extends State<SpacesScreen> {
     var draft = space.name;
     final name = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Rename space'),
-        content: TextFormField(
-          key: const Key('rename-space-name'),
-          initialValue: space.name,
-          autofocus: true,
-          maxLength: 80,
-          onChanged: (value) => draft = value,
-          onFieldSubmitted: (value) =>
-              Navigator.pop(dialogContext, value.trim()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
+      builder: (dialogContext) {
+        final s = AppStrings.of(dialogContext);
+        return AlertDialog(
+          title: Text(s.spacesRenameDialogTitle),
+          content: TextFormField(
+            key: const Key('rename-space-name'),
+            initialValue: space.name,
+            autofocus: true,
+            maxLength: 80,
+            decoration: InputDecoration(labelText: s.spacesNameLabel),
+            onChanged: (value) => draft = value,
+            onFieldSubmitted: (value) =>
+                Navigator.pop(dialogContext, value.trim()),
           ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, draft.trim()),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(s.commonCancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, draft.trim()),
+              child: Text(s.cronSaveAction),
+            ),
+          ],
+        );
+      },
     );
     if (name == null || name.isEmpty || !mounted) return;
     try {
@@ -128,14 +139,17 @@ class _SpacesScreenState extends State<SpacesScreen> {
     }
   }
 
-  String _countLabel(int count) => count == 1 ? '1 chat' : '$count chats';
+  String _countLabel(AppStrings s, int count) => count == 1
+      ? s.projectsOneChat
+      : s.projectsChatCount.replaceAll('{0}', '$count');
 
-  String? _activityLabel(double? timestamp) {
+  String? _activityLabel(AppStrings s, double? timestamp) {
     if (timestamp == null) return null;
     final date = DateTime.fromMillisecondsSinceEpoch(
       (timestamp * 1000).toInt(),
     );
-    return 'Last activity ${date.day}/${date.month}/${date.year}';
+    final formatted = '${date.day}/${date.month}/${date.year}';
+    return s.spacesLastActivity.replaceAll('{0}', formatted);
   }
 
   Widget _scopeTile({
@@ -153,7 +167,10 @@ class _SpacesScreenState extends State<SpacesScreen> {
       title: Text(title),
       subtitle: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [Text(_countLabel(count)), if (detail != null) Text(detail)],
+        children: [
+          Text(_countLabel(AppStrings.of(context), count)),
+          if (detail != null) Text(detail),
+        ],
       ),
       trailing: trailing ?? const Icon(Icons.chevron_right),
       onTap: () => widget.onScopeSelected(scope),
@@ -163,13 +180,14 @@ class _SpacesScreenState extends State<SpacesScreen> {
   @override
   Widget build(BuildContext context) {
     final state = _state;
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Spaces'),
+        title: Text(s.spacesTitle),
         actions: [
           IconButton(
             key: const Key('create-space'),
-            tooltip: 'New space',
+            tooltip: s.spacesNewSpace,
             onPressed: _createSpace,
             icon: const Icon(Icons.create_new_folder_outlined),
           ),
@@ -183,14 +201,14 @@ class _SpacesScreenState extends State<SpacesScreen> {
                 _scopeTile(
                   key: const Key('space-all'),
                   icon: Icons.forum_outlined,
-                  title: 'All chats',
+                  title: s.spacesAllChats,
                   count: widget.sessions.length,
                   scope: const ChatSpaceScope.all(),
                 ),
                 _scopeTile(
                   key: const Key('space-unassigned'),
                   icon: Icons.inbox_outlined,
-                  title: 'Unassigned',
+                  title: s.spacesUnassigned,
                   count: state
                       .sessionsFor(
                         widget.sessions,
@@ -213,32 +231,30 @@ class _SpacesScreenState extends State<SpacesScreen> {
                         .length,
                     scope: ChatSpaceScope.space(space.id),
                     detail: _activityLabel(
+                      s,
                       state.latestActivityFor(widget.sessions, space.id),
                     ),
                     trailing: PopupMenuButton<String>(
                       key: Key('space-menu-${space.id}'),
-                      tooltip: 'Space actions',
+                      tooltip: s.spacesActions,
                       onSelected: (action) {
                         if (action == 'rename') _renameSpace(space);
                       },
-                      itemBuilder: (_) => const [
+                      itemBuilder: (_) => [
                         PopupMenuItem(
                           value: 'rename',
                           child: ListTile(
-                            leading: Icon(Icons.edit_outlined),
-                            title: Text('Rename'),
+                            leading: const Icon(Icons.edit_outlined),
+                            title: Text(s.spacesRename),
                           ),
                         ),
                       ],
                     ),
                   ),
                 if (state.spaces.isEmpty)
-                  const Padding(
-                    padding: EdgeInsets.all(24),
-                    child: Text(
-                      'Create a space to separate related conversations.',
-                      textAlign: TextAlign.center,
-                    ),
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Text(s.spacesEmptyHint, textAlign: TextAlign.center),
                   ),
               ],
             ),
