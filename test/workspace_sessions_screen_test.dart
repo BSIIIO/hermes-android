@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/session.dart';
 import 'package:hermes_android/core/screens/workspace_sessions_screen.dart';
 import 'package:hermes_android/core/theme/hermes_theme.dart';
@@ -44,7 +45,7 @@ void main() {
         WorkspaceChatsFilter.archived,
       ]);
       for (final filter in WorkspaceChatsFilter.values) {
-        expect(filter.label, isNotEmpty);
+        expect(filter.label(const AppStringsEn()), isNotEmpty);
       }
     });
 
@@ -137,10 +138,10 @@ void main() {
     });
 
     test('bucket labels are human readable', () {
-      expect(ChatDateBucket.today.label, 'Today');
-      expect(ChatDateBucket.yesterday.label, 'Yesterday');
-      expect(ChatDateBucket.thisWeek.label, 'This week');
-      expect(ChatDateBucket.earlier.label, 'Earlier');
+      expect(ChatDateBucket.today.label(const AppStringsEn()), 'Today');
+      expect(ChatDateBucket.yesterday.label(const AppStringsEn()), 'Yesterday');
+      expect(ChatDateBucket.thisWeek.label(const AppStringsEn()), 'This week');
+      expect(ChatDateBucket.earlier.label(const AppStringsEn()), 'Earlier');
     });
   });
 
@@ -219,7 +220,10 @@ void main() {
       await pumpChats(tester);
 
       for (final filter in WorkspaceChatsFilter.values) {
-        expect(find.widgetWithText(ChoiceChip, filter.label), findsOneWidget);
+        expect(
+          find.widgetWithText(ChoiceChip, filter.label(const AppStringsEn())),
+          findsOneWidget,
+        );
       }
     });
 
@@ -258,8 +262,14 @@ void main() {
     testWidgets('groups rows under date headers', (tester) async {
       await pumpChats(tester);
 
-      expect(find.text(ChatDateBucket.today.label), findsOneWidget);
-      expect(find.text(ChatDateBucket.earlier.label), findsOneWidget);
+      expect(
+        find.text(ChatDateBucket.today.label(const AppStringsEn())),
+        findsOneWidget,
+      );
+      expect(
+        find.text(ChatDateBucket.earlier.label(const AppStringsEn())),
+        findsOneWidget,
+      );
     });
   });
 

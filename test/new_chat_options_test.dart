@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/hermes_project.dart';
 import 'package:hermes_android/core/services/projects_repository.dart';
 import 'package:hermes_android/core/utils/new_chat_options.dart';
@@ -39,10 +40,10 @@ void main() {
       final labels = <String>{};
       final descriptions = <String>{};
       for (final mode in NewChatMode.values) {
-        expect(mode.label, isNotEmpty);
-        expect(mode.description, isNotEmpty);
-        labels.add(mode.label);
-        descriptions.add(mode.description);
+        expect(mode.label(const AppStringsEn()), isNotEmpty);
+        expect(mode.description(const AppStringsEn()), isNotEmpty);
+        labels.add(mode.label(const AppStringsEn()));
+        descriptions.add(mode.description(const AppStringsEn()));
       }
       expect(labels.length, NewChatMode.values.length);
       expect(descriptions.length, NewChatMode.values.length);
@@ -57,6 +58,7 @@ void main() {
         final options = buildNewChatOptions(
           support: support,
           projects: const [],
+          s: const AppStringsEn(),
         );
         expect(
           options.map((option) => option.mode).toList(),
@@ -70,6 +72,7 @@ void main() {
       final options = buildNewChatOptions(
         support: ProjectsSupport.native,
         projects: [_project()],
+        s: const AppStringsEn(),
       );
 
       final projectChat = _option(options, NewChatMode.projectChat);
@@ -83,6 +86,7 @@ void main() {
       final options = buildNewChatOptions(
         support: ProjectsSupport.unsupported,
         projects: const [],
+        s: const AppStringsEn(),
       );
 
       final quick = _option(options, NewChatMode.quickChat);
@@ -95,6 +99,7 @@ void main() {
       final options = buildNewChatOptions(
         support: ProjectsSupport.unsupported,
         projects: const [],
+        s: const AppStringsEn(),
       );
 
       final projectChat = _option(options, NewChatMode.projectChat);
@@ -107,6 +112,7 @@ void main() {
       final options = buildNewChatOptions(
         support: ProjectsSupport.native,
         projects: const [],
+        s: const AppStringsEn(),
       );
 
       final projectChat = _option(options, NewChatMode.projectChat);
@@ -123,6 +129,7 @@ void main() {
         final options = buildNewChatOptions(
           support: ProjectsSupport.unknown,
           projects: const [],
+          s: const AppStringsEn(),
         );
 
         final projectChat = _option(options, NewChatMode.projectChat);
@@ -136,6 +143,7 @@ void main() {
       final options = buildNewChatOptions(
         support: ProjectsSupport.native,
         projects: [_project(archived: true)],
+        s: const AppStringsEn(),
       );
 
       expect(_option(options, NewChatMode.projectChat).enabled, isFalse);
@@ -148,6 +156,7 @@ void main() {
         support: ProjectsSupport.native,
         projects: [_project()],
         isStale: true,
+        s: const AppStringsEn(),
       );
 
       expect(_option(options, NewChatMode.projectChat).enabled, isTrue);
@@ -162,7 +171,7 @@ void main() {
           support: ProjectsSupport.native,
         );
 
-        final options = buildNewChatOptionsFor(view);
+        final options = buildNewChatOptionsFor(view, s: const AppStringsEn());
 
         expect(_option(options, NewChatMode.projectChat).enabled, isTrue);
         expect(_option(options, NewChatMode.quickChat).enabled, isTrue);
@@ -176,6 +185,7 @@ void main() {
         mode: NewChatMode.quickChat,
         sessionId: 'mob-1',
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(draft.isQuick, isTrue);
@@ -193,6 +203,7 @@ void main() {
         project: _project(),
         sessionId: 'mob-1',
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(draft.projectId, isNull);
@@ -204,6 +215,7 @@ void main() {
         mode: NewChatMode.quickChat,
         sessionId: 'mob-1',
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(draft.session.title.toLowerCase(), contains('quick'));
@@ -214,6 +226,7 @@ void main() {
         mode: NewChatMode.quickChat,
         sessionId: 'mob-1',
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(kQuickChatRetention, const Duration(hours: 72));
@@ -226,6 +239,7 @@ void main() {
         project: _project(primaryPath: '/srv/projects/hermes-android'),
         sessionId: 'mob-2',
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(draft.isQuick, isFalse);
@@ -240,6 +254,7 @@ void main() {
         'silent quick chat', () {
       expect(
         () => buildNewChatDraft(
+          s: const AppStringsEn(),
           mode: NewChatMode.projectChat,
           sessionId: 'mob-3',
           now: _now,
@@ -254,6 +269,7 @@ void main() {
         project: const HermesProject(id: 'p9', slug: 'p9', name: '   '),
         sessionId: 'mob-4',
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(draft.session.title.trim(), isNotEmpty);
@@ -263,6 +279,7 @@ void main() {
     test('an empty session id is rejected rather than sent to the gateway', () {
       expect(
         () => buildNewChatDraft(
+          s: const AppStringsEn(),
           mode: NewChatMode.quickChat,
           sessionId: '   ',
           now: _now,
@@ -276,6 +293,7 @@ void main() {
         mode: NewChatMode.quickChat,
         sessionId: 'mob-5',
         now: _now,
+        s: const AppStringsEn(),
       );
       final session = draft.session;
 
@@ -298,11 +316,13 @@ void main() {
         sessionId: 'mob-6',
         now: _now,
         model: 'claude-opus-5',
+        s: const AppStringsEn(),
       );
       final fallback = buildNewChatDraft(
         mode: NewChatMode.quickChat,
         sessionId: 'mob-7',
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(drafted.session.model, 'claude-opus-5');

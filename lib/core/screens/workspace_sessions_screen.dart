@@ -15,24 +15,34 @@ enum WorkspaceSessionView { all, unassigned, archivedQuick, search }
 /// The chip filters the Chats browser offers (decision #4 of the final UI
 /// spec): every conversation, recent activity, unassigned, and archived.
 enum WorkspaceChatsFilter {
-  all('All'),
-  recent('Recent'),
-  unassigned('Unassigned'),
-  archived('Archived');
+  all,
+  recent,
+  unassigned,
+  archived;
 
-  final String label;
-  const WorkspaceChatsFilter(this.label);
+  /// User-visible chip label in the active language.
+  String label(AppStrings s) => switch (this) {
+    WorkspaceChatsFilter.all => s.chatsFilterAll,
+    WorkspaceChatsFilter.recent => s.chatsFilterRecent,
+    WorkspaceChatsFilter.unassigned => s.chatsFilterUnassigned,
+    WorkspaceChatsFilter.archived => s.chatsFilterArchived,
+  };
 }
 
 /// How recently a conversation was last active, for date group headers.
 enum ChatDateBucket {
-  today('Today'),
-  yesterday('Yesterday'),
-  thisWeek('This week'),
-  earlier('Earlier');
+  today,
+  yesterday,
+  thisWeek,
+  earlier;
 
-  final String label;
-  const ChatDateBucket(this.label);
+  /// User-visible header in the active language.
+  String label(AppStrings s) => switch (this) {
+    ChatDateBucket.today => s.chatsBucketToday,
+    ChatDateBucket.yesterday => s.chatsBucketYesterday,
+    ChatDateBucket.thisWeek => s.chatsBucketThisWeek,
+    ChatDateBucket.earlier => s.chatsBucketEarlier,
+  };
 }
 
 /// How long "Recent" means in the Chats browser.
@@ -353,7 +363,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
           if (sessions.isEmpty)
             EmptyState(
               icon: _emptyIcon,
-              title: _query.isEmpty ? 'Nothing here' : 'No matches',
+              title: _query.isEmpty ? s.chatsNothingHere : s.chatsNoMatches,
               message: _emptyMessage,
             )
           else
@@ -364,7 +374,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
                   bottom: HermesSpacing.sm,
                 ),
                 child: Text(
-                  widget.embedded ? group.key.label : widget.title,
+                  widget.embedded ? group.key.label(s) : widget.title,
                   style: HermesTokens.of(context).typography.section,
                 ),
               ),
@@ -380,6 +390,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
   }
 
   Widget _buildChips() {
+    final s = AppStrings.of(context);
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
@@ -388,7 +399,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
             Padding(
               padding: const EdgeInsets.only(right: HermesSpacing.sm),
               child: ChoiceChip(
-                label: Text(filter.label),
+                label: Text(filter.label(s)),
                 selected: _filter == filter,
                 onSelected: (_) => setState(() => _filter = filter),
               ),
@@ -423,7 +434,9 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  session.title.isEmpty ? 'Untitled chat' : session.title,
+                  session.title.isEmpty
+                      ? AppStrings.of(context).chatUntitled
+                      : session.title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -498,23 +511,20 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
   }
 
   String get _emptyMessage {
+    final s = AppStrings.of(context);
     if (widget.embedded) {
       return switch (_filter) {
-        WorkspaceChatsFilter.unassigned =>
-          'Every conversation is already assigned to a Project.',
-        WorkspaceChatsFilter.archived => 'Archived conversations appear here.',
-        WorkspaceChatsFilter.recent =>
-          'Nothing changed in the last seven days.',
-        WorkspaceChatsFilter.all => 'No conversation matches this view.',
+        WorkspaceChatsFilter.unassigned => s.chatsEmptyAllAssigned,
+        WorkspaceChatsFilter.archived => s.chatsEmptyArchivedConversations,
+        WorkspaceChatsFilter.recent => s.chatsEmptyRecent,
+        WorkspaceChatsFilter.all => s.chatsEmptyNoMatches,
       };
     }
     return switch (widget.view) {
-      WorkspaceSessionView.unassigned =>
-        'Every conversation is already assigned to a Project.',
-      WorkspaceSessionView.archivedQuick =>
-        'Quick chats appear here after their retention period.',
+      WorkspaceSessionView.unassigned => s.chatsEmptyAllAssigned,
+      WorkspaceSessionView.archivedQuick => s.chatsEmptyArchivedQuickChats,
       WorkspaceSessionView.all ||
-      WorkspaceSessionView.search => 'No conversation matches this view.',
+      WorkspaceSessionView.search => s.chatsEmptyNoMatches,
     };
   }
 
