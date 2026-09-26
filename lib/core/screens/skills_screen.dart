@@ -1,5 +1,6 @@
 // Skills browser — list installed skills with enabled/disabled status.
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import '../services/connection_manager.dart';
 
 class SkillsScreen extends StatefulWidget {
@@ -60,9 +61,10 @@ class _SkillsScreenState extends State<SkillsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Skills (${_skills.length})'),
+        title: Text(s.skillsTitle.replaceAll('{0}', '${_skills.length}')),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -75,6 +77,7 @@ class _SkillsScreenState extends State<SkillsScreen> {
   }
 
   Widget _buildBody() {
+    final s = AppStrings.of(context);
     if (_loading) return const Center(child: CircularProgressIndicator());
     if (_error != null) {
       return Center(
@@ -86,7 +89,7 @@ class _SkillsScreenState extends State<SkillsScreen> {
               const Icon(Icons.error_outline, size: 48, color: Colors.orange),
               const SizedBox(height: 16),
               Text(
-                'Failed to load skills',
+                s.skillsLoadFailed,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
@@ -96,7 +99,7 @@ class _SkillsScreenState extends State<SkillsScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              ElevatedButton(onPressed: _load, child: const Text('Retry')),
+              ElevatedButton(onPressed: _load, child: Text(s.commonRetry)),
             ],
           ),
         ),
@@ -110,8 +113,18 @@ class _SkillsScreenState extends State<SkillsScreen> {
             Icon(Icons.extension_off, size: 48, color: Colors.grey[600]),
             const SizedBox(height: 16),
             Text(
-              'No skills found',
+              s.skillsEmptyTitle,
               style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                s.skillsEmptyMessage,
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
             ),
           ],
         ),

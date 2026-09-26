@@ -7,6 +7,7 @@
 //
 // API: GET /api/config returns the full config including memory.
 import 'package:flutter/material.dart';
+import '../l10n/app_strings.dart';
 import '../services/connection_manager.dart';
 
 class MemoryScreen extends StatefulWidget {
@@ -108,15 +109,16 @@ class _MemoryScreenState extends State<MemoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Memory'),
+            Text(s.memoryTitle),
             if (_source != null)
               Text(
-                'Source: $_source',
+                s.memorySource.replaceAll('{0}', _source!),
                 style: const TextStyle(fontSize: 11, color: Colors.grey),
               ),
           ],
@@ -133,6 +135,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
   }
 
   Widget _buildBody() {
+    final s = AppStrings.of(context);
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -147,7 +150,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
               const Icon(Icons.error_outline, size: 48, color: Colors.orange),
               const SizedBox(height: 16),
               Text(
-                'Failed to load memory',
+                s.memoryLoadFailed,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
@@ -159,7 +162,7 @@ class _MemoryScreenState extends State<MemoryScreen> {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _loadMemory,
-                child: const Text('Retry'),
+                child: Text(s.commonRetry),
               ),
             ],
           ),
@@ -175,13 +178,13 @@ class _MemoryScreenState extends State<MemoryScreen> {
             Icon(Icons.psychology, size: 48, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              'No memory entries',
+              s.memoryEmptyTitle,
               style: Theme.of(context).textTheme.titleLarge,
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
-              'Memory entries are cross-session facts the agent remembers.\n'
-              'They are configured in ~/.hermes/config.yaml',
+              s.memoryEmptyMessage,
               textAlign: TextAlign.center,
               style: Theme.of(
                 context,

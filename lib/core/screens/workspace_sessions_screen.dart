@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/session.dart';
 import '../theme/hermes_theme.dart';
 import '../utils/relative_time.dart';
@@ -224,6 +225,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
   }
 
   Future<void> _promote(Session session) async {
+    final s = AppStrings.of(context);
     final promote = widget.onPromote;
     if (promote == null || _promoting.contains(session.id)) return;
     setState(() => _promoting.add(session.id));
@@ -247,16 +249,16 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
       }
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Promoted to a Project')));
+      ).showSnackBar(SnackBar(content: Text(s.workspaceSessionsPromoted)));
     } catch (error) {
       if (!mounted) return;
       setState(() => _promoting.remove(session.id));
       if (error is QuickChatPromotionCancelled) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('Couldn’t promote conversation'),
+          content: Text(s.workspaceSessionsPromoteFailed),
           action: SnackBarAction(
-            label: 'Retry',
+            label: s.commonRetry,
             onPressed: () => unawaited(_promote(session)),
           ),
         ),
@@ -266,6 +268,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final data = _data;
     final body = data == null
         ? _error == null
@@ -274,8 +277,8 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
                   child: LoadingSkeleton(rows: 5),
                 )
               : ErrorState(
-                  title: 'Could not load conversations',
-                  message: 'Check the connection and try again.',
+                  title: s.workspaceSessionsLoadFailedTitle,
+                  message: s.workspaceSessionsLoadFailedMessage,
                   onRetry: _load,
                 )
         : _buildLoaded(data);
@@ -289,6 +292,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
   }
 
   Widget _buildLoaded(WorkspaceSessionsData data) {
+    final s = AppStrings.of(context);
     final sessions = widget.embedded
         ? filterChats(
             sessions: data.sessions,
@@ -329,12 +333,12 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
             key: kWorkspaceSessionSearchKey,
             autofocus: widget.view == WorkspaceSessionView.search,
             decoration: InputDecoration(
-              hintText: 'Search conversations',
+              hintText: s.workspaceSessionsSearchHint,
               prefixIcon: const Icon(Icons.search),
               suffixIcon: _query.isEmpty
                   ? null
                   : IconButton(
-                      tooltip: 'Clear search',
+                      tooltip: s.workspaceSessionsSearchClear,
                       onPressed: () => setState(() => _query = ''),
                       icon: const Icon(Icons.clear),
                     ),
@@ -395,6 +399,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
   }
 
   Widget _buildSessionRow(Session session, WorkspaceSessionsData data) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
     final projectLabel = data.projectLabels[session.id];
     final showPromote =
@@ -448,7 +453,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
                       )
                     else
                       _MetaChip(
-                        label: 'Unassigned',
+                        label: s.workspaceSessionsUnassigned,
                         icon: Icons.inbox_outlined,
                       ),
                     Text(
@@ -469,7 +474,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : IconButton(
-                    tooltip: 'Promote to project',
+                    tooltip: s.workspaceSessionsPromoteTooltip,
                     onPressed: () => unawaited(_promote(session)),
                     icon: const Icon(Icons.drive_file_move_outline),
                   ),

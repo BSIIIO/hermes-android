@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/attachment_draft.dart';
 import '../models/hermes_project.dart';
 import '../services/android_share_intent_service.dart';
@@ -661,10 +662,11 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   }
 
   Widget _pane(BuildContext context, HermesDestination destination) {
+    final s = AppStrings.of(context);
     switch (destination) {
       case HermesDestination.chats:
         return WorkspaceSessionsScreen(
-          title: 'Chats',
+          title: s.workspaceChatsTitle,
           view: WorkspaceSessionView.all,
           embedded: true,
           load: _loadWorkspaceSessionsData,
@@ -681,12 +683,9 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           );
         }
         if (repository == null) {
-          return const ErrorState.unsupported(
-            title: 'Projects unavailable',
-            message:
-                'Projects need a Desktop Gateway connection. Add the Desktop '
-                'Gateway URL to this connection to organize chats across '
-                'your devices.',
+          return ErrorState.unsupported(
+            title: s.workspaceProjectsUnavailableTitle,
+            message: s.workspaceProjectsUnavailableMessage,
           );
         }
         return ProjectsPane(
@@ -743,9 +742,10 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     if (uri == null) return;
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (launched || !mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not open the Hermes dashboard.')),
-    );
+    final s = AppStrings.of(context);
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(s.workspaceDashboardOpenFailed)));
   }
 
   void _push(Widget screen) {
@@ -844,9 +844,10 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   /// filters out informational Running/Completed rows, so this route contains
   /// only work that can change what the user does next.
   void _openInbox() {
+    final s = AppStrings.of(context);
     _push(
       Scaffold(
-        appBar: AppBar(title: const Text('Inbox')),
+        appBar: AppBar(title: Text(s.workspaceInbox)),
         body: ActivityPane(
           key: _inboxKey,
           loadFeed: _loadActivity,
@@ -990,6 +991,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     String? initialComposerText,
     List<AttachmentDraft> initialAttachmentDrafts = const [],
   }) async {
+    final s = AppStrings.of(context);
     final projectId = draft.projectId;
     if (projectId != null) {
       // Remember the intent so the stored-id reconciliation below can re-write
@@ -1012,12 +1014,9 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         final messenger = ScaffoldMessenger.of(context);
         messenger.hideCurrentSnackBar();
         messenger.showSnackBar(
-          const SnackBar(
-            content: Text(
-              'This gateway can\u2019t file chats into projects directly \u2014 '
-              'opened in the project\u2019s folder instead.',
-            ),
-            duration: Duration(seconds: 4),
+          SnackBar(
+            content: Text(s.workspaceProjectFolderFallback),
+            duration: const Duration(seconds: 4),
           ),
         );
       } catch (_) {
@@ -1026,9 +1025,9 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         messenger.hideCurrentSnackBar();
         messenger.showSnackBar(
           SnackBar(
-            content: const Text('Couldn’t create Project chat'),
+            content: Text(s.workspaceProjectChatFailed),
             action: SnackBarAction(
-              label: 'Retry',
+              label: s.workspaceRetry,
               onPressed: () => unawaited(
                 _finishNewChat(
                   draft,
@@ -1240,6 +1239,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   @override
   Widget build(BuildContext context) {
     final tokens = HermesTokens.of(context);
+    final s = AppStrings.of(context);
 
     return Scaffold(
       backgroundColor: tokens.surface,
@@ -1260,7 +1260,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
               ),
             ),
             IconButton(
-              tooltip: 'Search all chats',
+              tooltip: s.workspaceSearchAllChats,
               onPressed: () =>
                   _openWorkspaceSessionView(WorkspaceSessionView.search),
               icon: const Icon(Icons.search),
@@ -1288,7 +1288,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                 key: kWorkspaceNewChatButtonKey,
                 onPressed: () => unawaited(_startNewChat()),
                 icon: const Icon(Icons.add),
-                label: const Text('New'),
+                label: Text(s.workspaceNewChat),
               )
             : null,
         builder: _pane,

@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+
 /// The app's user-visible strings, resolved per interface language.
 ///
 /// This is a hand-written contract rather than `flutter gen-l10n` output, on
@@ -23,8 +24,7 @@ abstract class AppStrings {
   /// Falls back to English when no scope is installed, so a widget pumped
   /// inside a bare `MaterialApp` still renders real text instead of crashing.
   static AppStrings of(BuildContext context) {
-    final scope = context
-        .dependOnInheritedWidgetOfExactType<AppStringsScope>();
+    final scope = context.dependOnInheritedWidgetOfExactType<AppStringsScope>();
     return scope?.strings ?? const AppStringsEn();
   }
 
@@ -708,6 +708,293 @@ abstract class AppStrings {
 
   /// Menu item deleting a project.
   String get projectDetailDeleteProject;
+
+  // ---- Files (P1 batch 4) ----
+
+  /// App bar title of the Files screen.
+  String get filesTitle;
+
+  /// Empty directory title.
+  String get filesEmptyTitle;
+
+  /// Empty directory message.
+  String get filesEmptyMessage;
+
+  /// Chip marking a truncated preview.
+  String get filesPreviewTruncated;
+
+  /// Shown when a text preview is unavailable.
+  String get filesPreviewUnavailable;
+
+  /// Shown when a binary file cannot be previewed.
+  String get filesBinaryPreviewUnavailable;
+
+  /// Download button label.
+  String get filesDownload;
+
+  /// Snackbar after a successful download; receives the filename.
+  String get filesDownloaded;
+
+  /// Snackbar when a download fails; receives the error.
+  String get filesDownloadFailed;
+
+  /// Snackbar after adding a file reference to a chat.
+  String get filesAddedToChat;
+
+  /// Button adding a file reference to a chat.
+  String get filesAddToChat;
+
+  /// Error title when the file list cannot be read.
+  String get filesLoadFailedTitle;
+
+  /// Error title when a preview cannot be read.
+  String get filesPreviewFailedTitle;
+
+  /// Error message shared by both failure states.
+  String get filesErrorMessage;
+
+  /// Native save dialog title; receives the filename.
+  String get filesSaveDialogTitle;
+
+  // ---- Skills (P1 batch 4) ----
+
+  /// App bar title; receives the skill count.
+  String get skillsTitle;
+
+  /// Error title when skills cannot be loaded.
+  String get skillsLoadFailed;
+
+  /// Empty state title.
+  String get skillsEmptyTitle;
+
+  /// Empty state message.
+  String get skillsEmptyMessage;
+
+  // ---- Memory (P1 batch 4) ----
+
+  /// App bar title of the Memory screen.
+  String get memoryTitle;
+
+  /// Source line under an entry; receives the source label.
+  String get memorySource;
+
+  /// Error title when memory cannot be loaded.
+  String get memoryLoadFailed;
+
+  /// Empty state title.
+  String get memoryEmptyTitle;
+
+  /// Empty state message.
+  String get memoryEmptyMessage;
+
+  // ---- Cron (P1 batch 4) ----
+
+  /// App bar title of the Cron screen.
+  String get cronTitle;
+
+  /// FAB tooltip and dialog title creating a job.
+  String get cronAddJob;
+
+  /// Dialog title editing a job.
+  String get cronEditJob;
+
+  /// Name field label in the job editor.
+  String get cronNameLabel;
+
+  /// Name field hint.
+  String get cronNameHint;
+
+  /// Prompt field label.
+  String get cronPromptLabel;
+
+  /// Prompt field hint.
+  String get cronPromptHint;
+
+  /// Schedule field label.
+  String get cronScheduleLabel;
+
+  /// Schedule field hint.
+  String get cronScheduleHint;
+
+  /// FAB tooltip on the job list.
+  String get cronAddNewJob;
+
+  /// Toggle meaning a script-backed job needs no agent turn.
+  String get cronScriptOnly;
+
+  /// Description under [cronScriptOnly].
+  String get cronScriptOnlyHint;
+
+  /// Validation error when required fields are blank.
+  String get cronFieldsRequired;
+
+  /// Snackbar after a job is created.
+  String get cronJobAdded;
+
+  /// Snackbar after a job is updated.
+  String get cronJobUpdated;
+
+  /// Snackbar after a job is deleted; receives the job name.
+  String get cronJobDeleted;
+
+  /// Snackbar after a manual trigger.
+  String get cronJobTriggered;
+
+  /// Snackbar after resuming a job.
+  String get cronJobResumed;
+
+  /// Snackbar after pausing a job.
+  String get cronJobPaused;
+
+  /// Menu item triggering a job now.
+  String get cronTriggerNow;
+
+  /// Menu item editing a job.
+  String get cronEdit;
+
+  /// Menu item deleting a job.
+  String get cronDelete;
+
+  /// Confirmation title; receives the job name.
+  String get cronDeleteConfirmTitle;
+
+  /// Label shown when a job has never run.
+  String get cronNeverRun;
+
+  /// Last-run line; receives the timestamp.
+  String get cronLastRun;
+
+  /// Next-run line; receives the timestamp.
+  String get cronNextRun;
+
+  /// Error template for all cron operations; receives the failure.
+  String get cronOperationFailed;
+
+  /// Error title when the job list cannot be read.
+  String get cronLoadFailed;
+
+  /// Pause menu item.
+  String get cronPause;
+
+  /// Resume menu item.
+  String get cronResume;
+
+  /// Confirm button creating a job.
+  String get cronAddAction;
+
+  /// Confirm button saving an edit.
+  String get cronSaveAction;
+
+  /// Badge marking a script-backed job.
+  String get cronScriptBadge;
+
+  /// Delete confirmation body; receives the job name.
+  String get cronDeleteConfirmBody;
+
+  /// Empty state title.
+  String get cronEmptyTitle;
+
+  /// Empty state message.
+  String get cronEmptyMessage;
+
+  // ---- Spaces (P1 batch 4) ----
+
+  /// App bar title of the Spaces screen.
+  String get spacesTitle;
+
+  /// App bar action creating a space.
+  String get spacesNewSpace;
+
+  /// Scope tile covering every chat.
+  String get spacesAllChats;
+
+  /// Scope tile for chats with no space.
+  String get spacesUnassigned;
+
+  /// Action menu title and rename item.
+  String get spacesActions;
+
+  /// Menu item renaming a space.
+  String get spacesRename;
+
+  /// Hint shown when no space exists yet.
+  String get spacesEmptyHint;
+
+  /// Dialog title creating a space.
+  String get spacesNewDialogTitle;
+
+  /// Dialog title renaming a space.
+  String get spacesRenameDialogTitle;
+
+  /// Name field label in both space dialogs.
+  String get spacesNameLabel;
+
+  /// Validation error when the name field is blank.
+  String get spacesNameRequired;
+
+  /// Activity subtitle; receives the formatted date.
+  String get spacesLastActivity;
+
+  // ---- Workspace shell (P1 batch 4) ----
+
+  /// Title of the Chats pane in the workspace shell.
+  String get workspaceChatsTitle;
+
+  /// Error title when the gateway cannot host projects.
+  String get workspaceProjectsUnavailableTitle;
+
+  /// Error message when the gateway cannot host projects.
+  String get workspaceProjectsUnavailableMessage;
+
+  /// Title of the Inbox route.
+  String get workspaceInbox;
+
+  /// FAB label starting a new chat.
+  String get workspaceNewChat;
+
+  /// Tooltip opening search across all chats.
+  String get workspaceSearchAllChats;
+
+  /// Snackbar when the dashboard cannot be opened.
+  String get workspaceDashboardOpenFailed;
+
+  /// Snackbar when a project chat cannot be created.
+  String get workspaceProjectChatFailed;
+
+  /// Snackbar retry label.
+  String get workspaceRetry;
+
+  /// Snackbar explaining the project-folder fallback.
+  String get workspaceProjectFolderFallback;
+
+  /// Snackbar when shared files cannot be prepared.
+  String get workspaceSharedFilesFailed;
+
+  // ---- Workspace sessions (P1 batch 4) ----
+
+  /// Error title when conversations cannot be loaded.
+  String get workspaceSessionsLoadFailedTitle;
+
+  /// Error message when conversations cannot be loaded.
+  String get workspaceSessionsLoadFailedMessage;
+
+  /// Search field hint.
+  String get workspaceSessionsSearchHint;
+
+  /// Tooltip clearing the search field.
+  String get workspaceSessionsSearchClear;
+
+  /// Meta chip for a conversation with no project.
+  String get workspaceSessionsUnassigned;
+
+  /// Tooltip promoting a conversation to a project.
+  String get workspaceSessionsPromoteTooltip;
+
+  /// Snackbar after promoting a conversation.
+  String get workspaceSessionsPromoted;
+
+  /// Snackbar when promoting fails.
+  String get workspaceSessionsPromoteFailed;
 }
 
 /// English strings.
@@ -1119,7 +1406,8 @@ class AppStringsEn extends AppStrings {
   String get chatsSearchAiFullTextTitle => 'AI + full-text';
 
   @override
-  String get chatsSearchAiChooseModel => 'Choose a small model to rewrite queries';
+  String get chatsSearchAiChooseModel =>
+      'Choose a small model to rewrite queries';
 
   @override
   String get chatsAiModelTitle => 'AI search model';
@@ -1228,7 +1516,8 @@ class AppStringsEn extends AppStrings {
       'Check that the gateway is running and reachable, then try again.';
 
   @override
-  String get projectsOfflineBanner => 'Offline — showing the last known projects.';
+  String get projectsOfflineBanner =>
+      'Offline — showing the last known projects.';
 
   @override
   String get projectsLocalSpaceSubtitle => '{0} · on this device only';
@@ -1389,7 +1678,8 @@ class AppStringsEn extends AppStrings {
       'Check that the gateway is running and reachable, then try again.';
 
   @override
-  String get projectDetailOfflineBanner => 'Offline — showing the last known chats';
+  String get projectDetailOfflineBanner =>
+      'Offline — showing the last known chats';
 
   @override
   String get projectDetailTabOverview => 'Overview';
@@ -1405,6 +1695,293 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get projectDetailDeleteProject => 'Delete project';
+
+  @override
+  String get filesTitle => 'Files';
+
+  @override
+  String get filesEmptyTitle => 'Folder is empty';
+
+  @override
+  String get filesEmptyMessage =>
+      'There are no visible files in this server folder.';
+
+  @override
+  String get filesPreviewTruncated => 'Preview truncated';
+
+  @override
+  String get filesPreviewUnavailable => 'Preview unavailable';
+
+  @override
+  String get filesBinaryPreviewUnavailable =>
+      'Binary preview is unavailable. Download the file to open it.';
+
+  @override
+  String get filesDownload => 'Download';
+
+  @override
+  String get filesDownloaded => '{0} downloaded';
+
+  @override
+  String get filesDownloadFailed => 'Download failed: {0}';
+
+  @override
+  String get filesAddedToChat => 'File reference added to chat';
+
+  @override
+  String get filesAddToChat => 'Add to chat';
+
+  @override
+  String get filesLoadFailedTitle => 'Could not load files';
+
+  @override
+  String get filesPreviewFailedTitle => 'Could not preview file';
+
+  @override
+  String get filesErrorMessage =>
+      'Check the Dashboard connection and try again.';
+
+  @override
+  String get filesSaveDialogTitle => 'Save {0}';
+
+  @override
+  String get skillsTitle => 'Skills ({0})';
+
+  @override
+  String get skillsLoadFailed => 'Failed to load skills';
+
+  @override
+  String get skillsEmptyTitle => 'No skills found';
+
+  @override
+  String get skillsEmptyMessage =>
+      'Skills are reusable agent instructions published by the Hermes host.';
+
+  @override
+  String get memoryTitle => 'Memory';
+
+  @override
+  String get memorySource => 'Source: {0}';
+
+  @override
+  String get memoryLoadFailed => 'Failed to load memory';
+
+  @override
+  String get memoryEmptyTitle => 'No memory entries';
+
+  @override
+  String get memoryEmptyMessage =>
+      'Memory entries are cross-session facts the agent remembers.\n'
+      'They are stored on the Hermes host and shared across your devices.';
+
+  @override
+  String get cronTitle => 'Cron Jobs';
+
+  @override
+  String get cronAddJob => 'Add Cron Job';
+
+  @override
+  String get cronEditJob => 'Edit Cron Job';
+
+  @override
+  String get cronNameLabel => 'Name';
+
+  @override
+  String get cronNameHint => 'e.g., Daily backup';
+
+  @override
+  String get cronPromptLabel => 'Prompt';
+
+  @override
+  String get cronPromptHint => 'What should the agent do?';
+
+  @override
+  String get cronScheduleLabel => 'Schedule';
+
+  @override
+  String get cronScheduleHint => 'e.g., 0 9 * * * or every 2h';
+
+  @override
+  String get cronAddNewJob => 'Add new cron job';
+
+  @override
+  String get cronScriptOnly => 'Script only (no agent)';
+
+  @override
+  String get cronScriptOnlyHint => 'Use for cron jobs backed by scripts.';
+
+  @override
+  String get cronFieldsRequired => 'Name, prompt, and schedule are required';
+
+  @override
+  String get cronJobAdded => 'Cron job added';
+
+  @override
+  String get cronJobUpdated => 'Cron job updated';
+
+  @override
+  String get cronJobDeleted => 'Deleted “{0}”';
+
+  @override
+  String get cronJobTriggered => 'Job triggered';
+
+  @override
+  String get cronJobResumed => 'Job resumed';
+
+  @override
+  String get cronJobPaused => 'Job paused';
+
+  @override
+  String get cronTriggerNow => 'Trigger now';
+
+  @override
+  String get cronEdit => 'Edit';
+
+  @override
+  String get cronDelete => 'Delete';
+
+  @override
+  String get cronDeleteConfirmTitle => 'Delete “{0}”?';
+
+  @override
+  String get cronNeverRun => 'Never';
+
+  @override
+  String get cronLastRun => 'Last: {0}';
+
+  @override
+  String get cronNextRun => 'Next: {0}';
+
+  @override
+  String get cronOperationFailed => 'Failed: {0}';
+
+  @override
+  String get cronLoadFailed => 'Failed to load cron jobs';
+
+  @override
+  String get cronPause => 'Pause';
+
+  @override
+  String get cronResume => 'Resume';
+
+  @override
+  String get cronAddAction => 'Add';
+
+  @override
+  String get cronSaveAction => 'Save';
+
+  @override
+  String get cronScriptBadge => 'script';
+
+  @override
+  String get cronDeleteConfirmBody => 'Delete “{0}”?';
+
+  @override
+  String get cronEmptyTitle => 'No cron jobs';
+
+  @override
+  String get cronEmptyMessage =>
+      'Scheduled jobs run agent turns on the Hermes host on your behalf.';
+
+  @override
+  String get spacesTitle => 'Spaces';
+
+  @override
+  String get spacesNewSpace => 'New space';
+
+  @override
+  String get spacesAllChats => 'All chats';
+
+  @override
+  String get spacesUnassigned => 'Unassigned';
+
+  @override
+  String get spacesActions => 'Space actions';
+
+  @override
+  String get spacesRename => 'Rename';
+
+  @override
+  String get spacesEmptyHint =>
+      'Create a space to separate related conversations.';
+
+  @override
+  String get spacesNewDialogTitle => 'New space';
+
+  @override
+  String get spacesRenameDialogTitle => 'Rename space';
+
+  @override
+  String get spacesNameLabel => 'Name';
+
+  @override
+  String get spacesNameRequired => 'Enter a name';
+
+  @override
+  String get spacesLastActivity => 'Last activity {0}';
+
+  @override
+  String get workspaceChatsTitle => 'Chats';
+
+  @override
+  String get workspaceProjectsUnavailableTitle => 'Projects unavailable';
+
+  @override
+  String get workspaceProjectsUnavailableMessage =>
+      'Projects need a Desktop Gateway connection. Add the Desktop Gateway URL '
+      'to this connection to organize chats across your devices.';
+
+  @override
+  String get workspaceInbox => 'Inbox';
+
+  @override
+  String get workspaceNewChat => 'New';
+
+  @override
+  String get workspaceSearchAllChats => 'Search all chats';
+
+  @override
+  String get workspaceDashboardOpenFailed =>
+      'Could not open the Hermes dashboard.';
+
+  @override
+  String get workspaceProjectChatFailed => 'Couldn’t create Project chat';
+
+  @override
+  String get workspaceRetry => 'Retry';
+
+  @override
+  String get workspaceProjectFolderFallback =>
+      'This gateway can\u2019t file chats into projects directly — opened in '
+      'the project\u2019s folder instead.';
+
+  @override
+  String get workspaceSharedFilesFailed => 'Couldn’t prepare the shared files.';
+
+  @override
+  String get workspaceSessionsLoadFailedTitle => 'Could not load conversations';
+
+  @override
+  String get workspaceSessionsLoadFailedMessage =>
+      'Check the connection and try again.';
+
+  @override
+  String get workspaceSessionsSearchHint => 'Search conversations';
+
+  @override
+  String get workspaceSessionsSearchClear => 'Clear search';
+
+  @override
+  String get workspaceSessionsUnassigned => 'Unassigned';
+
+  @override
+  String get workspaceSessionsPromoteTooltip => 'Promote to project';
+
+  @override
+  String get workspaceSessionsPromoted => 'Promoted to a Project';
+
+  @override
+  String get workspaceSessionsPromoteFailed => 'Couldn’t promote conversation';
 }
 
 /// Simplified Chinese strings.
@@ -1470,7 +2047,8 @@ class AppStringsZh extends AppStrings {
   String get homeNoConnections => '暂无连接';
 
   @override
-  String get homeNoConnectionsHint => '点按 + 添加远程 Hermes 网关\n（API Server，端口 8642）';
+  String get homeNoConnectionsHint =>
+      '点按 + 添加远程 Hermes 网关\n（API Server，端口 8642）';
 
   @override
   String get connectionLabel => '名称';
@@ -1596,8 +2174,7 @@ class AppStringsZh extends AppStrings {
   String get backupTitle => '备份与恢复';
 
   @override
-  String get backupDescription =>
-      '把连接和设置保存到加密文件，重装或换设备后再恢复。';
+  String get backupDescription => '把连接和设置保存到加密文件，重装或换设备后再恢复。';
 
   @override
   String get backupExport => '导出';
@@ -1677,7 +2254,8 @@ class AppStringsZh extends AppStrings {
   String get chatsConnecting => '正在连接 {0}...';
 
   @override
-  String get chatsConnectingHint => '请确认 Gateway API Server 正在运行\n(hermes gateway status)';
+  String get chatsConnectingHint =>
+      '请确认 Gateway API Server 正在运行\n(hermes gateway status)';
 
   @override
   String get chatsConnectionIssue => '连接问题';
@@ -1725,8 +2303,7 @@ class AppStringsZh extends AppStrings {
   String get chatsDeleteSessionTitle => '删除会话？';
 
   @override
-  String get chatsDeleteSessionBody =>
-      '要从远端 Hermes 历史中删除“{0}”吗？此操作无法撤销。';
+  String get chatsDeleteSessionBody => '要从远端 Hermes 历史中删除“{0}”吗？此操作无法撤销。';
 
   @override
   String get chatsSessionDeleted => '已从远端 Hermes 历史中删除会话。';
@@ -1847,8 +2424,7 @@ class AppStringsZh extends AppStrings {
   String get projectsEmptyTitle => '还没有项目';
 
   @override
-  String get projectsEmptyMessage =>
-      '项目把相关的会话、文件和动态归到一起，并与电脑上的 Hermes 保持同步。';
+  String get projectsEmptyMessage => '项目把相关的会话、文件和动态归到一起，并与电脑上的 Hermes 保持同步。';
 
   @override
   String get projectsCreateAction => '创建项目';
@@ -1872,8 +2448,7 @@ class AppStringsZh extends AppStrings {
   String get projectsArchiveConfirmTitle => '归档「{0}」？';
 
   @override
-  String get projectsArchiveConfirmBody =>
-      '项目将移入「已归档」，其中的会话和文件都会保留，之后可随时恢复。';
+  String get projectsArchiveConfirmBody => '项目将移入「已归档」，其中的会话和文件都会保留，之后可随时恢复。';
 
   @override
   String get projectsArchiveConfirmAction => '归档';
@@ -1903,8 +2478,7 @@ class AppStringsZh extends AppStrings {
   String get projectsUnreachableTitle => '无法连接到 Hermes';
 
   @override
-  String get projectsUnreachableMessage =>
-      '请确认网关正在运行且可以访问，然后重试。';
+  String get projectsUnreachableMessage => '请确认网关正在运行且可以访问，然后重试。';
 
   @override
   String get projectsOfflineBanner => '离线 — 显示的是上次已知的项目列表。';
@@ -1973,8 +2547,7 @@ class AppStringsZh extends AppStrings {
   String get projectDetailDeleteConfirmTitle => '删除「{0}」？';
 
   @override
-  String get projectDetailDeleteConfirmBody =>
-      '这将永久删除该项目。会话不会被删除，它们会回到「未分配」。';
+  String get projectDetailDeleteConfirmBody => '这将永久删除该项目。会话不会被删除，它们会回到「未分配」。';
 
   @override
   String get projectDetailDelete => '删除';
@@ -2007,8 +2580,7 @@ class AppStringsZh extends AppStrings {
   String get projectDetailNoFoldersTitle => '还没有文件夹';
 
   @override
-  String get projectDetailNoFoldersMessage =>
-      '服务器尚未报告此项目的文件夹。全局「文件」仍可从「更多」进入。';
+  String get projectDetailNoFoldersMessage => '服务器尚未报告此项目的文件夹。全局「文件」仍可从「更多」进入。';
 
   @override
   String get projectDetailAssetsUnavailableTitle => '资源不可用';
@@ -2072,6 +2644,281 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get projectDetailDeleteProject => '删除项目';
+
+  @override
+  String get filesTitle => '文件';
+
+  @override
+  String get filesEmptyTitle => '文件夹为空';
+
+  @override
+  String get filesEmptyMessage => '此服务器文件夹中没有可见文件。';
+
+  @override
+  String get filesPreviewTruncated => '预览已截断';
+
+  @override
+  String get filesPreviewUnavailable => '无法预览';
+
+  @override
+  String get filesBinaryPreviewUnavailable => '无法预览二进制文件。请下载后打开。';
+
+  @override
+  String get filesDownload => '下载';
+
+  @override
+  String get filesDownloaded => '「{0}」已下载';
+
+  @override
+  String get filesDownloadFailed => '下载失败：{0}';
+
+  @override
+  String get filesAddedToChat => '已把文件引用添加到会话';
+
+  @override
+  String get filesAddToChat => '添加到会话';
+
+  @override
+  String get filesLoadFailedTitle => '无法加载文件';
+
+  @override
+  String get filesPreviewFailedTitle => '无法预览文件';
+
+  @override
+  String get filesErrorMessage => '请检查 Dashboard 连接，然后重试。';
+
+  @override
+  String get filesSaveDialogTitle => '保存 {0}';
+
+  @override
+  String get skillsTitle => '技能（{0}）';
+
+  @override
+  String get skillsLoadFailed => '加载技能失败';
+
+  @override
+  String get skillsEmptyTitle => '没有找到技能';
+
+  @override
+  String get skillsEmptyMessage => '技能是由 Hermes 主机发布的、可复用的智能体指令。';
+
+  @override
+  String get memoryTitle => '记忆';
+
+  @override
+  String get memorySource => '来源：{0}';
+
+  @override
+  String get memoryLoadFailed => '加载记忆失败';
+
+  @override
+  String get memoryEmptyTitle => '没有记忆条目';
+
+  @override
+  String get memoryEmptyMessage =>
+      '记忆条目是智能体跨会话记住的事实。\n它们存储在 Hermes 主机上，并在你的各设备间共享。';
+
+  @override
+  String get cronTitle => '定时任务';
+
+  @override
+  String get cronAddJob => '添加定时任务';
+
+  @override
+  String get cronEditJob => '编辑定时任务';
+
+  @override
+  String get cronNameLabel => '名称';
+
+  @override
+  String get cronNameHint => '例如：每日备份';
+
+  @override
+  String get cronPromptLabel => '提示词';
+
+  @override
+  String get cronPromptHint => '希望智能体做什么？';
+
+  @override
+  String get cronScheduleLabel => '计划';
+
+  @override
+  String get cronScheduleHint => '例如：0 9 * * * 或 every 2h';
+
+  @override
+  String get cronAddNewJob => '添加定时任务';
+
+  @override
+  String get cronScriptOnly => '仅脚本（不调用智能体）';
+
+  @override
+  String get cronScriptOnlyHint => '用于由脚本驱动的定时任务。';
+
+  @override
+  String get cronFieldsRequired => '名称、提示词和计划均为必填';
+
+  @override
+  String get cronJobAdded => '定时任务已添加';
+
+  @override
+  String get cronJobUpdated => '定时任务已更新';
+
+  @override
+  String get cronJobDeleted => '已删除「{0}」';
+
+  @override
+  String get cronJobTriggered => '任务已触发';
+
+  @override
+  String get cronJobResumed => '任务已恢复';
+
+  @override
+  String get cronJobPaused => '任务已暂停';
+
+  @override
+  String get cronTriggerNow => '立即触发';
+
+  @override
+  String get cronEdit => '编辑';
+
+  @override
+  String get cronDelete => '删除';
+
+  @override
+  String get cronDeleteConfirmTitle => '删除「{0}」？';
+
+  @override
+  String get cronNeverRun => '从未';
+
+  @override
+  String get cronLastRun => '上次：{0}';
+
+  @override
+  String get cronNextRun => '下次：{0}';
+
+  @override
+  String get cronOperationFailed => '失败：{0}';
+
+  @override
+  String get cronLoadFailed => '加载定时任务失败';
+
+  @override
+  String get cronPause => '暂停';
+
+  @override
+  String get cronResume => '恢复';
+
+  @override
+  String get cronAddAction => '添加';
+
+  @override
+  String get cronSaveAction => '保存';
+
+  @override
+  String get cronScriptBadge => '脚本';
+
+  @override
+  String get cronDeleteConfirmBody => '删除「{0}」？';
+
+  @override
+  String get cronEmptyTitle => '没有定时任务';
+
+  @override
+  String get cronEmptyMessage => '定时任务会在你指定的时间于 Hermes 主机上运行智能体回合。';
+
+  @override
+  String get spacesTitle => '空间';
+
+  @override
+  String get spacesNewSpace => '新建空间';
+
+  @override
+  String get spacesAllChats => '全部会话';
+
+  @override
+  String get spacesUnassigned => '未分配';
+
+  @override
+  String get spacesActions => '空间操作';
+
+  @override
+  String get spacesRename => '重命名';
+
+  @override
+  String get spacesEmptyHint => '创建空间来区分相关的会话。';
+
+  @override
+  String get spacesNewDialogTitle => '新建空间';
+
+  @override
+  String get spacesRenameDialogTitle => '重命名空间';
+
+  @override
+  String get spacesNameLabel => '名称';
+
+  @override
+  String get spacesNameRequired => '请输入名称';
+
+  @override
+  String get spacesLastActivity => '最近活动 {0}';
+
+  @override
+  String get workspaceChatsTitle => '会话';
+
+  @override
+  String get workspaceProjectsUnavailableTitle => '项目不可用';
+
+  @override
+  String get workspaceProjectsUnavailableMessage =>
+      '项目功能需要 Desktop Gateway 连接。请为此连接添加 Desktop Gateway 地址，以便在多台设备间组织会话。';
+
+  @override
+  String get workspaceInbox => '收件箱';
+
+  @override
+  String get workspaceNewChat => '新建';
+
+  @override
+  String get workspaceSearchAllChats => '搜索全部会话';
+
+  @override
+  String get workspaceDashboardOpenFailed => '无法打开 Hermes 仪表盘。';
+
+  @override
+  String get workspaceProjectChatFailed => '无法创建项目会话';
+
+  @override
+  String get workspaceRetry => '重试';
+
+  @override
+  String get workspaceProjectFolderFallback => '此网关无法直接把会话归入项目 —— 已在项目的文件夹中打开。';
+
+  @override
+  String get workspaceSharedFilesFailed => '无法准备共享文件。';
+
+  @override
+  String get workspaceSessionsLoadFailedTitle => '无法加载会话';
+
+  @override
+  String get workspaceSessionsLoadFailedMessage => '请检查连接后重试。';
+
+  @override
+  String get workspaceSessionsSearchHint => '搜索会话';
+
+  @override
+  String get workspaceSessionsSearchClear => '清除搜索';
+
+  @override
+  String get workspaceSessionsUnassigned => '未分配';
+
+  @override
+  String get workspaceSessionsPromoteTooltip => '升级为项目';
+
+  @override
+  String get workspaceSessionsPromoted => '已升级为项目';
+
+  @override
+  String get workspaceSessionsPromoteFailed => '无法升级会话';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
@@ -2080,7 +2927,11 @@ class AppStringsZh extends AppStrings {
 /// including one reached through a route pushed before a language switch —
 /// rebuilds with new strings when the user picks a different language.
 class AppStringsScope extends InheritedWidget {
-  const AppStringsScope({required this.strings, required super.child, super.key});
+  const AppStringsScope({
+    required this.strings,
+    required super.child,
+    super.key,
+  });
 
   /// The strings for the current interface language.
   final AppStrings strings;

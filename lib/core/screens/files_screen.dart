@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../services/remote_files_client.dart';
 import '../theme/hermes_theme.dart';
 import '../widgets/hermes_components.dart';
@@ -133,6 +134,7 @@ class _FilesScreenState extends State<FilesScreen> {
   }
 
   Future<void> _download() async {
+    final s = AppStrings.of(context);
     final selected = _selected;
     if (selected == null || _downloading) return;
     setState(() => _downloading = true);
@@ -143,32 +145,40 @@ class _FilesScreenState extends State<FilesScreen> {
         await saver(download);
       } else {
         await FilePicker.platform.saveFile(
-          dialogTitle: 'Save ${download.filename}',
+          dialogTitle: s.filesSaveDialogTitle.replaceAll(
+            '{0}',
+            download.filename,
+          ),
           fileName: download.filename,
           bytes: download.bytes,
         );
       }
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('${download.filename} downloaded')),
+        SnackBar(
+          content: Text(s.filesDownloaded.replaceAll('{0}', download.filename)),
+        ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Download failed: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s.filesDownloadFailed.replaceAll('{0}', '$error')),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _downloading = false);
     }
   }
 
   Widget _directoryBody() {
+    final s = AppStrings.of(context);
     if (_entries.isEmpty) {
-      return const Center(
+      return Center(
         child: EmptyState(
           icon: Icons.folder_open_outlined,
-          title: 'Folder is empty',
-          message: 'There are no visible files in this server folder.',
+          title: s.filesEmptyTitle,
+          message: s.filesEmptyMessage,
         ),
       );
     }
@@ -208,6 +218,7 @@ class _FilesScreenState extends State<FilesScreen> {
   }
 
   Widget _previewBody() {
+    final s = AppStrings.of(context);
     final selected = _selected!;
     final preview = _preview;
     final tokens = HermesTokens.of(context);
@@ -225,9 +236,9 @@ class _FilesScreenState extends State<FilesScreen> {
               if (preview != null)
                 StatusChip(status: HermesStatus.idle, label: preview.language),
               if (preview?.truncated == true)
-                const StatusChip(
+                StatusChip(
                   status: HermesStatus.blocked,
-                  label: 'Preview truncated',
+                  label: s.filesPreviewTruncated,
                 ),
             ],
           ),
@@ -237,8 +248,8 @@ class _FilesScreenState extends State<FilesScreen> {
               child: SingleChildScrollView(
                 child: SelectableText(
                   preview?.binary == true
-                      ? 'Binary preview is unavailable. Download the file to open it.'
-                      : preview?.text ?? 'Preview unavailable',
+                      ? s.filesBinaryPreviewUnavailable
+                      : preview?.text ?? s.filesPreviewUnavailable,
                   style: tokens.typography.body.copyWith(
                     fontFamily: 'monospace',
                     color: tokens.onSurface,
@@ -254,7 +265,7 @@ class _FilesScreenState extends State<FilesScreen> {
                 child: OutlinedButton.icon(
                   onPressed: _downloading ? null : _download,
                   icon: const Icon(Icons.download_outlined),
-                  label: const Text('Download'),
+                  label: Text(s.filesDownload),
                 ),
               ),
               if (widget.onAddToChat != null) ...[
@@ -264,13 +275,11 @@ class _FilesScreenState extends State<FilesScreen> {
                     onPressed: () {
                       widget.onAddToChat!(selected.path);
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('File reference added to chat'),
-                        ),
+                        SnackBar(content: Text(s.filesAddedToChat)),
                       );
                     },
                     icon: const Icon(Icons.add_comment_outlined),
-                    label: const Text('Add to chat'),
+                    label: Text(s.filesAddToChat),
                   ),
                 ),
               ],
@@ -282,14 +291,15 @@ class _FilesScreenState extends State<FilesScreen> {
   }
 
   Widget _body() {
+    final s = AppStrings.of(context);
     if (_loading) return const LoadingSkeleton(rows: 6);
     if (_error != null) {
       return Center(
         child: ErrorState(
           title: _selected == null
-              ? 'Could not load files'
-              : 'Could not preview file',
-          message: 'Check the Dashboard connection and try again.',
+              ? s.filesLoadFailedTitle
+              : s.filesPreviewFailedTitle,
+          message: s.filesErrorMessage,
           onRetry: _selected == null
               ? () => unawaited(
                   _path == null ? _loadRoot() : _openDirectory(_path!),
@@ -302,40 +312,46 @@ class _FilesScreenState extends State<FilesScreen> {
   }
 
   @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      leading: IconButton(onPressed: _back, icon: const Icon(Icons.arrow_back)),
-      title: const Text('Files'),
-      bottom: _selected == null && _path != null
-          ? PreferredSize(
-              preferredSize: const Size.fromHeight(42),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(
-                  HermesSpacing.lg,
-                  0,
-                  HermesSpacing.lg,
-                  HermesSpacing.sm,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        _path!,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+  Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
+    return Scaffold(
+      appBar: AppBar(
+        leading: IconButton(
+          onPressed: _back,
+          icon: const Icon(Icons.arrow_back),
+        ),
+        title: Text(s.filesTitle),
+        bottom: _selected == null && _path != null
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(42),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    HermesSpacing.lg,
+                    0,
+                    HermesSpacing.lg,
+                    HermesSpacing.sm,
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _path!,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    if (_root?.branch != null)
-                      StatusChip(
-                        status: HermesStatus.idle,
-                        label: _root!.branch,
-                      ),
-                  ],
+                      if (_root?.branch != null)
+                        StatusChip(
+                          status: HermesStatus.idle,
+                          label: _root!.branch,
+                        ),
+                    ],
+                  ),
                 ),
-              ),
-            )
-          : null,
-    ),
-    body: _body(),
-  );
+              )
+            : null,
+      ),
+      body: _body(),
+    );
+  }
 }
