@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/gateway_approval.dart';
 
 typedef ApprovalResponder = Future<void> Function(GatewayApprovalChoice choice);
@@ -44,29 +45,28 @@ class _GatewayApprovalDialogState extends State<GatewayApprovalDialog> {
       if (!mounted) return;
       setState(() {
         _submitting = null;
-        _error = 'Could not send the approval: $error';
+        final s = AppStrings.of(context);
+        _error = s.approvalSendFailed.replaceAll('{0}', '$error');
       });
     }
   }
 
-  String _labelFor(GatewayApprovalChoice choice) {
+  String _labelFor(AppStrings s, GatewayApprovalChoice choice) {
     return switch (choice) {
-      GatewayApprovalChoice.once => 'Allow once',
-      GatewayApprovalChoice.session => 'Allow for this session',
+      GatewayApprovalChoice.once => s.approvalAllowOnce,
+      GatewayApprovalChoice.session => s.approvalAllowForSession,
       GatewayApprovalChoice.always =>
-        _confirmAlways ? 'Confirm always allow' : 'Always allow',
-      GatewayApprovalChoice.deny => 'Deny',
+        _confirmAlways ? s.approvalConfirmAlways : s.approvalAlwaysAllow,
+      GatewayApprovalChoice.deny => s.approvalDeny,
     };
   }
 
-  String _scopeFor(GatewayApprovalChoice choice) {
+  String _scopeFor(AppStrings s, GatewayApprovalChoice choice) {
     return switch (choice) {
-      GatewayApprovalChoice.once => 'Run only this command.',
-      GatewayApprovalChoice.session =>
-        'Allow matching commands until this Hermes session ends.',
-      GatewayApprovalChoice.always =>
-        'Save a permanent rule in the Hermes configuration.',
-      GatewayApprovalChoice.deny => 'Do not run this command.',
+      GatewayApprovalChoice.once => s.approvalScopeOnce,
+      GatewayApprovalChoice.session => s.approvalScopeSession,
+      GatewayApprovalChoice.always => s.approvalScopeAlways,
+      GatewayApprovalChoice.deny => s.approvalScopeDeny,
     };
   }
 
@@ -81,13 +81,14 @@ class _GatewayApprovalDialogState extends State<GatewayApprovalDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final theme = Theme.of(context);
     final request = widget.request;
     final busy = _submitting != null;
 
     return AlertDialog(
       icon: const Icon(Icons.gpp_maybe_outlined),
-      title: const Text('Approval needed'),
+      title: Text(s.approvalNeeded),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 520),
         child: SingleChildScrollView(
@@ -98,7 +99,7 @@ class _GatewayApprovalDialogState extends State<GatewayApprovalDialog> {
               Text(request.description),
               if (request.command.isNotEmpty) ...[
                 const SizedBox(height: 16),
-                Text('Command', style: theme.textTheme.labelLarge),
+                Text(s.approvalCommand, style: theme.textTheme.labelLarge),
                 const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -117,8 +118,7 @@ class _GatewayApprovalDialogState extends State<GatewayApprovalDialog> {
               if (_confirmAlways) ...[
                 const SizedBox(height: 14),
                 Text(
-                  'This creates a permanent rule in Hermes. Review the full '
-                  'command before confirming.',
+                  s.approvalAlwaysWarning,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.error,
                   ),
@@ -150,9 +150,9 @@ class _GatewayApprovalDialogState extends State<GatewayApprovalDialog> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(_labelFor(choice)),
+                        Text(_labelFor(s, choice)),
                         Text(
-                          _scopeFor(choice),
+                          _scopeFor(s, choice),
                           style: theme.textTheme.bodySmall,
                         ),
                       ],

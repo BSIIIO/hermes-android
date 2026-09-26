@@ -562,7 +562,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Couldn’t prepare the shared files.')),
+        SnackBar(content: Text(AppStrings.of(context).shareFilesPrepareFailed)),
       );
       return;
     }
@@ -1010,7 +1010,9 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       try {
         final repository = _repository;
         if (repository == null) {
-          throw StateError('Projects are unavailable for this connection');
+          throw StateError(
+            AppStrings.of(context).projectsUnavailableForConnection,
+          );
         }
         await repository.assignSession(draft.session.id, projectId);
       } on ProjectsUnsupportedException {
@@ -1150,10 +1152,11 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   }
 
   void _openWorkspaceSessionView(WorkspaceSessionView view) {
+    final s = AppStrings.of(context);
     final title = switch (view) {
-      WorkspaceSessionView.all => 'All chats',
-      WorkspaceSessionView.unassigned => 'Unassigned chats',
-      WorkspaceSessionView.archivedQuick => 'Archived quick chats',
+      WorkspaceSessionView.all => s.chatsAllChats,
+      WorkspaceSessionView.unassigned => s.chatsNoUnassignedChats,
+      WorkspaceSessionView.archivedQuick => s.workspaceArchivedQuickChats,
       WorkspaceSessionView.search => 'Search',
     };
     _push(
@@ -1171,8 +1174,12 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
 
   Future<void> _promoteQuickChat(Session session) async {
     final repository = _repository;
+    // Resolved before the first await: both error branches below build a
+    // StateError whose message a user can see, and a BuildContext must not be
+    // read after an async gap.
+    final s = AppStrings.of(context);
     if (repository == null) {
-      throw StateError('Projects are unavailable for this connection');
+      throw StateError(s.projectsUnavailableForConnection);
     }
     var view = repository.current;
     if (view.support == ProjectsSupport.unknown) {
@@ -1182,7 +1189,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         .where((project) => !project.archived)
         .toList(growable: false);
     if (projects.isEmpty) {
-      throw StateError('Create a Project before promoting this chat');
+      throw StateError(s.createProjectBeforePromoting);
     }
 
     if (!mounted) throw const QuickChatPromotionCancelled();
@@ -1259,8 +1266,11 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           if (_destination == HermesDestination.home) ...[
             IconButton(
               tooltip: _inboxActionCount == 0
-                  ? 'Open inbox'
-                  : 'Open inbox ($_inboxActionCount)',
+                  ? s.openInbox
+                  : s.openInboxWithCount.replaceAll(
+                      '{0}',
+                      '$_inboxActionCount',
+                    ),
               onPressed: _openInbox,
               icon: Badge(
                 isLabelVisible: _inboxActionCount > 0,

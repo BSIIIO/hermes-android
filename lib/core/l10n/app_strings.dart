@@ -1844,6 +1844,102 @@ abstract class AppStrings {
 
   /// Nothing changed in the last seven days.
   String get chatsEmptyRecent;
+
+  /// Attachment {0} of {1}
+  String get attachmentSemanticLabel;
+
+  /// Upload failed • tap retry
+  String get attachmentUploadFailedTapRetry;
+
+  /// Move attachment previous
+  String get attachmentMovePrevious;
+
+  /// Move attachment next
+  String get attachmentMoveNext;
+
+  /// Retry upload
+  String get attachmentRetryUpload;
+
+  /// Remove attachment
+  String get attachmentRemove;
+
+  /// Ready to upload
+  String get attachmentStatusReady;
+
+  /// Uploading
+  String get attachmentStatusUploading;
+
+  /// Uploaded
+  String get attachmentStatusUploaded;
+
+  /// Upload failed
+  String get attachmentStatusFailed;
+
+  /// Uploading
+  String get uploading;
+
+  /// Upload failed
+  String get uploadFailed;
+
+  /// Uploaded
+  String get attached;
+
+  /// Couldn’t prepare the shared files.
+  String get shareFilesPrepareFailed;
+
+  /// Projects are unavailable for this connection
+  String get projectsUnavailableForConnection;
+
+  /// Create a Project before promoting this chat
+  String get createProjectBeforePromoting;
+
+  /// Archived quick chats
+  String get workspaceArchivedQuickChats;
+
+  /// Open inbox
+  String get openInbox;
+
+  /// Open inbox ({0})
+  String get openInboxWithCount;
+
+  /// Could not send the approval: {0}
+  String get approvalSendFailed;
+
+  /// Allow once
+  String get approvalAllowOnce;
+
+  /// Allow for this session
+  String get approvalAllowForSession;
+
+  /// Confirm always allow
+  String get approvalConfirmAlways;
+
+  /// Always allow
+  String get approvalAlwaysAllow;
+
+  /// Deny
+  String get approvalDeny;
+
+  /// Run only this command.
+  String get approvalScopeOnce;
+
+  /// Allow matching commands until this Hermes session ends.
+  String get approvalScopeSession;
+
+  /// Save a permanent rule in the Hermes configuration.
+  String get approvalScopeAlways;
+
+  /// Do not run this command.
+  String get approvalScopeDeny;
+
+  /// Approval needed
+  String get approvalNeeded;
+
+  /// Command
+  String get approvalCommand;
+
+  /// This creates a permanent rule in Hermes. Review the full command before confirming.
+  String get approvalAlwaysWarning;
 }
 
 /// English strings.
@@ -3708,6 +3804,107 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get chatsEmptyRecent => 'Nothing changed in the last seven days.';
+
+  @override
+  String get attachmentSemanticLabel => 'Attachment {0} of {1}';
+
+  @override
+  String get attachmentUploadFailedTapRetry => 'Upload failed • tap retry';
+
+  @override
+  String get attachmentMovePrevious => 'Move attachment previous';
+
+  @override
+  String get attachmentMoveNext => 'Move attachment next';
+
+  @override
+  String get attachmentRetryUpload => 'Retry upload';
+
+  @override
+  String get attachmentRemove => 'Remove attachment';
+
+  @override
+  String get attachmentStatusReady => 'Ready to upload';
+
+  @override
+  String get attachmentStatusUploading => 'Uploading';
+
+  @override
+  String get attachmentStatusUploaded => 'Uploaded';
+
+  @override
+  String get attachmentStatusFailed => 'Upload failed';
+
+  @override
+  String get uploading => 'Uploading';
+
+  @override
+  String get uploadFailed => 'Upload failed';
+
+  @override
+  String get attached => 'Uploaded';
+
+  @override
+  String get shareFilesPrepareFailed => 'Couldn’t prepare the shared files.';
+
+  @override
+  String get projectsUnavailableForConnection =>
+      'Projects are unavailable for this connection';
+
+  @override
+  String get createProjectBeforePromoting =>
+      'Create a Project before promoting this chat';
+
+  @override
+  String get workspaceArchivedQuickChats => 'Archived quick chats';
+
+  @override
+  String get openInbox => 'Open inbox';
+
+  @override
+  String get openInboxWithCount => 'Open inbox ({0})';
+
+  @override
+  String get approvalSendFailed => 'Could not send the approval: {0}';
+
+  @override
+  String get approvalAllowOnce => 'Allow once';
+
+  @override
+  String get approvalAllowForSession => 'Allow for this session';
+
+  @override
+  String get approvalConfirmAlways => 'Confirm always allow';
+
+  @override
+  String get approvalAlwaysAllow => 'Always allow';
+
+  @override
+  String get approvalDeny => 'Deny';
+
+  @override
+  String get approvalScopeOnce => 'Run only this command.';
+
+  @override
+  String get approvalScopeSession =>
+      'Allow matching commands until this Hermes session ends.';
+
+  @override
+  String get approvalScopeAlways =>
+      'Save a permanent rule in the Hermes configuration.';
+
+  @override
+  String get approvalScopeDeny => 'Do not run this command.';
+
+  @override
+  String get approvalNeeded => 'Approval needed';
+
+  @override
+  String get approvalCommand => 'Command';
+
+  @override
+  String get approvalAlwaysWarning =>
+      'This creates a permanent rule in Hermes. Review the full command before confirming.';
 }
 
 /// Simplified Chinese strings.
@@ -5465,6 +5662,102 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get chatsEmptyRecent => '最近七天没有任何变化。';
+
+  @override
+  String get attachmentSemanticLabel => '附件 {0}/{1}';
+
+  @override
+  String get attachmentUploadFailedTapRetry => '上传失败 • 点此重试';
+
+  @override
+  String get attachmentMovePrevious => '上移附件';
+
+  @override
+  String get attachmentMoveNext => '下移附件';
+
+  @override
+  String get attachmentRetryUpload => '重新上传';
+
+  @override
+  String get attachmentRemove => '移除附件';
+
+  @override
+  String get attachmentStatusReady => '待上传';
+
+  @override
+  String get attachmentStatusUploading => '上传中';
+
+  @override
+  String get attachmentStatusUploaded => '已上传';
+
+  @override
+  String get attachmentStatusFailed => '上传失败';
+
+  @override
+  String get uploading => '上传中';
+
+  @override
+  String get uploadFailed => '上传失败';
+
+  @override
+  String get attached => '已上传';
+
+  @override
+  String get shareFilesPrepareFailed => '无法准备要分享的文件。';
+
+  @override
+  String get projectsUnavailableForConnection => '此连接不支持项目功能';
+
+  @override
+  String get createProjectBeforePromoting => '提升此会话前请先创建一个项目';
+
+  @override
+  String get workspaceArchivedQuickChats => '已归档的快速会话';
+
+  @override
+  String get openInbox => '打开收件箱';
+
+  @override
+  String get openInboxWithCount => '打开收件箱（{0}）';
+
+  @override
+  String get approvalSendFailed => '无法提交审批决定：{0}';
+
+  @override
+  String get approvalAllowOnce => '允许一次';
+
+  @override
+  String get approvalAllowForSession => '本会话内允许';
+
+  @override
+  String get approvalConfirmAlways => '确认永久允许';
+
+  @override
+  String get approvalAlwaysAllow => '总是允许';
+
+  @override
+  String get approvalDeny => '拒绝';
+
+  @override
+  String get approvalScopeOnce => '仅执行这一条命令。';
+
+  @override
+  String get approvalScopeSession => '在本次 Hermes 会话结束前，允许匹配的命令。';
+
+  @override
+  String get approvalScopeAlways => '在 Hermes 配置中保存一条永久规则。';
+
+  @override
+  String get approvalScopeDeny => '不执行这条命令。';
+
+  @override
+  String get approvalNeeded => '需要审批';
+
+  @override
+  String get approvalCommand => '命令';
+
+  @override
+  String get approvalAlwaysWarning => '这会在 Hermes 中创建一条永久规则。确认前请先完整核对命令。';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
