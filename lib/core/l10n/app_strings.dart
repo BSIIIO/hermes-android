@@ -1330,7 +1330,6 @@ abstract class AppStrings {
   /// Dashboard / Proxy Settings
   String get connDashboardProxySettings;
 
-
   /// Semantics label of the model / scope button.
   String get chatChooseModel;
 
@@ -1342,6 +1341,65 @@ abstract class AppStrings {
 
   /// Tooltip of the add-attachment button.
   String get chatAttachImageOrFile;
+
+  // ---- Gateway activity & turn status (P1 batch 7) ----
+
+  /// Running
+  String get activityToolPhaseRunning;
+
+  /// Preparing
+  String get activityToolPhasePreparing;
+
+  /// Working
+  String get activityToolPhaseWorking;
+
+  /// Completed
+  String get activityToolPhaseCompleted;
+
+  /// Failed
+  String get activityToolPhaseFailed;
+
+  /// Completed in {0}
+  String get activityToolCompletedIn;
+
+  /// Failed after {0}
+  String get activityToolFailedAfter;
+
+  /// {0} ms
+  String get activityDurationMilliseconds;
+
+  /// {0} s
+  String get activityDurationSeconds;
+
+  /// Tool
+  String get activityToolFallbackName;
+
+  /// Tool activity
+  String get activityToolLabel;
+
+  /// Compacting conversation context…
+  String get activityTurnCompacting;
+
+  /// Conversation context compacted
+  String get activityTurnCompacted;
+
+  /// Using {0}…
+  String get activityTurnUsingTool;
+
+  /// {0}: {1}
+  String get activityToolRowLabel;
+
+  /// Hermes is using a tool
+  String get activityCardUsingOneTool;
+
+  /// Hermes is using {0} tools
+  String get activityCardUsingTools;
+
+  /// {0} failed • {1} total
+  String get activityCardSomeFailed;
+
+  /// {0} completed
+  String get activityCardAllCompleted;
 }
 
 /// English strings.
@@ -2586,7 +2644,8 @@ class AppStringsEn extends AppStrings {
   String get connProxySectionTitle => 'Custom proxy and dashboard details';
 
   @override
-  String get connProxyIntro => 'Used for hosted path prefixes and for the Settings, Memory, Skills and Cron tabs. Leave username/password blank for an open dashboard, or enable proxied mode when your reverse proxy injects dashboard auth.';
+  String get connProxyIntro =>
+      'Used for hosted path prefixes and for the Settings, Memory, Skills and Cron tabs. Leave username/password blank for an open dashboard, or enable proxied mode when your reverse proxy injects dashboard auth.';
 
   @override
   String get connGatewayPrefixLabel => 'Gateway path prefix';
@@ -2595,7 +2654,8 @@ class AppStringsEn extends AppStrings {
   String get connGatewayPrefixHintProfile => 'e.g. /profile/peter';
 
   @override
-  String get connGatewayPrefixHintProxy => 'e.g. /profile/peter (proxy path before /api/ and /v1/)';
+  String get connGatewayPrefixHintProxy =>
+      'e.g. /profile/peter (proxy path before /api/ and /v1/)';
 
   @override
   String get connDashboardPrefixLabel => 'Dashboard path prefix';
@@ -2604,16 +2664,19 @@ class AppStringsEn extends AppStrings {
   String get connDashboardPrefixHint => 'e.g. /dashboard';
 
   @override
-  String get connDashboardPrefixHintProxy => 'e.g. /dashboard (proxy path before /api/)';
+  String get connDashboardPrefixHintProxy =>
+      'e.g. /dashboard (proxy path before /api/)';
 
   @override
   String get connDashboardBehindProxy => 'Dashboard behind proxy';
 
   @override
-  String get connDashboardBehindProxySub => 'Proxy injects auth; app sends clean requests';
+  String get connDashboardBehindProxySub =>
+      'Proxy injects auth; app sends clean requests';
 
   @override
-  String get connDashboardBehindProxySubNginx => 'Nginx injects auth — app sends clean requests';
+  String get connDashboardBehindProxySubNginx =>
+      'Nginx injects auth — app sends clean requests';
 
   @override
   String get connDashPortLabel => 'Dashboard Port';
@@ -2622,7 +2685,8 @@ class AppStringsEn extends AppStrings {
   String get connDashPortHint => 'Leave blank for default (9119)';
 
   @override
-  String get connDashPortOptionalNote => 'Optional. For the Memory/Cron/Skills/Settings tabs. Leave blank to use the default dashboard port (9119) with no login.';
+  String get connDashPortOptionalNote =>
+      'Optional. For the Memory/Cron/Skills/Settings tabs. Leave blank to use the default dashboard port (9119) with no login.';
 
   @override
   String get connUsernameOptional => 'Username (optional)';
@@ -2643,7 +2707,8 @@ class AppStringsEn extends AppStrings {
   String get connDesktopGatewayUrlHint => 'https://hermes-desktop.example.lan';
 
   @override
-  String get connDesktopGatewayUrlHelper => 'Enables file attachments through the Desktop remote gateway.';
+  String get connDesktopGatewayUrlHelper =>
+      'Enables file attachments through the Desktop remote gateway.';
 
   @override
   String get connHermesProfile => 'Hermes profile (optional)';
@@ -2652,10 +2717,70 @@ class AppStringsEn extends AppStrings {
   String get connHermesProfileHint => 'e.g. sol';
 
   @override
-  String get connHermesProfileHelper => 'Profile this connection chats as when the dashboard serves several profiles. Leave blank for an isolated per-profile dashboard.';
+  String get connHermesProfileHelper =>
+      'Profile this connection chats as when the dashboard serves several profiles. Leave blank for an isolated per-profile dashboard.';
 
   @override
   String get connDashboardProxySettings => 'Dashboard / Proxy Settings';
+
+  // ---- Gateway activity & turn status (P1 batch 7) ----
+
+  @override
+  String get activityToolPhaseRunning => 'Running';
+
+  @override
+  String get activityToolPhasePreparing => 'Preparing';
+
+  @override
+  String get activityToolPhaseWorking => 'Working';
+
+  @override
+  String get activityToolPhaseCompleted => 'Completed';
+
+  @override
+  String get activityToolPhaseFailed => 'Failed';
+
+  @override
+  String get activityToolCompletedIn => 'Completed in {0}';
+
+  @override
+  String get activityToolFailedAfter => 'Failed after {0}';
+
+  @override
+  String get activityDurationMilliseconds => '{0} ms';
+
+  @override
+  String get activityDurationSeconds => '{0} s';
+
+  @override
+  String get activityToolFallbackName => 'Tool';
+
+  @override
+  String get activityToolLabel => 'Tool activity';
+
+  @override
+  String get activityTurnCompacting => 'Compacting conversation context…';
+
+  @override
+  String get activityTurnCompacted => 'Conversation context compacted';
+
+  @override
+  String get activityTurnUsingTool => 'Using {0}…';
+
+  @override
+  String get activityToolRowLabel => '{0}: {1}';
+
+  @override
+  String get activityCardUsingOneTool => 'Hermes is using a tool';
+
+  @override
+  String get activityCardUsingTools => 'Hermes is using {0} tools';
+
+  @override
+  String get activityCardSomeFailed => '{0} failed • {1} total';
+
+  @override
+  String get activityCardAllCompleted => '{0} completed';
 }
 
 /// Simplified Chinese strings.
@@ -3833,7 +3958,8 @@ class AppStringsZh extends AppStrings {
   String get connProxySectionTitle => '自定义代理与仪表盘详情';
 
   @override
-  String get connProxyIntro => '用于托管路径前缀，以及设置、记忆、技能和定时任务这几个页签。公开的仪表盘请把用户名和密码留空；若你的反向代理会注入仪表盘鉴权，请开启代理模式。';
+  String get connProxyIntro =>
+      '用于托管路径前缀，以及设置、记忆、技能和定时任务这几个页签。公开的仪表盘请把用户名和密码留空；若你的反向代理会注入仪表盘鉴权，请开启代理模式。';
 
   @override
   String get connGatewayPrefixLabel => 'Gateway 路径前缀';
@@ -3842,7 +3968,8 @@ class AppStringsZh extends AppStrings {
   String get connGatewayPrefixHintProfile => '例如 /profile/peter';
 
   @override
-  String get connGatewayPrefixHintProxy => '例如 /profile/peter（/api/ 与 /v1/ 之前的代理路径）';
+  String get connGatewayPrefixHintProxy =>
+      '例如 /profile/peter（/api/ 与 /v1/ 之前的代理路径）';
 
   @override
   String get connDashboardPrefixLabel => 'Dashboard 路径前缀';
@@ -3869,7 +3996,8 @@ class AppStringsZh extends AppStrings {
   String get connDashPortHint => '留空则使用默认端口（9119）';
 
   @override
-  String get connDashPortOptionalNote => '可选。用于记忆/定时任务/技能/设置这几个页签。留空则使用默认仪表盘端口（9119）且无需登录。';
+  String get connDashPortOptionalNote =>
+      '可选。用于记忆/定时任务/技能/设置这几个页签。留空则使用默认仪表盘端口（9119）且无需登录。';
 
   @override
   String get connUsernameOptional => '用户名（可选）';
@@ -3899,10 +4027,70 @@ class AppStringsZh extends AppStrings {
   String get connHermesProfileHint => '例如 sol';
 
   @override
-  String get connHermesProfileHelper => '当仪表盘提供多个配置时，此连接以哪个配置的身份对话。留空则使用独立的按配置隔离的仪表盘。';
+  String get connHermesProfileHelper =>
+      '当仪表盘提供多个配置时，此连接以哪个配置的身份对话。留空则使用独立的按配置隔离的仪表盘。';
 
   @override
   String get connDashboardProxySettings => 'Dashboard / 代理设置';
+
+  // ---- Gateway activity & turn status (P1 batch 7) ----
+
+  @override
+  String get activityToolPhaseRunning => '运行中';
+
+  @override
+  String get activityToolPhasePreparing => '准备中';
+
+  @override
+  String get activityToolPhaseWorking => '处理中';
+
+  @override
+  String get activityToolPhaseCompleted => '已完成';
+
+  @override
+  String get activityToolPhaseFailed => '失败';
+
+  @override
+  String get activityToolCompletedIn => '{0} 完成';
+
+  @override
+  String get activityToolFailedAfter => '{0} 后失败';
+
+  @override
+  String get activityDurationMilliseconds => '{0} 毫秒';
+
+  @override
+  String get activityDurationSeconds => '{0} 秒';
+
+  @override
+  String get activityToolFallbackName => '工具';
+
+  @override
+  String get activityToolLabel => '工具活动';
+
+  @override
+  String get activityTurnCompacting => '正在压缩会话上下文…';
+
+  @override
+  String get activityTurnCompacted => '会话上下文已压缩';
+
+  @override
+  String get activityTurnUsingTool => '正在使用 {0}…';
+
+  @override
+  String get activityToolRowLabel => '{0}：{1}';
+
+  @override
+  String get activityCardUsingOneTool => 'Hermes 正在使用 1 个工具';
+
+  @override
+  String get activityCardUsingTools => 'Hermes 正在使用 {0} 个工具';
+
+  @override
+  String get activityCardSomeFailed => '{0} 个失败 • 共 {1} 个';
+
+  @override
+  String get activityCardAllCompleted => '{0} 个完成';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
