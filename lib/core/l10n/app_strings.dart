@@ -1400,6 +1400,18 @@ abstract class AppStrings {
 
   /// {0} completed
   String get activityCardAllCompleted;
+
+  /// Nothing is running
+  String get activityEmptyTitleRunning;
+
+  /// No turn is blocked, in flight, or recently finished. Work you start will show up here.
+  String get activityEmptyMessageRunning;
+
+  /// Inbox is clear
+  String get activityEmptyTitleActionable;
+
+  /// No turn needs your input or has failed.
+  String get activityEmptyMessageActionable;
 }
 
 /// English strings.
@@ -2781,6 +2793,20 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get activityCardAllCompleted => '{0} completed';
+
+  @override
+  String get activityEmptyTitleRunning => 'Nothing is running';
+
+  @override
+  String get activityEmptyMessageRunning =>
+      'No turn is blocked, in flight, or recently finished. Work you start will show up here.';
+
+  @override
+  String get activityEmptyTitleActionable => 'Inbox is clear';
+
+  @override
+  String get activityEmptyMessageActionable =>
+      'No turn needs your input or has failed.';
 }
 
 /// Simplified Chinese strings.
@@ -4091,6 +4117,18 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get activityCardAllCompleted => '{0} 个完成';
+
+  @override
+  String get activityEmptyTitleRunning => '暂无正在运行的内容';
+
+  @override
+  String get activityEmptyMessageRunning => '没有回合被阻塞、进行中或刚刚结束。你启动的工作会显示在这里。';
+
+  @override
+  String get activityEmptyTitleActionable => '收件箱是空的';
+
+  @override
+  String get activityEmptyMessageActionable => '没有回合需要你的输入，也没有失败的回合。';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
