@@ -22,6 +22,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/session.dart';
 import '../theme/hermes_theme.dart';
 import '../utils/home_digest.dart';
@@ -118,15 +119,14 @@ class HomePaneState extends State<HomePane> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final sessions = _sessions;
 
     if (sessions == null) {
       if (_error != null) {
         return ErrorState(
-          title: 'Could not reach Hermes',
-          message:
-              'Home needs your recent chats to know what deserves your '
-              'attention. Check that the gateway is reachable, then try again.',
+          title: s.homeCouldNotReachHermes,
+          message: s.homeCouldNotReachHermesMessage,
           onRetry: _load,
         );
       }
@@ -143,6 +143,7 @@ class HomePaneState extends State<HomePane> {
       running: widget.running,
       archived: widget.archived,
       projectNames: widget.projectNames,
+      s: s,
     );
 
     return RefreshIndicator(
@@ -157,24 +158,24 @@ class HomePaneState extends State<HomePane> {
               padding: EdgeInsets.only(
                 top: MediaQuery.sizeOf(context).height * 0.12,
               ),
-              child: const EmptyState(
+              child: EmptyState(
                 icon: Icons.check_circle_outline,
-                title: 'Nothing needs you',
-                message:
-                    'No chat is blocked, running, or waiting to be resumed. '
-                    'Start a new one whenever you are ready.',
+                title: s.homeNothingNeedsYou,
+                message: s.homeNothingNeedsYouMessage,
               ),
             )
           else
-            for (final section in digest.sections) ..._section(section),
+            for (final section in digest.sections)
+              ..._section(context, section),
         ],
       ),
     );
   }
 
-  List<Widget> _section(HomeSection section) {
+  List<Widget> _section(BuildContext context, HomeSection section) {
+    final s = AppStrings.of(context);
     return [
-      SectionHeader(title: section.title, count: section.totalCount),
+      SectionHeader(title: section.title(s), count: section.totalCount),
       for (final item in section.items)
         Padding(
           padding: const EdgeInsets.fromLTRB(
@@ -225,6 +226,7 @@ class _OfflineBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
 
     return Padding(
@@ -243,7 +245,7 @@ class _OfflineBanner extends StatelessWidget {
             const SizedBox(width: HermesSpacing.sm),
             Expanded(
               child: Text(
-                'Offline — showing the last known activity.',
+                s.homeOfflineShowingCached,
                 style: tokens.typography.label.copyWith(color: tokens.muted),
               ),
             ),
@@ -262,9 +264,10 @@ class _HomeItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
     final title = item.session.title.trim().isEmpty
-        ? 'Untitled chat'
+        ? s.chatUntitled
         : item.session.title;
     final project = item.projectName;
     final reason = item.attentionLabel;

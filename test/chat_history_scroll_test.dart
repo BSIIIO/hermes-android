@@ -296,14 +296,14 @@ void main() {
         await tester.pump();
         await tester.pump();
         final historyPosition = controller.position.pixels;
-        expect(_indicatorText(tester), '1 new');
+        expect(_indicatorText(tester), '1 new message');
         expect(_goToEndSemantics(tester).value, '1 new message');
 
         client.emitToken(' and a second delta of the same message');
         await tester.pump();
         await tester.pump();
         expect(controller.position.pixels, closeTo(historyPosition, 0.01));
-        expect(_indicatorText(tester), '1 new');
+        expect(_indicatorText(tester), '1 new message');
 
         client.finish([
           ...initialMessages,
@@ -316,7 +316,7 @@ void main() {
         ]);
         await tester.pumpAndSettle();
         expect(controller.position.pixels, closeTo(historyPosition, 0.01));
-        expect(_indicatorText(tester), '1 new');
+        expect(_indicatorText(tester), '1 new message');
 
         await tester.tap(find.bySemanticsLabel('Go to end'));
         await tester.pumpAndSettle();
@@ -383,12 +383,12 @@ void main() {
         await tester.pump();
         await tester.pump();
         final historyPosition = controller.position.pixels;
-        expect(_indicatorText(tester), '1 new');
+        expect(_indicatorText(tester), '1 new message');
 
         remote.emit('message.delta', {'text': ' second delta'});
         await tester.pump();
         await tester.pump();
-        expect(_indicatorText(tester), '1 new');
+        expect(_indicatorText(tester), '1 new message');
         expect(controller.position.pixels, closeTo(historyPosition, 0.01));
 
         remote.emit('message.interim', {
@@ -398,14 +398,14 @@ void main() {
         remote.emit('message.delta', {'text': 'second message'});
         await tester.pump();
         await tester.pump();
-        expect(_indicatorText(tester), '2 new');
+        expect(_indicatorText(tester), '2 new messages');
         expect(_goToEndSemantics(tester).value, '2 new messages');
 
         remote.emit('message.complete', {'rendered': 'second message final'});
         remote.finish();
         await tester.pumpAndSettle();
         expect(controller.position.pixels, closeTo(historyPosition, 0.01));
-        expect(_indicatorText(tester), '2 new');
+        expect(_indicatorText(tester), '2 new messages');
 
         await _dragToEnd(tester, controller);
         expect(controller.position.pixels, controller.position.maxScrollExtent);

@@ -130,6 +130,7 @@ void main() {
         sessions: [_session('quick'), _session('durable')],
         now: _now,
         archived: const {'quick'},
+        s: const AppStringsEn(),
       );
 
       expect(_idsIn(digest, HomeSectionKind.continueWorking), ['durable']);
@@ -143,6 +144,7 @@ void main() {
         ],
         now: _now,
         archived: const {'quick'},
+        s: const AppStringsEn(),
       );
 
       expect(_idsIn(digest, HomeSectionKind.completedRecently), ['durable']);
@@ -154,6 +156,7 @@ void main() {
       final digest = buildHomeDigest(
         sessions: [_session('quick')],
         now: _now,
+        s: const AppStringsEn(),
         attention: const {'quick': 'Approval requested'},
         archived: const {'quick'},
       );
@@ -167,6 +170,7 @@ void main() {
       final digest = buildHomeDigest(
         sessions: [_session('quick')],
         now: _now,
+        s: const AppStringsEn(),
         running: const {'quick'},
         archived: const {'quick'},
       );
@@ -179,6 +183,7 @@ void main() {
         sessions: [_session('durable')],
         now: _now,
         archived: const {'ghost'},
+        s: const AppStringsEn(),
       );
 
       expect(_idsIn(digest, HomeSectionKind.continueWorking), ['durable']);
@@ -188,6 +193,7 @@ void main() {
       final digest = buildHomeDigest(
         sessions: [_session('quick')],
         now: _now,
+        s: const AppStringsEn(),
         archived: const {'quick'},
       );
 

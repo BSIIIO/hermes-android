@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/session.dart';
 import 'package:hermes_android/core/theme/hermes_theme.dart';
 import 'package:hermes_android/core/utils/home_digest.dart';
@@ -108,16 +109,20 @@ void main() {
     double topOf(String text) => tester.getTopLeft(find.text(text).first).dy;
 
     expect(
-      topOf(HomeSectionKind.needsYou.title),
-      lessThan(topOf(HomeSectionKind.running.title)),
+      topOf(HomeSectionKind.needsYou.title(const AppStringsEn())),
+      lessThan(topOf(HomeSectionKind.running.title(const AppStringsEn()))),
     );
     expect(
-      topOf(HomeSectionKind.running.title),
-      lessThan(topOf(HomeSectionKind.continueWorking.title)),
+      topOf(HomeSectionKind.running.title(const AppStringsEn())),
+      lessThan(
+        topOf(HomeSectionKind.continueWorking.title(const AppStringsEn())),
+      ),
     );
     expect(
-      topOf(HomeSectionKind.continueWorking.title),
-      lessThan(topOf(HomeSectionKind.completedRecently.title)),
+      topOf(HomeSectionKind.continueWorking.title(const AppStringsEn())),
+      lessThan(
+        topOf(HomeSectionKind.completedRecently.title(const AppStringsEn())),
+      ),
     );
   });
 
@@ -137,7 +142,10 @@ void main() {
 
       expect(find.text('Approval needed'), findsOneWidget);
       expect(find.text('Waiting on you'), findsOneWidget);
-      expect(find.text(HomeSectionKind.running.title), findsNothing);
+      expect(
+        find.text(HomeSectionKind.running.title(const AppStringsEn())),
+        findsNothing,
+      );
     },
   );
 
@@ -263,7 +271,10 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text(HomeSectionKind.needsYou.title), findsNothing);
+    expect(
+      find.text(HomeSectionKind.needsYou.title(const AppStringsEn())),
+      findsNothing,
+    );
     expect(find.text('Roadmap'), findsOneWidget);
   });
 }

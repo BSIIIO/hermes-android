@@ -416,6 +416,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       connectionId: connection.id,
       endpointDigest: endpointDigest,
       sessionTitles: sessionTitles,
+      s: AppStrings.of(context),
     );
   }
 

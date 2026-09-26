@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/session.dart';
 import 'package:hermes_android/core/theme/hermes_theme.dart';
 import 'package:hermes_android/core/utils/home_digest.dart';
@@ -57,8 +58,8 @@ void main() {
     test('each kind carries a distinct human title', () {
       final titles = <String>{};
       for (final kind in HomeSectionKind.values) {
-        expect(kind.title, isNotEmpty);
-        titles.add(kind.title);
+        expect(kind.title(const AppStringsEn()), isNotEmpty);
+        titles.add(kind.title(const AppStringsEn()));
       }
       expect(titles, hasLength(HomeSectionKind.values.length));
     });
@@ -66,7 +67,11 @@ void main() {
 
   group('buildHomeDigest', () {
     test('returns no section for an empty corpus', () {
-      final digest = buildHomeDigest(sessions: const [], now: _now);
+      final digest = buildHomeDigest(
+        sessions: const [],
+        now: _now,
+        s: const AppStringsEn(),
+      );
 
       expect(digest.sections, isEmpty);
       expect(digest.isEmpty, isTrue);
@@ -77,6 +82,7 @@ void main() {
       final digest = buildHomeDigest(
         sessions: [_session(id: 'a')],
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(_section(digest, HomeSectionKind.needsYou), isNull);
@@ -95,6 +101,7 @@ void main() {
         now: _now,
         attention: const {'blocked': 'Approval required'},
         running: const {'run'},
+        s: const AppStringsEn(),
       );
 
       expect(digest.sections.map((section) => section.kind), [
@@ -112,6 +119,7 @@ void main() {
         sessions: [_session(id: 'blocked')],
         now: _now,
         attention: const {'blocked': 'Clarification needed'},
+        s: const AppStringsEn(),
       );
 
       final item = _section(digest, HomeSectionKind.needsYou)!.items.single;
@@ -124,6 +132,7 @@ void main() {
         sessions: [_session(id: 'run')],
         now: _now,
         running: const {'run'},
+        s: const AppStringsEn(),
       );
 
       final item = _section(digest, HomeSectionKind.running)!.items.single;
@@ -137,6 +146,7 @@ void main() {
         now: _now,
         attention: const {'both': 'Approval required'},
         running: const {'both'},
+        s: const AppStringsEn(),
       );
 
       expect(_ids(digest, HomeSectionKind.needsYou), ['both']);
@@ -154,6 +164,7 @@ void main() {
         now: _now,
         attention: const {'blocked': 'Approval required'},
         running: const {'run'},
+        s: const AppStringsEn(),
       );
 
       final seen = <String>[];
@@ -169,6 +180,7 @@ void main() {
         now: _now,
         attention: const {'ghost': 'Approval required'},
         running: const {'phantom'},
+        s: const AppStringsEn(),
       );
 
       expect(_section(digest, HomeSectionKind.needsYou), isNull);
@@ -184,6 +196,7 @@ void main() {
           _session(id: 'mid', startedAgo: const Duration(hours: 1)),
         ],
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(_ids(digest, HomeSectionKind.continueWorking), [
@@ -209,6 +222,7 @@ void main() {
           ),
         ],
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(_ids(digest, HomeSectionKind.completedRecently), [
@@ -221,6 +235,7 @@ void main() {
       final digest = buildHomeDigest(
         sessions: [_session(id: 'a', startedAgo: const Duration(days: 3))],
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(_ids(digest, HomeSectionKind.continueWorking), ['a']);
@@ -234,6 +249,7 @@ void main() {
           _session(id: 'fresh'),
         ],
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(_ids(digest, HomeSectionKind.continueWorking), ['fresh']);
@@ -249,6 +265,7 @@ void main() {
           ),
         ],
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(digest.sections, isEmpty);
@@ -267,6 +284,7 @@ void main() {
         now: _now,
         continueWindow: const Duration(hours: 24),
         completedWindow: const Duration(hours: 1),
+        s: const AppStringsEn(),
       );
 
       expect(digest.sections, isEmpty);
@@ -287,6 +305,7 @@ void main() {
           ),
         ],
         now: _now,
+        s: const AppStringsEn(),
       );
 
       expect(_ids(digest, HomeSectionKind.continueWorking), ['skewed']);
@@ -303,6 +322,7 @@ void main() {
         ],
         now: _now,
         sectionLimit: 4,
+        s: const AppStringsEn(),
       );
 
       final section = _section(digest, HomeSectionKind.continueWorking)!;
@@ -324,6 +344,7 @@ void main() {
         ],
         now: _now,
         sectionLimit: 5,
+        s: const AppStringsEn(),
       );
 
       final section = _section(digest, HomeSectionKind.continueWorking)!;
@@ -339,6 +360,7 @@ void main() {
         ],
         now: _now,
         projectNames: const {'a': 'Hermes Android'},
+        s: const AppStringsEn(),
       );
 
       final items = _section(digest, HomeSectionKind.continueWorking)!.items;
@@ -357,6 +379,7 @@ void main() {
             sessions: [_session(id: 'a')],
             now: _now,
             sectionLimit: 0,
+            s: const AppStringsEn(),
           ),
           throwsA(isA<ArgumentError>()),
         );
@@ -369,7 +392,7 @@ void main() {
         _session(id: 'new'),
       ];
 
-      buildHomeDigest(sessions: sessions, now: _now);
+      buildHomeDigest(sessions: sessions, now: _now, s: const AppStringsEn());
 
       expect(sessions.map((session) => session.id), ['old', 'new']);
     });
@@ -379,6 +402,7 @@ void main() {
         sessions: [_session(id: 'run')],
         now: _now,
         running: const {'run'},
+        s: const AppStringsEn(),
       );
       expect(running.needsAttention, isFalse);
 
@@ -386,6 +410,7 @@ void main() {
         sessions: [_session(id: 'run')],
         now: _now,
         attention: const {'run': 'Approval required'},
+        s: const AppStringsEn(),
       );
       expect(blocked.needsAttention, isTrue);
     });
@@ -400,6 +425,7 @@ void main() {
         now: _now,
         attention: const {'a': 'Approval required', 'b': 'Secret required'},
         running: const {'c'},
+        s: const AppStringsEn(),
       );
 
       expect(digest.blockedCount, 2);
@@ -416,6 +442,7 @@ void main() {
             's$index': 'Approval required',
         },
         sectionLimit: 3,
+        s: const AppStringsEn(),
       );
 
       expect(_section(digest, HomeSectionKind.needsYou)!.items, hasLength(3));

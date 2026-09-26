@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
+
 import '../controllers/voice_composer_controller.dart';
 
 class VoiceComposerIndicator extends StatelessWidget {
@@ -20,11 +22,12 @@ class VoiceComposerIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final elapsed = _formatElapsed(controller.elapsed);
     return Semantics(
       container: true,
       liveRegion: true,
-      label: 'Listening, elapsed $elapsed',
+      label: s.voiceElapsed(elapsed),
       child: Container(
         key: indicatorKey,
         width: double.infinity,
@@ -47,7 +50,7 @@ class VoiceComposerIndicator extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onErrorContainer,
                 ),
                 const SizedBox(width: 8),
-                Flexible(child: Text('Listening • $elapsed')),
+                Flexible(child: Text(s.voiceListening(elapsed))),
               ],
             );
             final actions = Wrap(
@@ -55,7 +58,7 @@ class VoiceComposerIndicator extends StatelessWidget {
               spacing: 4,
               children: [
                 Semantics(
-                  label: 'Stop voice input',
+                  label: s.voiceStop,
                   button: true,
                   excludeSemantics: true,
                   child: TextButton.icon(
@@ -66,7 +69,7 @@ class VoiceComposerIndicator extends StatelessWidget {
                   ),
                 ),
                 Semantics(
-                  label: 'Cancel voice input',
+                  label: s.voiceCancel,
                   button: true,
                   excludeSemantics: true,
                   child: TextButton.icon(
@@ -118,15 +121,16 @@ class VoiceComposerStartButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Semantics(
-      label: 'Start voice input',
+      label: s.voiceStart,
       button: true,
       enabled: enabled,
       excludeSemantics: true,
       child: IconButton.filledTonal(
         icon: const Icon(Icons.mic),
         onPressed: enabled ? onPressed : null,
-        tooltip: 'Speak to Hermes',
+        tooltip: s.voiceSpeakToHermes,
         constraints: const BoxConstraints.tightFor(width: 48, height: 48),
       ),
     );
