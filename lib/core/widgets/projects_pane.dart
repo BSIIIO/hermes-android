@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import '../models/hermes_project.dart';
 import '../models/projects_tree_overview.dart';
 import '../services/chat_space_store.dart';
+import '../l10n/app_strings.dart';
 import '../services/projects_repository.dart';
 import '../theme/hermes_theme.dart';
 import 'hermes_components.dart';
@@ -155,22 +156,22 @@ class _ProjectsPaneState extends State<ProjectsPane> {
   }
 
   Future<void> _archiveProject(HermesProject project) async {
+    final s = AppStrings.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: Text('Archive ${project.name}?'),
-        content: const Text(
-          'The Project will move to Archived. Its chats and files stay intact, '
-          'and you can restore it at any time.',
+        title: Text(
+          s.projectsArchiveConfirmTitle.replaceAll('{0}', project.name),
         ),
+        content: Text(s.projectsArchiveConfirmBody),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+            child: Text(s.commonCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Archive'),
+            child: Text(s.projectsArchiveConfirmAction),
           ),
         ],
       ),
@@ -192,8 +193,22 @@ class _ProjectsPaneState extends State<ProjectsPane> {
   }
 
   void _showMutationError(String action, Object error) {
+    final s = AppStrings.of(context);
+    final verb = switch (action) {
+      'create' => s.projectsActionCreate,
+      'rename' => s.projectsActionRename,
+      'archive' => s.projectsActionArchive,
+      'restore' => s.projectsActionRestore,
+      _ => action,
+    };
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Could not $action the project: $error')),
+      SnackBar(
+        content: Text(
+          s.projectsMutationFailed
+              .replaceAll('{0}', verb)
+              .replaceAll('{1}', '$error'),
+        ),
+      ),
     );
   }
 
@@ -207,6 +222,7 @@ class _ProjectsPaneState extends State<ProjectsPane> {
   @override
   Widget build(BuildContext context) {
     final tokens = HermesTokens.of(context);
+    final s = AppStrings.of(context);
     final view = _view;
 
     if (view == null) {
@@ -222,9 +238,8 @@ class _ProjectsPaneState extends State<ProjectsPane> {
 
     if (view.projects.isEmpty && view.error != null) {
       return ErrorState(
-        title: 'Could not reach Hermes',
-        message:
-            'Check that the gateway is running and reachable, then try again.',
+        title: s.projectsUnreachableTitle,
+        message: s.projectsUnreachableMessage,
         onRetry: _refresh,
       );
     }
@@ -237,11 +252,9 @@ class _ProjectsPaneState extends State<ProjectsPane> {
             SizedBox(height: MediaQuery.sizeOf(context).height * 0.12),
             EmptyState(
               icon: Icons.folder_outlined,
-              title: 'No projects yet',
-              message:
-                  'Projects group related chats, files, and activity, and stay '
-                  'in sync with Hermes on your computer.',
-              actionLabel: 'Create a project',
+              title: s.projectsEmptyTitle,
+              message: s.projectsEmptyMessage,
+              actionLabel: s.projectsCreateAction,
               onAction: _createProject,
             ),
           ],
@@ -253,7 +266,7 @@ class _ProjectsPaneState extends State<ProjectsPane> {
       backgroundColor: tokens.surface,
       floatingActionButton: FloatingActionButton(
         onPressed: _createProject,
-        tooltip: 'New project',
+        tooltip: s.projectsNewProject,
         child: const Icon(Icons.add),
       ),
       body: RefreshIndicator(
@@ -263,9 +276,9 @@ class _ProjectsPaneState extends State<ProjectsPane> {
           children: [
             if (view.isStale) _OfflineBanner(error: view.error),
             SectionHeader(
-              title: 'Projects',
+              title: s.projectsTitle,
               count: view.projects.length,
-              actionLabel: _hasLocalSpaces ? 'Review local spaces' : null,
+              actionLabel: _hasLocalSpaces ? s.projectsReviewLocalSpaces : null,
               onAction: _hasLocalSpaces ? _showMigrationPreview : null,
             ),
             for (final project in view.projects)
@@ -286,7 +299,10 @@ class _ProjectsPaneState extends State<ProjectsPane> {
                 ),
               ),
             if (view.archived.isNotEmpty) ...[
-              SectionHeader(title: 'Archived', count: view.archived.length),
+              SectionHeader(
+                title: s.projectsArchived,
+                count: view.archived.length,
+              ),
               for (final project in view.archived)
                 Padding(
                   padding: const EdgeInsets.fromLTRB(
@@ -322,14 +338,10 @@ class _CompatibilityMode extends StatelessWidget {
 
   const _CompatibilityMode({required this.spaces, required this.onRetry});
 
-  static const _explanation =
-      'This Hermes gateway is older than server-side projects, so chats stay '
-      'grouped on this device only. Update Hermes to share the same projects '
-      'across your devices.';
-
   @override
   Widget build(BuildContext context) {
     final tokens = HermesTokens.of(context);
+    final s = AppStrings.of(context);
     final state = spaces;
     final localSpaces = state?.spaces ?? const <ChatSpace>[];
 
@@ -343,7 +355,7 @@ class _CompatibilityMode extends StatelessWidget {
       child: ListView(
         padding: const EdgeInsets.only(bottom: HermesSpacing.xl),
         children: [
-          const SectionHeader(title: 'Compatibility mode'),
+          SectionHeader(title: s.projectsCompatibilityMode),
           Padding(
             padding: const EdgeInsets.fromLTRB(
               HermesSpacing.lg,
@@ -361,7 +373,7 @@ class _CompatibilityMode extends StatelessWidget {
                   const SizedBox(width: HermesSpacing.sm),
                   Expanded(
                     child: Text(
-                      _explanation,
+                      s.projectsCompatibilityExplanation,
                       style: tokens.typography.body.copyWith(
                         color: tokens.muted,
                       ),
@@ -372,15 +384,16 @@ class _CompatibilityMode extends StatelessWidget {
             ),
           ),
           if (localSpaces.isEmpty)
-            const EmptyState(
+            EmptyState(
               icon: Icons.folder_outlined,
-              title: 'No spaces on this device',
-              message:
-                  'Chats from this gateway are not grouped yet. Grouping '
-                  'stays on this phone until the gateway can host projects.',
+              title: s.projectsNoLocalSpacesTitle,
+              message: s.projectsNoLocalSpacesMessage,
             )
           else ...[
-            SectionHeader(title: 'On this device', count: localSpaces.length),
+            SectionHeader(
+              title: s.projectsOnThisDevice,
+              count: localSpaces.length,
+            ),
             for (final space in localSpaces)
               Padding(
                 padding: const EdgeInsets.fromLTRB(
@@ -410,7 +423,10 @@ class _LocalSpaceCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = HermesTokens.of(context);
-    final chats = sessionCount == 1 ? '1 chat' : '$sessionCount chats';
+    final s = AppStrings.of(context);
+    final chats = sessionCount == 1
+        ? s.projectsOneChat
+        : s.projectsChatCount.replaceAll('{0}', '$sessionCount');
 
     return HermesCard(
       child: Row(
@@ -444,7 +460,7 @@ class _LocalSpaceCard extends StatelessWidget {
                 ),
                 const SizedBox(height: HermesSpacing.xs),
                 Text(
-                  '$chats · on this device only',
+                  s.projectsLocalSpaceSubtitle.replaceAll('{0}', chats),
                   style: tokens.typography.body.copyWith(color: tokens.muted),
                 ),
               ],
@@ -464,6 +480,7 @@ class _OfflineBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = HermesTokens.of(context);
+    final s = AppStrings.of(context);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(
@@ -481,7 +498,7 @@ class _OfflineBanner extends StatelessWidget {
             const SizedBox(width: HermesSpacing.sm),
             Expanded(
               child: Text(
-                'Offline — showing the last known projects.',
+                s.projectsOfflineBanner,
                 style: tokens.typography.label.copyWith(color: tokens.muted),
               ),
             ),
@@ -514,6 +531,7 @@ class _ProjectCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = HermesTokens.of(context);
+    final s = AppStrings.of(context);
     final path = project.workingDirectory;
 
     return HermesCard(
@@ -547,8 +565,11 @@ class _ProjectCard extends StatelessWidget {
                   const SizedBox(height: HermesSpacing.xs),
                   Text(
                     overview!.sessionCount == 1
-                        ? '1 chat'
-                        : '${overview!.sessionCount} chats',
+                        ? s.projectsOneChat
+                        : s.projectsChatCount.replaceAll(
+                            '{0}',
+                            '${overview!.sessionCount}',
+                          ),
                     style: tokens.typography.label.copyWith(
                       color: tokens.muted,
                     ),
@@ -577,11 +598,11 @@ class _ProjectCard extends StatelessWidget {
           ),
           if (isActive) ...[
             const SizedBox(width: HermesSpacing.sm),
-            const StatusChip(status: HermesStatus.running, label: 'Active'),
+            StatusChip(status: HermesStatus.running, label: s.projectsActive),
           ],
           PopupMenuButton<String>(
             key: Key('project-actions-${project.id}'),
-            tooltip: 'Project actions',
+            tooltip: s.projectsActions,
             onSelected: (action) {
               switch (action) {
                 case 'rename':
@@ -594,19 +615,19 @@ class _ProjectCard extends StatelessWidget {
             },
             itemBuilder: (_) => [
               if (onRename != null)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'rename',
-                  child: Text('Rename project'),
+                  child: Text(s.projectsRename),
                 ),
               if (onArchive != null)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'archive',
-                  child: Text('Archive project'),
+                  child: Text(s.projectsArchive),
                 ),
               if (onRestore != null)
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'restore',
-                  child: Text('Restore project'),
+                  child: Text(s.projectsRestore),
                 ),
             ],
           ),
@@ -632,7 +653,8 @@ class _RenameProjectDialogState extends State<_RenameProjectDialog> {
   void _submit() {
     final name = _draft.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Enter a name');
+      final s = AppStrings.of(context);
+      setState(() => _error = s.projectsNameRequired);
       return;
     }
     Navigator.pop(context, name);
@@ -640,24 +662,33 @@ class _RenameProjectDialogState extends State<_RenameProjectDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return AlertDialog(
-      title: Text('Rename ${widget.project.name}'),
+      title: Text(
+        s.projectsRenameDialogTitle.replaceAll('{0}', widget.project.name),
+      ),
       content: TextFormField(
         key: const Key('rename-project-name'),
         initialValue: widget.project.name,
         autofocus: true,
         maxLength: 80,
         textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration(labelText: 'Name', errorText: _error),
+        decoration: InputDecoration(
+          labelText: s.projectsNameLabel,
+          errorText: _error,
+        ),
         onChanged: (value) => _draft = value,
         onFieldSubmitted: (_) => _submit(),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(s.commonCancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Rename')),
+        FilledButton(
+          onPressed: _submit,
+          child: Text(s.projectsRenameAction),
+        ),
       ],
     );
   }
@@ -677,7 +708,8 @@ class _CreateProjectDialogState extends State<_CreateProjectDialog> {
   void _submit() {
     final name = _draft.trim();
     if (name.isEmpty) {
-      setState(() => _error = 'Enter a name');
+      final s = AppStrings.of(context);
+      setState(() => _error = s.projectsNameRequired);
       return;
     }
     Navigator.pop(context, name);
@@ -685,23 +717,27 @@ class _CreateProjectDialogState extends State<_CreateProjectDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return AlertDialog(
-      title: const Text('New project'),
+      title: Text(s.projectsNewDialogTitle),
       content: TextField(
         key: const Key('project-name'),
         autofocus: true,
         maxLength: 80,
         textCapitalization: TextCapitalization.sentences,
-        decoration: InputDecoration(labelText: 'Name', errorText: _error),
+        decoration: InputDecoration(
+          labelText: s.projectsNameLabel,
+          errorText: _error,
+        ),
         onChanged: (value) => _draft = value,
         onSubmitted: (_) => _submit(),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(s.commonCancel),
         ),
-        FilledButton(onPressed: _submit, child: const Text('Create')),
+        FilledButton(onPressed: _submit, child: Text(s.projectsCreate)),
       ],
     );
   }
