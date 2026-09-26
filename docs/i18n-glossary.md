@@ -37,6 +37,34 @@ Stage 1 P0 范围的中文用词依据。新增 key 时必须先在本表登记�
 | Follow the system language | 跟随系统语言 | 语言卡 system 档副标题 |
 | Interface language. Changes apply immediately. | 界面语言，更改立即生效。 | 语言卡弹窗说明 |
 
+### 1b. 第二批新增（chat / 连接表单 / 共享面板 / 迁移预览）
+
+| EN | 简体中文 | 说明 |
+|---|---|---|
+| Off (no thinking) | 关闭（不思考） | 思考强度 `none` 档。不写「无思考」：说的是回路，不是哲学 |
+| Extra High | 超高 | 思考强度 `xhigh` 档 |
+| Recovering Hermes… | 正在恢复 Hermes… | 恢复进行中的状态 |
+| Turn completed | 回合已完成 | 回合（turn）统一用「回合」，不用「轮次」 |
+| Untitled chat | 未命名会话 | 会话列表与聊天标题 |
+| Stop response / Send message | 停止回复 / 发送消息 | 输入区语义标签 |
+| Restore configuration | 恢复配置 | 顶栏按钮 |
+| Matched | 已匹配 | 迁移预览里的匹配状态 |
+| Use as is | 按原样发送 | 分享面板动作 |
+| Extract tasks | 提取任务 | 分享面板动作 |
+| Fill from document | 填充文档 | 分享面板动作 |
+| Quick chat | 快速会话 | 分享面板新建模式 |
+| Project chat | 项目会话 | 分享面板新建模式 |
+| 72 hours | 72 小时 | 快速会话自动归档。数字保留半角 |
+| Migration preview | 迁移预览 | Spaces → Projects |
+
+`minimal` / `low` / `medium` / `high` / `max` / `ultra` 六个思考强度档位**保留网关自己的
+枚举名**（见 `_reasoningEffortLabels`）。它们没有自然的中文对应，翻译会让下拉单与网关
+文档、配置、日志对不上号。
+
+`ShareFavoriteAction` 的 `buildSharedPrompt()` 里十二句是**发给 Hermes 的指令**，不是
+界面文字，**永不本地化**：指令语言决定输出语言，且 `share_text_review_sheet_test.dart`
+按英文锁住了这份契约。
+
 ## 2. 暂不翻译（技术标识/品牌）
 
 `Hermes`、`Gateway`、`API Server`、`Android`、`Bearer`、`token`、`URL`、`SSE`、`Cron`、

@@ -1577,6 +1577,177 @@ abstract class AppStrings {
 
   /// Gateway connected, but the dashboard could not be reached or authenticated. Check the dashboard details, or clear them to skip.
   String get dashboardSkippedWarning;
+
+  /// Use as is
+  String get useAsIs;
+
+  /// Summarize
+  String get summarize;
+
+  /// Explain
+  String get explain;
+
+  /// Research
+  String get research;
+
+  /// Extract tasks
+  String get extractTasks;
+
+  /// Remember
+  String get remember;
+
+  /// Fill from document
+  String get fillFromDocument;
+
+  /// Share to Hermes
+  String get shareToHermes;
+
+  /// No text shared
+  String get noTextShared;
+
+  /// 1 attachment
+  String get oneAttachment;
+
+  /// {0} attachments
+  String get attachmentsCount;
+
+  /// Quick chat
+  String get quickChat;
+
+  /// Auto-archives after 72 hours
+  String get quickChatAutoArchive;
+
+  /// Project chat
+  String get projectChat;
+
+  /// Choose an active Project next
+  String get projectChatChooseNext;
+
+  /// No active Projects on this Gateway
+  String get noActiveProjectsOnGateway;
+
+  /// 1 chat
+  String get migrationOneChat;
+
+  /// {0} chats
+  String get migrationChatCount;
+
+  /// 1 space
+  String get migrationOneSpace;
+
+  /// {0} spaces
+  String get migrationSpaceCount;
+
+  /// no new projects needed
+  String get migrationNoProjectsNeeded;
+
+  /// 1 project to create
+  String get migrationOneProjectToCreate;
+
+  /// {0} projects to create
+  String get migrationProjectsToCreate;
+
+  /// Nothing to migrate
+  String get migrationNothingToMigrate;
+
+  /// No local spaces were found for this connection, so Projects are already the only organization in use here.
+  String get migrationNoLocalSpaces;
+
+  /// Migration preview
+  String get migrationPreview;
+
+  /// Nothing has moved yet — this is only what a migration would do.
+  String get migrationPreviewOnly;
+
+  /// Migration complete
+  String get migrationComplete;
+
+  /// Migration incomplete
+  String get migrationIncomplete;
+
+  /// {0} chats migrated · {1} projects created
+  String get migrationResultSummary;
+
+  /// {0} chats stayed in local Spaces and can be retried safely.
+  String get migrationUnlinkedWarning;
+
+  /// Migration failed. Local Spaces were kept unchanged.
+  String get migrationFailedUnchanged;
+
+  /// Migrating…
+  String get migrating;
+
+  /// Migrate
+  String get migrate;
+
+  /// 1 assigned chat
+  String get migrationOneAssignedChat;
+
+  /// {0} assigned chats
+  String get migrationAssignedChatCount;
+
+  /// New project
+  String get migrationNewProject;
+
+  /// Matched
+  String get matched;
+
+  /// No server project matches this name · {0}
+  String get migrationNoServerProject;
+
+  /// Matches {0} · {1}
+  String get migrationMatchesProject;
+
+  /// Close
+  String get close;
+
+  /// Base URL
+  String get connectionBaseUrl;
+
+  /// {0}  \nvia `{1}`
+  String get settingsModelViaProvider;
+
+  /// Autonomous agents
+  String get sessionSourceAcp;
+
+  /// External API clients
+  String get sessionSourceApiServer;
+
+  /// Command-line chats
+  String get sessionSourceCli;
+
+  /// Scheduled tasks
+  String get sessionSourceCron;
+
+  /// Desktop app
+  String get sessionSourceDesktop;
+
+  /// Discord chats
+  String get sessionSourceDiscord;
+
+  /// Gateway API access
+  String get sessionSourceGateway;
+
+  /// Phone or tablet
+  String get sessionSourceMobile;
+
+  /// Signal messages
+  String get sessionSourceSignal;
+
+  /// Slack chats
+  String get sessionSourceSlack;
+
+  /// Telegram messages
+  String get sessionSourceTelegram;
+
+  /// Developer tool calls
+  String get sessionSourceTool;
+
+  /// Terminal sessions
+  String get sessionSourceTui;
+
+  /// WhatsApp messages
+  String get sessionSourceWhatsapp;
 }
 
 /// English strings.
@@ -3158,6 +3329,183 @@ class AppStringsEn extends AppStrings {
   @override
   String get dashboardSkippedWarning =>
       'Gateway connected, but the dashboard could not be reached or authenticated. Check the dashboard details, or clear them to skip.';
+
+  @override
+  String get useAsIs => 'Use as is';
+
+  @override
+  String get summarize => 'Summarize';
+
+  @override
+  String get explain => 'Explain';
+
+  @override
+  String get research => 'Research';
+
+  @override
+  String get extractTasks => 'Extract tasks';
+
+  @override
+  String get remember => 'Remember';
+
+  @override
+  String get fillFromDocument => 'Fill from document';
+
+  @override
+  String get shareToHermes => 'Share to Hermes';
+
+  @override
+  String get noTextShared => 'No text shared';
+
+  @override
+  String get oneAttachment => '1 attachment';
+
+  @override
+  String get attachmentsCount => '{0} attachments';
+
+  @override
+  String get quickChat => 'Quick chat';
+
+  @override
+  String get quickChatAutoArchive => 'Auto-archives after 72 hours';
+
+  @override
+  String get projectChat => 'Project chat';
+
+  @override
+  String get projectChatChooseNext => 'Choose an active Project next';
+
+  @override
+  String get noActiveProjectsOnGateway => 'No active Projects on this Gateway';
+
+  @override
+  String get migrationOneChat => '1 chat';
+
+  @override
+  String get migrationChatCount => '{0} chats';
+
+  @override
+  String get migrationOneSpace => '1 space';
+
+  @override
+  String get migrationSpaceCount => '{0} spaces';
+
+  @override
+  String get migrationNoProjectsNeeded => 'no new projects needed';
+
+  @override
+  String get migrationOneProjectToCreate => '1 project to create';
+
+  @override
+  String get migrationProjectsToCreate => '{0} projects to create';
+
+  @override
+  String get migrationNothingToMigrate => 'Nothing to migrate';
+
+  @override
+  String get migrationNoLocalSpaces =>
+      'No local spaces were found for this connection, so Projects are already the only organization in use here.';
+
+  @override
+  String get migrationPreview => 'Migration preview';
+
+  @override
+  String get migrationPreviewOnly =>
+      'Nothing has moved yet — this is only what a migration would do.';
+
+  @override
+  String get migrationComplete => 'Migration complete';
+
+  @override
+  String get migrationIncomplete => 'Migration incomplete';
+
+  @override
+  String get migrationResultSummary =>
+      '{0} chats migrated · {1} projects created';
+
+  @override
+  String get migrationUnlinkedWarning =>
+      '{0} chats stayed in local Spaces and can be retried safely.';
+
+  @override
+  String get migrationFailedUnchanged =>
+      'Migration failed. Local Spaces were kept unchanged.';
+
+  @override
+  String get migrating => 'Migrating…';
+
+  @override
+  String get migrate => 'Migrate';
+
+  @override
+  String get migrationOneAssignedChat => '1 assigned chat';
+
+  @override
+  String get migrationAssignedChatCount => '{0} assigned chats';
+
+  @override
+  String get migrationNewProject => 'New project';
+
+  @override
+  String get matched => 'Matched';
+
+  @override
+  String get migrationNoServerProject =>
+      'No server project matches this name · {0}';
+
+  @override
+  String get migrationMatchesProject => 'Matches {0} · {1}';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get connectionBaseUrl => 'Base URL';
+
+  @override
+  String get settingsModelViaProvider => '{0}  \nvia `{1}`';
+
+  @override
+  String get sessionSourceAcp => 'Autonomous agents';
+
+  @override
+  String get sessionSourceApiServer => 'External API clients';
+
+  @override
+  String get sessionSourceCli => 'Command-line chats';
+
+  @override
+  String get sessionSourceCron => 'Scheduled tasks';
+
+  @override
+  String get sessionSourceDesktop => 'Desktop app';
+
+  @override
+  String get sessionSourceDiscord => 'Discord chats';
+
+  @override
+  String get sessionSourceGateway => 'Gateway API access';
+
+  @override
+  String get sessionSourceMobile => 'Phone or tablet';
+
+  @override
+  String get sessionSourceSignal => 'Signal messages';
+
+  @override
+  String get sessionSourceSlack => 'Slack chats';
+
+  @override
+  String get sessionSourceTelegram => 'Telegram messages';
+
+  @override
+  String get sessionSourceTool => 'Developer tool calls';
+
+  @override
+  String get sessionSourceTui => 'Terminal sessions';
+
+  @override
+  String get sessionSourceWhatsapp => 'WhatsApp messages';
 }
 
 /// Simplified Chinese strings.
@@ -4648,6 +4996,177 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get dashboardSkippedWarning => '网关已连接，但无法连接或无法验证仪表盘。请检查仪表盘信息，或清空以跳过。';
+
+  @override
+  String get useAsIs => '按原样发送';
+
+  @override
+  String get summarize => '总结';
+
+  @override
+  String get explain => '解释';
+
+  @override
+  String get research => '研究';
+
+  @override
+  String get extractTasks => '提取任务';
+
+  @override
+  String get remember => '记住';
+
+  @override
+  String get fillFromDocument => '填充文档';
+
+  @override
+  String get shareToHermes => '分享到 Hermes';
+
+  @override
+  String get noTextShared => '没有分享文本';
+
+  @override
+  String get oneAttachment => '1 个附件';
+
+  @override
+  String get attachmentsCount => '{0} 个附件';
+
+  @override
+  String get quickChat => '快速会话';
+
+  @override
+  String get quickChatAutoArchive => '72 小时后自动归档';
+
+  @override
+  String get projectChat => '项目会话';
+
+  @override
+  String get projectChatChooseNext => '请选择要加入的项目';
+
+  @override
+  String get noActiveProjectsOnGateway => '此网关上没有可用的项目';
+
+  @override
+  String get migrationOneChat => '1 个会话';
+
+  @override
+  String get migrationChatCount => '{0} 个会话';
+
+  @override
+  String get migrationOneSpace => '1 个空间';
+
+  @override
+  String get migrationSpaceCount => '{0} 个空间';
+
+  @override
+  String get migrationNoProjectsNeeded => '无需新建项目';
+
+  @override
+  String get migrationOneProjectToCreate => '需新建 1 个项目';
+
+  @override
+  String get migrationProjectsToCreate => '需新建 {0} 个项目';
+
+  @override
+  String get migrationNothingToMigrate => '没有可迁移的内容';
+
+  @override
+  String get migrationNoLocalSpaces => '此连接下没有找到本地空间，项目已经是这里唯一的组织方式。';
+
+  @override
+  String get migrationPreview => '迁移预览';
+
+  @override
+  String get migrationPreviewOnly => '目前还没有任何改动，这里只是迁移会做的事。';
+
+  @override
+  String get migrationComplete => '迁移完成';
+
+  @override
+  String get migrationIncomplete => '迁移未完成';
+
+  @override
+  String get migrationResultSummary => '已迁移 {0} 个会话 · 新建 {1} 个项目';
+
+  @override
+  String get migrationUnlinkedWarning => '有 {0} 个会话仍留在本地空间，可以安全地重试。';
+
+  @override
+  String get migrationFailedUnchanged => '迁移失败，本地空间未做任何改动。';
+
+  @override
+  String get migrating => '正在迁移…';
+
+  @override
+  String get migrate => '迁移';
+
+  @override
+  String get migrationOneAssignedChat => '1 个已分配会话';
+
+  @override
+  String get migrationAssignedChatCount => '{0} 个已分配会话';
+
+  @override
+  String get migrationNewProject => '新建项目';
+
+  @override
+  String get matched => '已匹配';
+
+  @override
+  String get migrationNoServerProject => '服务端没有同名项目 · {0}';
+
+  @override
+  String get migrationMatchesProject => '匹配到 {0} · {1}';
+
+  @override
+  String get close => '关闭';
+
+  @override
+  String get connectionBaseUrl => 'Base URL';
+
+  @override
+  String get settingsModelViaProvider => '{0}  \n经由 `{1}`';
+
+  @override
+  String get sessionSourceAcp => '自主智能体';
+
+  @override
+  String get sessionSourceApiServer => '外部 API 客户端';
+
+  @override
+  String get sessionSourceCli => '命令行会话';
+
+  @override
+  String get sessionSourceCron => '定时任务';
+
+  @override
+  String get sessionSourceDesktop => '桌面端';
+
+  @override
+  String get sessionSourceDiscord => 'Discord 会话';
+
+  @override
+  String get sessionSourceGateway => 'Gateway API 访问';
+
+  @override
+  String get sessionSourceMobile => '手机或平板';
+
+  @override
+  String get sessionSourceSignal => 'Signal 消息';
+
+  @override
+  String get sessionSourceSlack => 'Slack 会话';
+
+  @override
+  String get sessionSourceTelegram => 'Telegram 消息';
+
+  @override
+  String get sessionSourceTool => '开发者工具调用';
+
+  @override
+  String get sessionSourceTui => '终端会话';
+
+  @override
+  String get sessionSourceWhatsapp => 'WhatsApp 消息';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.

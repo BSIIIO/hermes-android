@@ -186,10 +186,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _loadData,
-                child: Text(s.commonRetry),
-              ),
+              ElevatedButton(onPressed: _loadData, child: Text(s.commonRetry)),
             ],
           ),
         ),
@@ -231,7 +228,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '${_modelInfo!['model'] ?? '???'}  \nvia `${_modelInfo!['provider'] ?? '???'}`',
+                    s.settingsModelViaProvider
+                        .replaceAll(
+                          '{0}',
+                          _modelInfo!['model']?.toString() ?? '???',
+                        )
+                        .replaceAll(
+                          '{1}',
+                          _modelInfo!['provider']?.toString() ?? '???',
+                        ),
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   if (_modelInfo!['effective_context_length'] != null &&
@@ -382,13 +387,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _infoRow('Label', widget.connection.label),
+                _infoRow(s.connectionLabel, widget.connection.label),
                 const SizedBox(height: 4),
-                _infoRow('Host', widget.connection.host),
+                _infoRow(s.connectionHost, widget.connection.host),
                 const SizedBox(height: 4),
-                _infoRow('Port', '${widget.connection.port}'),
+                _infoRow(s.connectionPort, '${widget.connection.port}'),
                 const SizedBox(height: 4),
-                _infoRow('Base URL', widget.connection.baseUrl),
+                _infoRow(s.connectionBaseUrl, widget.connection.baseUrl),
               ],
             ),
           ),
@@ -537,7 +542,12 @@ class _AboutCardState extends State<_AboutCard> {
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
-            Text(s.settingsVersion.replaceAll('{0}', _version.isNotEmpty ? _version : '…')),
+            Text(
+              s.settingsVersion.replaceAll(
+                '{0}',
+                _version.isNotEmpty ? _version : '…',
+              ),
+            ),
             const SizedBox(height: 8),
             Text(
               s.settingsAboutDescription,
@@ -699,10 +709,7 @@ class _VoicePickerState extends State<_VoicePicker> {
     }
 
     final items = <DropdownMenuItem<Map<String, String>?>>[
-      DropdownMenuItem(
-        value: null,
-        child: Text(s.settingsVoiceAuto),
-      ),
+      DropdownMenuItem(value: null, child: Text(s.settingsVoiceAuto)),
       ..._voices.map(
         (v) => DropdownMenuItem(
           value: v,
@@ -724,7 +731,10 @@ class _VoicePickerState extends State<_VoicePicker> {
       decoration: InputDecoration(
         labelText: s.settingsVoice,
         border: const OutlineInputBorder(),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 12,
+          vertical: 10,
+        ),
       ),
       items: items,
       onChanged: _set,
@@ -745,21 +755,43 @@ class _SessionSourcesFilter extends StatefulWidget {
 class _SessionSourcesFilterState extends State<_SessionSourcesFilter> {
   /// Known session source types. Hermes Gateway persists `session.source` for
   /// every session. Sources not in this list are always shown (whitelisted).
-  static const Map<String, String> _knownSources = {
-    'acp': 'Autonomous agents',
-    'api_server': 'External API clients',
-    'cli': 'Command-line chats',
-    'cron': 'Scheduled tasks',
-    'desktop': 'Desktop app',
-    'discord': 'Discord chats',
-    'gateway': 'Gateway API access',
-    'mobile': 'Phone or tablet',
-    'signal': 'Signal messages',
-    'slack': 'Slack chats',
-    'telegram': 'Telegram messages',
-    'tool': 'Developer tool calls',
-    'tui': 'Terminal sessions',
-    'whatsapp': 'WhatsApp messages',
+  /// Wire values the Gateway may persist in `session.source`. The keys are the
+  /// source's own identifiers and must never be translated; the labels are
+  /// looked up through [AppStrings], which is why this is a function rather
+  /// than a const map.
+  static const List<String> _knownSourceKeys = [
+    'acp',
+    'api_server',
+    'cli',
+    'cron',
+    'desktop',
+    'discord',
+    'gateway',
+    'mobile',
+    'signal',
+    'slack',
+    'telegram',
+    'tool',
+    'tui',
+    'whatsapp',
+  ];
+
+  static String _sourceLabel(AppStrings s, String key) => switch (key) {
+    'acp' => s.sessionSourceAcp,
+    'api_server' => s.sessionSourceApiServer,
+    'cli' => s.sessionSourceCli,
+    'cron' => s.sessionSourceCron,
+    'desktop' => s.sessionSourceDesktop,
+    'discord' => s.sessionSourceDiscord,
+    'gateway' => s.sessionSourceGateway,
+    'mobile' => s.sessionSourceMobile,
+    'signal' => s.sessionSourceSignal,
+    'slack' => s.sessionSourceSlack,
+    'telegram' => s.sessionSourceTelegram,
+    'tool' => s.sessionSourceTool,
+    'tui' => s.sessionSourceTui,
+    'whatsapp' => s.sessionSourceWhatsapp,
+    _ => key,
   };
 
   Set<String> _excluded = {};
@@ -793,11 +825,11 @@ class _SessionSourcesFilterState extends State<_SessionSourcesFilter> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Card(
       child: Column(
-        children: _knownSources.entries.map((entry) {
-          final source = entry.key;
-          final label = entry.value;
+        children: _knownSourceKeys.map((source) {
+          final label = _sourceLabel(s, source);
           final isVisible = !_excluded.contains(source);
           return CheckboxListTile(
             title: Text(label),
