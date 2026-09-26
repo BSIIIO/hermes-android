@@ -2,8 +2,11 @@ name: PR Quality Checks
 
 on:
   workflow_dispatch:
+  # No `branches:` filter: filtering on [main] silently skips the quality gate
+  # for any PR whose base is another feature branch (the normal case while
+  # stacking batches), which is exactly the PR most likely to be broken. The
+  # workflow is read-only and idempotent, so running it on every PR is safe.
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
