@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/gateway_activity.dart';
 import 'package:hermes_android/core/widgets/gateway_activity_card.dart';
 
@@ -16,7 +17,7 @@ void main() {
       expect(activity, isNotNull);
       expect(activity!.toolId, 'tool-1');
       expect(activity.name, 'search_files');
-      expect(activity.displayName, 'Search files');
+      expect(activity.displayName(const AppStringsEn()), 'Search files');
       expect(activity.phase, GatewayToolActivityPhase.running);
       expect(activity.detail, 'Hermes Android workspace');
     });
@@ -43,7 +44,7 @@ void main() {
 
       expect(activity!.phase, GatewayToolActivityPhase.completed);
       expect(activity.detail, 'Found the official activity contract');
-      expect(activity.statusLabel, 'Completed in 420 ms');
+      expect(activity.statusLabel(const AppStringsEn()), 'Completed in 420 ms');
     });
 
     test('uses the error as the safe failure summary', () {
@@ -56,7 +57,7 @@ void main() {
 
       expect(activity!.phase, GatewayToolActivityPhase.failed);
       expect(activity.detail, 'Synthetic command failed');
-      expect(activity.statusLabel, 'Failed');
+      expect(activity.statusLabel(const AppStringsEn()), 'Failed');
     });
 
     test('keeps compatibility with legacy REST progress fields', () {
@@ -92,12 +93,13 @@ void main() {
 
   group('GatewayTurnStatus', () {
     test('parses thinking and status updates', () {
+      const strings = AppStringsEn();
       final thinking = GatewayTurnStatus.fromGatewayEvent('thinking.delta', {
         'text': '  Planning   the next step  ',
-      });
+      }, strings);
       final compacting = GatewayTurnStatus.fromGatewayEvent('status.update', {
         'kind': 'compacting',
-      });
+      }, strings);
 
       expect(thinking!.kind, 'thinking');
       expect(thinking.text, 'Planning the next step');

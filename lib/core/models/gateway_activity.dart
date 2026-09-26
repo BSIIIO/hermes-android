@@ -1,3 +1,5 @@
+import '../l10n/app_strings.dart';
+
 enum GatewayToolActivityPhase {
   running,
   generating,
@@ -32,28 +34,40 @@ class GatewayToolActivity {
 
   bool get isFailed => phase == GatewayToolActivityPhase.failed;
 
-  String get displayName {
+  /// Localized tool name for display.
+  ///
+  /// The raw [name] comes from a gateway event and is a wire identifier, so
+  /// only its humanized shape is produced here — never an English label.
+  String displayName(AppStrings s) {
     final words = name.replaceAll(RegExp(r'[_-]+'), ' ').trim();
-    if (words.isEmpty) return 'Tool';
+    if (words.isEmpty) return s.activityToolFallbackName;
     return words[0].toUpperCase() + words.substring(1);
   }
 
-  String get statusLabel {
+  /// Localized status line. Durations are formatted by this layer because they
+  /// are numbers, not strings; the surrounding words are localized.
+  String statusLabel(AppStrings s) {
     switch (phase) {
       case GatewayToolActivityPhase.running:
-        return 'Running';
+        return s.activityToolPhaseRunning;
       case GatewayToolActivityPhase.generating:
-        return 'Preparing';
+        return s.activityToolPhasePreparing;
       case GatewayToolActivityPhase.progress:
-        return 'Working';
+        return s.activityToolPhaseWorking;
       case GatewayToolActivityPhase.completed:
         return durationSeconds == null
-            ? 'Completed'
-            : 'Completed in ${_formatDuration(durationSeconds!)}';
+            ? s.activityToolPhaseCompleted
+            : s.activityToolCompletedIn.replaceAll(
+                '{0}',
+                _formatDuration(durationSeconds!),
+              );
       case GatewayToolActivityPhase.failed:
         return durationSeconds == null
-            ? 'Failed'
-            : 'Failed after ${_formatDuration(durationSeconds!)}';
+            ? s.activityToolPhaseFailed
+            : s.activityToolFailedAfter.replaceAll(
+                '{0}',
+                _formatDuration(durationSeconds!),
+              );
     }
   }
 
@@ -194,9 +208,13 @@ class GatewayTurnStatus {
 
   const GatewayTurnStatus({required this.kind, required this.text});
 
+  /// Parses a gateway status event. [s] must be the caller's live strings: this
+  /// method is static and has no context, so the fallback text for a
+  /// `compacting` / `compacted` kind can only be localized by the caller.
   static GatewayTurnStatus? fromGatewayEvent(
     String eventType,
     Map<String, dynamic> data,
+    AppStrings s,
   ) {
     if (eventType != 'status.update' && eventType != 'thinking.delta') {
       return null;
@@ -206,17 +224,17 @@ class GatewayTurnStatus {
         ? 'thinking'
         : _normalize(data['kind']?.toString(), 40) ?? 'status';
     final rawText = _normalize(data['text']?.toString(), _maxTextLength);
-    final text = rawText ?? _fallbackText(kind);
+    final text = rawText ?? _fallbackText(s, kind);
     if (text == null) return null;
     return GatewayTurnStatus(kind: kind, text: text);
   }
 
-  static String? _fallbackText(String kind) {
+  static String? _fallbackText(AppStrings s, String kind) {
     switch (kind) {
       case 'compacting':
-        return 'Compacting conversation context…';
+        return s.activityTurnCompacting;
       case 'compacted':
-        return 'Conversation context compacted';
+        return s.activityTurnCompacted;
       default:
         return null;
     }

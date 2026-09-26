@@ -2074,9 +2074,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _scheduleStreamingFollow();
       return;
     }
+    final s = AppStrings.of(context);
     final turnStatus = GatewayTurnStatus.fromGatewayEvent(
       event.type,
       event.data,
+      s,
     );
     if (turnStatus != null) {
       setState(() => _gatewayTurnStatus = turnStatus);
@@ -2628,11 +2630,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       } else {
         _toolActivities.add(update);
       }
+      final s = AppStrings.of(context);
+      final name = update.displayName(s);
       _gatewayTurnStatus = GatewayTurnStatus(
         kind: 'tool',
         text: update.isTerminal
-            ? '${update.displayName}: ${update.statusLabel.toLowerCase()}'
-            : 'Using ${update.displayName}…',
+            ? s.activityToolRowLabel
+                  .replaceAll('{0}', name)
+                  .replaceAll('{1}', update.statusLabel(s).toLowerCase())
+            : s.activityTurnUsingTool.replaceAll('{0}', name),
       );
     });
 

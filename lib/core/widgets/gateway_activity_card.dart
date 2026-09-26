@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/gateway_activity.dart';
+import '../l10n/app_strings.dart';
 import '../theme/hermes_theme.dart';
 import 'hermes_components.dart';
 
@@ -31,14 +32,22 @@ class _GatewayActivityCardState extends State<GatewayActivityCard> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final activities = widget.activities;
     final active = activities.any((activity) => !activity.isTerminal);
     final failures = activities.where((activity) => activity.isFailed).length;
     final subtitle = active
-        ? 'Hermes is using ${activities.length == 1 ? 'a tool' : '${activities.length} tools'}'
+        ? (activities.length == 1
+              ? s.activityCardUsingOneTool
+              : s.activityCardUsingTools.replaceAll(
+                  '{0}',
+                  '${activities.length}',
+                ))
         : failures > 0
-        ? '$failures failed • ${activities.length} total'
-        : '${activities.length} completed';
+        ? s.activityCardSomeFailed
+              .replaceAll('{0}', '$failures')
+              .replaceAll('{1}', '${activities.length}')
+        : s.activityCardAllCompleted.replaceAll('{0}', '${activities.length}');
 
     final cardStatus = active
         ? HermesStatus.running
@@ -78,7 +87,7 @@ class _GatewayActivityCardState extends State<GatewayActivityCard> {
                           ? Theme.of(context).colorScheme.error
                           : Theme.of(context).colorScheme.primary,
                     ),
-              title: const Text('Tool activity'),
+              title: Text(s.activityToolLabel),
               subtitle: Text(subtitle),
               children: [
                 const Divider(height: 1),
@@ -101,6 +110,7 @@ class _GatewayActivityRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final color = activity.isFailed
         ? Theme.of(context).colorScheme.error
         : activity.isTerminal
@@ -108,7 +118,9 @@ class _GatewayActivityRow extends StatelessWidget {
         : Theme.of(context).colorScheme.secondary;
 
     return Semantics(
-      label: '${activity.displayName}: ${activity.statusLabel}',
+      label: s.activityToolRowLabel
+          .replaceAll('{0}', activity.displayName(s))
+          .replaceAll('{1}', activity.statusLabel(s)),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
         child: Row(
@@ -139,14 +151,14 @@ class _GatewayActivityRow extends StatelessWidget {
                 children: [
                   Text(
                     '${activity.emoji ?? _emojiFor(activity.name)} '
-                    '${activity.displayName}',
+                    '${activity.displayName(s)}',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    activity.statusLabel,
+                    activity.statusLabel(s),
                     style: Theme.of(
                       context,
                     ).textTheme.bodySmall?.copyWith(color: color),
