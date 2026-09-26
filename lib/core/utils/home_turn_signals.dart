@@ -24,6 +24,7 @@
 library;
 
 import '../models/connection.dart';
+import '../l10n/app_strings.dart';
 import '../models/gateway_turn_contract.dart';
 import '../services/desktop_gateway_client.dart';
 import '../services/gateway_turn_journal.dart';
@@ -57,6 +58,7 @@ class HomeTurnSignals {
 HomeTurnSignals buildHomeTurnSignals({
   required GatewayTurnJournalSnapshot snapshot,
   required DateTime now,
+  required AppStrings s,
   String? connectionId,
   String? endpointDigest,
   Duration runningStaleAfter = kHomeRunningStaleAfter,
@@ -85,7 +87,7 @@ HomeTurnSignals buildHomeTurnSignals({
     final sessionId = sessionForBinding[entry.bindingIdentity];
     if (sessionId == null) continue;
 
-    final reason = _attentionReason(entry);
+    final reason = _attentionReason(entry, s);
     if (reason != null) {
       final previous = attentionAt[sessionId];
       if (previous == null || entry.updatedAtEpochMs >= previous) {
@@ -129,6 +131,7 @@ String? endpointDigestForConnection(SavedConnection connection) =>
 /// attention badge is acceptable, losing the Home screen is not.
 Future<HomeTurnSignals> readHomeTurnSignals({
   required GatewayTurnJournal journal,
+  required AppStrings s,
   required String? connectionId,
   required String? endpointDigest,
   DateTime? now,
@@ -139,6 +142,7 @@ Future<HomeTurnSignals> readHomeTurnSignals({
     return buildHomeTurnSignals(
       snapshot: snapshot,
       now: now ?? DateTime.now(),
+      s: s,
       connectionId: connectionId,
       endpointDigest: endpointDigest,
       runningStaleAfter: runningStaleAfter,
@@ -149,16 +153,16 @@ Future<HomeTurnSignals> readHomeTurnSignals({
 }
 
 /// Why this turn blocks the user, or `null` when it does not.
-String? _attentionReason(GatewayTurnJournalEntry entry) {
+String? _attentionReason(GatewayTurnJournalEntry entry, AppStrings s) {
   // A recovery failure outranks the reported status: the turn may well have
   // completed server-side, but the client could not reconcile it and the
   // composer stays blocked, which is exactly what Home must surface.
-  if (entry.failure != null) return 'Turn recovery failed';
+  if (entry.failure != null) return s.activityTurnRecoveryFailed;
   switch (entry.status) {
     case GatewayRecoveryTurnStatus.waitingInput:
-      return 'Waiting for your input';
+      return s.activityWaitingForYourInput;
     case GatewayRecoveryTurnStatus.failed:
-      return 'The last turn failed';
+      return s.homeLastTurnFailed;
     case GatewayRecoveryTurnStatus.accepted:
     case GatewayRecoveryTurnStatus.running:
     case GatewayRecoveryTurnStatus.completed:

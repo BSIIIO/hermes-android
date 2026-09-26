@@ -300,6 +300,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       journal: _journal ??= GatewayTurnJournal(),
       connectionId: connection.id,
       endpointDigest: endpointDigest,
+      s: AppStrings.of(context),
     );
   }
 

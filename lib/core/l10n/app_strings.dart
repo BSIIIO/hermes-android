@@ -79,6 +79,8 @@ abstract class AppStrings {
   String chatNewMessages(int newMessageCount);
   String get chatGoToEnd;
   String get chatLatest;
+  String get homeLastTurnFailed;
+  String get codeCopied;
   String get homeGroupNeedsYou;
   String get homeGroupRunningNow;
   String get homeGroupContinueWorking;
@@ -1983,6 +1985,10 @@ abstract class AppStrings {
 
   /// This creates a permanent rule in Hermes. Review the full command before confirming.
   String get approvalAlwaysWarning;
+  String get codeScrollHorizontally;
+  String get codeWrapLines;
+  String get codeCopy;
+  String get aiSearchNoConfiguredModels;
 }
 
 /// English strings.
@@ -2069,6 +2075,11 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get chatLatest => 'Latest';
+
+  @override
+  String get homeLastTurnFailed => 'The last turn failed';
+  @override
+  String get codeCopied => 'Code copied';
   @override
   String get homeGroupNeedsYou => 'Needs you';
   @override
@@ -4041,6 +4052,19 @@ class AppStringsEn extends AppStrings {
   @override
   String get approvalAlwaysWarning =>
       'This creates a permanent rule in Hermes. Review the full command before confirming.';
+
+  @override
+  String get codeScrollHorizontally => 'Scroll horizontally';
+
+  @override
+  String get codeWrapLines => 'Wrap lines';
+
+  @override
+  String get codeCopy => 'Copy code';
+
+  @override
+  String get aiSearchNoConfiguredModels =>
+      'Hermes returned no configured selectable models.';
 }
 
 /// Simplified Chinese strings.
@@ -4120,8 +4144,14 @@ class AppStringsZh extends AppStrings {
   String chatNewMessages(int newMessageCount) => '$newMessageCount 条新消息';
   @override
   String get chatGoToEnd => '去到底部';
+
   @override
   String get chatLatest => '最新';
+
+  @override
+  String get homeLastTurnFailed => '上一个回合失败';
+  @override
+  String get codeCopied => '代码已复制';
   @override
   String get homeGroupNeedsYou => '需要你处理';
   @override
@@ -5981,6 +6011,18 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get approvalAlwaysWarning => '这会在 Hermes 中创建一条永久规则。确认前请先完整核对命令。';
+
+  @override
+  String get codeScrollHorizontally => '横向滚动';
+
+  @override
+  String get codeWrapLines => '自动换行';
+
+  @override
+  String get codeCopy => '复制代码';
+
+  @override
+  String get aiSearchNoConfiguredModels => 'Hermes 没有返回已配置的可选模型。';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
