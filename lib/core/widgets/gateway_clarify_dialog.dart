@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/gateway_clarify.dart';
 
 typedef ClarifyResponder = Future<void> Function(String answer);
@@ -64,6 +65,7 @@ class _GatewayClarifyDialogState extends State<GatewayClarifyDialog> {
 
   Future<void> _respond(String answer) async {
     if (_submitting) return;
+    final s = AppStrings.of(context);
     setState(() {
       _submitting = true;
       _error = null;
@@ -75,20 +77,21 @@ class _GatewayClarifyDialogState extends State<GatewayClarifyDialog> {
       if (!mounted) return;
       setState(() {
         _submitting = false;
-        _error = 'Hermes could not accept the answer. Please try again.';
+        _error = s.clarifyAcceptFailed;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final theme = Theme.of(context);
     final request = widget.request;
     final answer = _answer;
 
     return AlertDialog(
       icon: const Icon(Icons.help_outline_rounded),
-      title: const Text('Hermes needs your input'),
+      title: Text(s.clarifyNeedsInput),
       content: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560, maxHeight: 620),
         child: SingleChildScrollView(
@@ -105,8 +108,8 @@ class _GatewayClarifyDialogState extends State<GatewayClarifyDialog> {
                 const SizedBox(height: 12),
                 Text(
                   request.multiSelect
-                      ? 'Select one or more options, then continue.'
-                      : 'Select one option, or enter another answer.',
+                      ? s.clarifySelectMulti
+                      : s.clarifySelectOne,
                   style: theme.textTheme.bodySmall,
                 ),
                 const SizedBox(height: 6),
@@ -148,8 +151,8 @@ class _GatewayClarifyDialogState extends State<GatewayClarifyDialog> {
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   labelText: request.hasChoices
-                      ? 'Other answer'
-                      : 'Your answer',
+                      ? s.clarifyOtherAnswer
+                      : s.clarifyYourAnswer,
                 ),
                 onChanged: (value) {
                   setState(() {

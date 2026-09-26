@@ -15,6 +15,7 @@
 ///    the rest does not exist.
 library;
 
+import '../l10n/app_strings.dart';
 import '../models/session.dart';
 import '../theme/hermes_theme.dart';
 
@@ -33,16 +34,17 @@ enum HomeSectionKind {
   /// Work that finished inside the recent window.
   completedRecently;
 
-  String get title {
+  /// Section header in the active language.
+  String title(AppStrings s) {
     switch (this) {
       case HomeSectionKind.needsYou:
-        return 'Needs you';
+        return s.homeGroupNeedsYou;
       case HomeSectionKind.running:
-        return 'Running now';
+        return s.homeGroupRunningNow;
       case HomeSectionKind.continueWorking:
-        return 'Continue working';
+        return s.homeGroupContinueWorking;
       case HomeSectionKind.completedRecently:
-        return 'Recently completed';
+        return s.homeGroupRecentlyCompleted;
     }
   }
 }
@@ -88,7 +90,8 @@ class HomeSection {
     required this.totalCount,
   });
 
-  String get title => kind.title;
+  /// Section header in the active language.
+  String title(AppStrings s) => kind.title(s);
 
   /// How many matching sessions the cap hid.
   int get overflow => totalCount - items.length;
@@ -137,6 +140,7 @@ HomeDigest buildHomeDigest({
   Set<String> running = const {},
   Set<String> archived = const {},
   Map<String, String> projectNames = const {},
+  required AppStrings s,
   Duration continueWindow = kHomeContinueWindow,
   Duration completedWindow = kHomeCompletedWindow,
   int sectionLimit = kHomeSectionLimit,

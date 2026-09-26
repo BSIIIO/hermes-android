@@ -29,6 +29,7 @@
 ///    absent from the session list keeps its row but has no title.
 library;
 
+import '../l10n/app_strings.dart';
 import '../models/gateway_turn_contract.dart';
 import '../services/gateway_turn_journal.dart';
 import '../theme/hermes_theme.dart';
@@ -174,6 +175,7 @@ class _Classification {
 ActivityFeed buildActivityFeed({
   required GatewayTurnJournalSnapshot snapshot,
   required DateTime now,
+  required AppStrings s,
   String? connectionId,
   String? endpointDigest,
   Map<String, String> sessionTitles = const {},
@@ -217,6 +219,7 @@ ActivityFeed buildActivityFeed({
       entry,
       ageMs: nowMs - entry.updatedAtEpochMs,
       staleMs: staleMs,
+      s: s,
     );
 
     // Blocked work is never aged out — being stuck for a week is the strongest
@@ -269,6 +272,7 @@ _Classification _classify(
   GatewayTurnJournalEntry entry, {
   required int ageMs,
   required int staleMs,
+  required AppStrings s,
 }) {
   // A recovery failure outranks the reported status: the turn may well have
   // completed server-side, but the client could not reconcile it and the
@@ -337,6 +341,7 @@ Future<ActivityFeed> readActivityFeed({
   required GatewayTurnJournal journal,
   required String? connectionId,
   required String? endpointDigest,
+  required AppStrings s,
   Map<String, String> sessionTitles = const {},
   DateTime? now,
   Duration runningStaleAfter = kActivityRunningStaleAfter,
@@ -350,6 +355,7 @@ Future<ActivityFeed> readActivityFeed({
       now: now ?? DateTime.now(),
       connectionId: connectionId,
       endpointDigest: endpointDigest,
+      s: s,
       sessionTitles: sessionTitles,
       runningStaleAfter: runningStaleAfter,
       completedWindow: completedWindow,

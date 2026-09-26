@@ -55,6 +55,49 @@ abstract class AppStrings {
 
   /// `HermesDestination.more`.
   String get navMore;
+  String get backupEnterPassphrase;
+  String get backupPassphraseTooShort;
+  String get backupPassphrasesDoNotMatch;
+  String get backupEnterRestorePassphrase;
+  String backupExported(String destination);
+  String get backupExportFailed;
+  String get backupRestoreFailed;
+  String get clarifyAcceptFailed;
+  String get clarifyNeedsInput;
+  String get clarifySelectMulti;
+  String get clarifySelectOne;
+  String get clarifyOtherAnswer;
+  String get clarifyYourAnswer;
+  String voiceElapsed(String elapsed);
+  String voiceListening(String elapsed);
+  String get voiceStop;
+  String get voiceCancel;
+  String get voiceStart;
+  String get voiceSpeakToHermes;
+  String get chatNoNewMessages;
+  String get chatOneNewMessage;
+  String chatNewMessages(int newMessageCount);
+  String get chatGoToEnd;
+  String get chatLatest;
+  String get homeGroupNeedsYou;
+  String get homeGroupRunningNow;
+  String get homeGroupContinueWorking;
+  String get homeGroupRecentlyCompleted;
+  String get homeCouldNotReachHermes;
+  String get homeCouldNotReachHermesMessage;
+  String get homeNothingNeedsYou;
+  String get homeNothingNeedsYouMessage;
+  String get homeOfflineShowingCached;
+  String get activityGroupNeedsYou;
+  String get activityGroupRunningNow;
+  String get activityGroupFailed;
+  String get activityGroupCompleted;
+  String get activityTurnRecoveryFailed;
+  String get activityWaitingForYourInput;
+  String get activityTurnFailed;
+  String get activityStalledNoUpdate;
+  String get activitySubmittedWaiting;
+  String get activityRunningNow;
 
   // ---- Common actions ----
 
@@ -1974,6 +2017,99 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get navMore => 'More';
+  @override
+  String get backupEnterPassphrase => 'Enter a passphrase.';
+  @override
+  String get backupPassphraseTooShort => 'Use at least 8 characters.';
+  @override
+  String get backupPassphrasesDoNotMatch => 'The two passphrases do not match.';
+  @override
+  String get backupEnterRestorePassphrase =>
+      'Enter the passphrase for this backup.';
+  @override
+  String backupExported(String destination) => 'Backup exported — $destination';
+  @override
+  String get backupExportFailed => 'The backup could not be exported.';
+  @override
+  String get backupRestoreFailed => 'The backup could not be restored.';
+  @override
+  String get clarifyAcceptFailed =>
+      'Hermes could not accept the answer. Please try again.';
+  @override
+  String get clarifyNeedsInput => 'Hermes needs your input';
+  @override
+  String get clarifySelectMulti => 'Select one or more options, then continue.';
+  @override
+  String get clarifySelectOne => 'Select one option, or enter another answer.';
+  @override
+  String get clarifyOtherAnswer => 'Other answer';
+  @override
+  String get clarifyYourAnswer => 'Your answer';
+  @override
+  String voiceElapsed(String elapsed) => 'Listening, elapsed $elapsed';
+  @override
+  String voiceListening(String elapsed) => 'Listening • $elapsed';
+  @override
+  String get voiceStop => 'Stop voice input';
+  @override
+  String get voiceCancel => 'Cancel voice input';
+  @override
+  String get voiceStart => 'Start voice input';
+  @override
+  String get voiceSpeakToHermes => 'Speak to Hermes';
+  @override
+  String get chatNoNewMessages => 'No new messages';
+  @override
+  String get chatOneNewMessage => '1 new message';
+  @override
+  String chatNewMessages(int newMessageCount) =>
+      '$newMessageCount new messages';
+  @override
+  String get chatGoToEnd => 'Go to end';
+
+  @override
+  String get chatLatest => 'Latest';
+  @override
+  String get homeGroupNeedsYou => 'Needs you';
+  @override
+  String get homeGroupRunningNow => 'Running now';
+  @override
+  String get homeGroupContinueWorking => 'Continue working';
+  @override
+  String get homeGroupRecentlyCompleted => 'Recently completed';
+  @override
+  String get homeCouldNotReachHermes => 'Could not reach Hermes';
+  @override
+  String get homeCouldNotReachHermesMessage =>
+      'Home needs your recent chats to know what deserves your attention. Check that the gateway is reachable, then try again.';
+  @override
+  String get homeNothingNeedsYou => 'Nothing needs you';
+  @override
+  String get homeNothingNeedsYouMessage =>
+      'No chat is blocked, running, or waiting to be resumed. Start a new one whenever you are ready.';
+  @override
+  String get homeOfflineShowingCached =>
+      'Offline — showing the last known activity.';
+  @override
+  String get activityGroupNeedsYou => 'Needs you';
+  @override
+  String get activityGroupRunningNow => 'Running now';
+  @override
+  String get activityGroupFailed => 'Failed';
+  @override
+  String get activityGroupCompleted => 'Completed';
+  @override
+  String get activityTurnRecoveryFailed => 'Turn recovery failed';
+  @override
+  String get activityWaitingForYourInput => 'Waiting for your input';
+  @override
+  String get activityTurnFailed => 'The turn failed';
+  @override
+  String get activityStalledNoUpdate => 'Stalled — no update from Hermes';
+  @override
+  String get activitySubmittedWaiting => 'Submitted, waiting for Hermes';
+  @override
+  String get activityRunningNow => 'Running';
 
   @override
   String get commonCancel => 'Cancel';
@@ -3938,6 +4074,93 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get navMore => '更多';
+  @override
+  String get backupEnterPassphrase => '请输入密码短语。';
+  @override
+  String get backupPassphraseTooShort => '至少 8 个字符。';
+  @override
+  String get backupPassphrasesDoNotMatch => '两次输入的密码短语不一致。';
+  @override
+  String get backupEnterRestorePassphrase => '请输入此备份的密码短语。';
+  @override
+  String backupExported(String destination) => '备份已导出 —— $destination';
+  @override
+  String get backupExportFailed => '备份导出失败。';
+  @override
+  String get backupRestoreFailed => '备份恢复失败。';
+  @override
+  String get clarifyAcceptFailed => 'Hermes 没能接受这个回答，请重试。';
+  @override
+  String get clarifyNeedsInput => 'Hermes 需要你的输入';
+  @override
+  String get clarifySelectMulti => '选择一个或多个选项，然后继续。';
+  @override
+  String get clarifySelectOne => '选择一个选项，或输入其他回答。';
+  @override
+  String get clarifyOtherAnswer => '其他回答';
+  @override
+  String get clarifyYourAnswer => '你的回答';
+  @override
+  String voiceElapsed(String elapsed) => '正在聆听，已过 $elapsed';
+  @override
+  String voiceListening(String elapsed) => '聆听中 • $elapsed';
+  @override
+  String get voiceStop => '停止语音输入';
+  @override
+  String get voiceCancel => '取消语音输入';
+  @override
+  String get voiceStart => '开始语音输入';
+  @override
+  String get voiceSpeakToHermes => '对 Hermes 说话';
+  @override
+  String get chatNoNewMessages => '没有新消息';
+  @override
+  String get chatOneNewMessage => '1 条新消息';
+  @override
+  String chatNewMessages(int newMessageCount) => '$newMessageCount 条新消息';
+  @override
+  String get chatGoToEnd => '去到底部';
+  @override
+  String get chatLatest => '最新';
+  @override
+  String get homeGroupNeedsYou => '需要你处理';
+  @override
+  String get homeGroupRunningNow => '正在运行';
+  @override
+  String get homeGroupContinueWorking => '继续处理';
+  @override
+  String get homeGroupRecentlyCompleted => '最近完成';
+  @override
+  String get homeCouldNotReachHermes => '连接不到 Hermes';
+  @override
+  String get homeCouldNotReachHermesMessage =>
+      '主页需要你的近期会话才能判断什么值得关注。请确认网关可达后重试。';
+  @override
+  String get homeNothingNeedsYou => '没有事需要你处理';
+  @override
+  String get homeNothingNeedsYouMessage => '没有会话处于阻塞、运行中或等待继续的状态。随时可以开新的。';
+  @override
+  String get homeOfflineShowingCached => '离线 —— 显示的是上次已知的动态。';
+  @override
+  String get activityGroupNeedsYou => '需要你处理';
+  @override
+  String get activityGroupRunningNow => '正在运行';
+  @override
+  String get activityGroupFailed => '失败';
+  @override
+  String get activityGroupCompleted => '已完成';
+  @override
+  String get activityTurnRecoveryFailed => '回合恢复失败';
+  @override
+  String get activityWaitingForYourInput => '等待你的输入';
+  @override
+  String get activityTurnFailed => '回合失败';
+  @override
+  String get activityStalledNoUpdate => '已停滞 —— Hermes 没有新进展';
+  @override
+  String get activitySubmittedWaiting => '已提交，等待 Hermes';
+  @override
+  String get activityRunningNow => '运行中';
 
   @override
   String get commonCancel => '取消';

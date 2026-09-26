@@ -44,15 +44,15 @@ class _ExportPassphraseSheetState extends State<ExportPassphraseSheet> {
   void _submit() {
     final value = _passphrase.text;
     if (value.trim().isEmpty) {
-      setState(() => _error = 'Enter a passphrase.');
+      setState(() => _error = AppStrings.of(context).backupEnterPassphrase);
       return;
     }
     if (value.length < 8) {
-      setState(() => _error = 'Use at least 8 characters.');
+      setState(() => _error = AppStrings.of(context).backupPassphraseTooShort);
       return;
     }
     if (value != _confirm.text) {
-      setState(() => _error = 'The two passphrases do not match.');
+      setState(() => _error = AppStrings.of(context).backupPassphrasesDoNotMatch);
       return;
     }
     Navigator.of(context).pop(ExportPassphraseChoice(value));
@@ -161,7 +161,7 @@ class _ImportOptionsSheetState extends State<ImportOptionsSheet> {
 
   void _submit() {
     if (_passphrase.text.trim().isEmpty) {
-      setState(() => _error = 'Enter the passphrase for this backup.');
+      setState(() => _error = AppStrings.of(context).backupEnterRestorePassphrase);
       return;
     }
     Navigator.of(
@@ -318,7 +318,9 @@ class _ConfigBackupCardState extends State<ConfigBackupCard> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _status = destination == null ? null : 'Backup exported — $destination';
+        _status = destination == null
+            ? null
+            : AppStrings.of(context).backupExported(destination);
       });
     } on ConfigBackupException catch (error) {
       if (!mounted) return;
@@ -330,7 +332,7 @@ class _ConfigBackupCardState extends State<ConfigBackupCard> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = 'The backup could not be exported.';
+        _error = AppStrings.of(context).backupExportFailed;
       });
     }
   }
@@ -372,7 +374,7 @@ class _ConfigBackupCardState extends State<ConfigBackupCard> {
       if (!mounted) return;
       setState(() {
         _busy = false;
-        _error = 'The backup could not be restored.';
+        _error = AppStrings.of(context).backupRestoreFailed;
       });
     }
   }

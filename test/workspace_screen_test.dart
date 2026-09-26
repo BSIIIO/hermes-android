@@ -236,7 +236,9 @@ Future<void> _pump(
 /// blocked [StatusChip] on each row, so matching raw text would pass for the
 /// wrong reason.
 Finder _sectionHeader(HomeSectionKind kind) => find.byWidgetPredicate(
-  (widget) => widget is SectionHeader && widget.title == kind.title,
+  (widget) =>
+      widget is SectionHeader &&
+      widget.title == kind.title(const AppStringsEn()),
 );
 
 /// A turn session a widget test can drive: captures the workspace's
@@ -578,7 +580,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(HomePane), findsOneWidget);
-    expect(find.text(HomeSectionKind.continueWorking.title), findsOneWidget);
+    expect(
+      find.text(HomeSectionKind.continueWorking.title(const AppStringsEn())),
+      findsOneWidget,
+    );
     expect(find.text('Roadmap slice'), findsOneWidget);
     // The placeholder it replaces must be gone, not merely pushed down.
     expect(find.textContaining('Home — Coming next'), findsNothing);

@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/gateway_turn_contract.dart';
 import 'package:hermes_android/core/services/gateway_turn_journal.dart';
 import 'package:hermes_android/core/services/gateway_turn_recovery.dart';
@@ -85,6 +86,7 @@ ActivityFeed _feed(
     endpointDigest: endpointDigest,
     sessionTitles: sessionTitles,
     groupLimit: groupLimit,
+    s: const AppStringsEn(),
   );
 }
 
@@ -532,7 +534,7 @@ void main() {
       entries: entries,
     );
 
-    buildActivityFeed(snapshot: snapshot, now: _now);
+    buildActivityFeed(snapshot: snapshot, now: _now, s: const AppStringsEn());
 
     expect(identical(snapshot.entries, entries), isTrue);
     expect(snapshot.entries, hasLength(1));
