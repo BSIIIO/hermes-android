@@ -17,12 +17,15 @@ jobs:
       HAS_RELEASE_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
       # Pin the production signer so a valid but wrong keystore cannot silently
       # break in-place upgrades. This build is an independent distribution
-      # (applicationId com.hermesagent.hermes_android.zh), so its certificate
-      # is NOT the upstream v2.1.x one — generate your own and set the digest
-      # with:
+      # (applicationId com.hermesagent.hermes_android.zh) and is signed with
+      # its own keystore — NOT the upstream v2.1.x certificate.
+      #
+      # To rotate or re-derive this digest:
       #   keytool -list -v -keystore release.keystore -alias <KEY_ALIAS> \
       #     | grep 'SHA256:'
-      EXPECTED_RELEASE_CERT_SHA256: ''
+      # Strip the colons and lowercase it. Losing the keystore means users must
+      # uninstall before updating; see docs/release-signing.md.
+      EXPECTED_RELEASE_CERT_SHA256: 'ef27ea0553a8b2ef61bc116cc48350eabfe1aefd4a125fe18706f0957975ca09'
       # F-Droid ABI split: the Gradle versionCodeOverride derives per-ABI codes
       # as base * 10 + ABI code (arm64-v8a = 2). The pubspec value is the base.
       ARM64_ABI_CODE: '2'
