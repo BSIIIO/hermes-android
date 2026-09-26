@@ -51,9 +51,13 @@ void main() {
               return submission.future;
             },
       );
-      // Baseline: no Desktop gateway is configured for this fixture, so
-      // initState never ensured a session; history was fetched once.
-      expect(ensureCount, 0);
+      // Baseline: the fork's `_initializeChat` awaits the bind BEFORE it
+      // reads history, so exactly one bind has already happened even though
+      // this fixture configures no gateway. Record it and assert the deltas
+      // from here — the ordering itself is a fork invariant (see
+      // `_initializeChat`'s contract in chat_screen.dart).
+      final bindsBeforeDrop = ensureCount;
+      expect(bindsBeforeDrop, 1);
       expect(history.messageRequestCount, 1);
 
       // The socket is live, then the user sends and the turn goes in flight.
@@ -74,8 +78,8 @@ void main() {
         ),
         findsOneWidget,
       );
-      // Nothing has been resynced yet — the promise is still pending.
-      expect(ensureCount, 0);
+      // Nothing extra has been bound or read yet — the promise is pending.
+      expect(ensureCount, bindsBeforeDrop);
       expect(history.messageRequestCount, 1);
 
       // PRODUCTION ORDERING: WsClient rejects the pending prompt.submit AT
@@ -102,7 +106,11 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(ensureCount, 1, reason: 'reattach must re-ensure the session');
+      expect(
+        ensureCount,
+        bindsBeforeDrop + 1,
+        reason: 'reattach must re-ensure the session',
+      );
       expect(
         history.messageRequestCount,
         2,
@@ -504,6 +512,10 @@ void main() {
             ({required sessionId, required text, required onEvent}) async {},
       );
 
+      // The fork binds once in `_initializeChat`; record that baseline so
+      // the idle-drop assertions stay about the reconnect, not the ordering.
+      final bindsBeforeReconnect = ensureCount;
+
       hook.handler?.call(DesktopConnectionState.connected);
       await tester.pump();
       hook.handler?.call(DesktopConnectionState.reconnecting);
@@ -519,7 +531,7 @@ void main() {
         ),
         findsNothing,
       );
-      expect(ensureCount, 0);
+      expect(ensureCount, bindsBeforeReconnect);
       expect(history.messageRequestCount, 1);
     },
   );

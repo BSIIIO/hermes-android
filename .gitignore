@@ -57,3 +57,4 @@ graphify-out/.graphify_root
 
 # Local agent plan/handoff documents, not part of the app
 .hermes/
+mutation-test-report/
