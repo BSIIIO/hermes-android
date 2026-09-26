@@ -1,4 +1,4 @@
-package com.hermesagent.hermes_android
+package com.hermesagent.hermes_android.zh
 
 import android.content.Intent
 import android.net.Uri
@@ -12,9 +12,9 @@ import java.io.FileOutputStream
 import java.util.UUID
 
 class MainActivity : FlutterActivity() {
-    private val shareChannelName = "com.hermesagent.hermes_android/share"
-    private val launchChannelName = "com.hermesagent.hermes_android/launch"
-    private val quickChatAction = "com.hermesagent.hermes_android.action.QUICK_CHAT"
+    private val shareChannelName = "com.hermesagent.hermes_android.zh/share"
+    private val launchChannelName = "com.hermesagent.hermes_android.zh/launch"
+    private val quickChatAction = "com.hermesagent.hermes_android.zh.action.QUICK_CHAT"
     private val maxSharedItems = 10
     private val maxSharedBytes = 64L * 1024L * 1024L
     private var shareChannel: MethodChannel? = null

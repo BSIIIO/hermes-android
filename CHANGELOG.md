@@ -140,7 +140,7 @@ Community Remote Gateway edition based on Hermes Android 1.0.13.
   and subagent events from Hermes Desktop Gateway.
 - A local synthetic Desktop Gateway fixture and contract test suite under
   `tools/fake_gateway`.
-- A separate debug application ID (`com.hermesagent.hermes_android.dev`) so the
+- A separate debug application ID (`com.hermesagent.hermes_android.zh.dev`) so the
   community test build can coexist with the upstream application.
 
 ### Changed

@@ -15,12 +15,12 @@ Android client for [Hermes Agent](https://hermes-agent.nousresearch.com/) — ch
 ## Current release
 
 - Version: **2.1.3** (build 2143)
-- Package: `com.hermesagent.hermes_android`
+- Package: `com.hermesagent.hermes_android.zh`
 - Recommended APK for modern phones: ARM64 release build from the
   [Releases](https://github.com/rusty4444/hermes-android/releases) page.
 - Production builds are signed with a private release keystore. Debug APKs
   signed with the Android debug certificate remain available for testing
-  under the `com.hermesagent.hermes_android.dev` package ID.
+  under the `com.hermesagent.hermes_android.zh.dev` package ID.
 - Previous upstream releases remain available from the
   [Releases](https://github.com/rusty4444/hermes-android/releases) page.
 

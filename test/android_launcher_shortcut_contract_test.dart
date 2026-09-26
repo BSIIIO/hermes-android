@@ -16,7 +16,7 @@ void main() {
     expect(shortcuts, contains('android:shortcutId="new_quick_chat"'));
     expect(
       shortcuts,
-      contains('com.hermesagent.hermes_android.action.QUICK_CHAT'),
+      contains('com.hermesagent.hermes_android.zh.action.QUICK_CHAT'),
     );
   });
 

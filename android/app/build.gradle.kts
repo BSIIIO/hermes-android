@@ -15,7 +15,7 @@ if (keystorePath.exists()) {
 }
 
 android {
-   namespace = "com.hermesagent.hermes_android"
+   namespace = "com.hermesagent.hermes_android.zh"
    compileSdk = 36
 
    compileOptions {
@@ -29,7 +29,7 @@ android {
            "versionCode ${flutter.versionCode} must be greater than " +
                "$minimumInstalledVersionCode to upgrade the accepted Hermes APK"
        }
-       applicationId = "com.hermesagent.hermes_android"
+       applicationId = "com.hermesagent.hermes_android.zh"
        minSdk = 24
        targetSdk = 36
        versionCode = flutter.versionCode
