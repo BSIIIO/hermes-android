@@ -70,7 +70,7 @@ class AndroidSharePayload {
 
 /// Receives text, URLs, images, and files sent through Android share intents.
 class AndroidShareIntentService {
-  static const channelName = 'com.hermesagent.hermes_android/share';
+  static const channelName = 'com.hermesagent.hermes_android.zh/share';
   static const _channel = MethodChannel(channelName);
 
   final ValueNotifier<AndroidSharePayload?> pendingShare =

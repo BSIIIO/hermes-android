@@ -57,9 +57,18 @@ void main() {
     expect(releaseWorkflow, contains("env.HAS_RELEASE_KEYSTORE == 'true'"));
     expect(
       releaseWorkflow,
-      contains(
-        "EXPECTED_RELEASE_CERT_SHA256: '475baf431b16d050c8f658ac838783b273f7c10bba06ed1d16bb0a4239f592fb'",
+      matches(
+        RegExp(r"EXPECTED_RELEASE_CERT_SHA256: '[0-9a-f]{0,64}'"),
       ),
+      reason: 'The pinned certificate must be a hex digest placeholder so a '
+          'fresh keystore can be pinned by editing one line.',
+    );
+    expect(
+      releaseWorkflow,
+      contains('if not expected_cert:'),
+      reason: 'An empty EXPECTED_RELEASE_CERT_SHA256 must fail fast with an '
+          'explanatory message rather than reporting a bare "signer '
+          'mismatch" for every build.',
     );
     expect(
       releaseWorkflow,

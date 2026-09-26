@@ -16,8 +16,13 @@ jobs:
     env:
       HAS_RELEASE_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
       # Pin the production signer so a valid but wrong keystore cannot silently
-      # break in-place upgrades. This is the certificate used for v2.1.0+.
-      EXPECTED_RELEASE_CERT_SHA256: '475baf431b16d050c8f658ac838783b273f7c10bba06ed1d16bb0a4239f592fb'
+      # break in-place upgrades. This build is an independent distribution
+      # (applicationId com.hermesagent.hermes_android.zh), so its certificate
+      # is NOT the upstream v2.1.x one — generate your own and set the digest
+      # with:
+      #   keytool -list -v -keystore release.keystore -alias <KEY_ALIAS> \
+      #     | grep 'SHA256:'
+      EXPECTED_RELEASE_CERT_SHA256: ''
       # F-Droid ABI split: the Gradle versionCodeOverride derives per-ABI codes
       # as base * 10 + ABI code (arm64-v8a = 2). The pubspec value is the base.
       ARM64_ABI_CODE: '2'
@@ -222,6 +227,15 @@ jobs:
               raise SystemExit("Android apksigner was not found")
           apksigner = str(apksigner_paths[-1])
           expected_cert = os.environ["EXPECTED_RELEASE_CERT_SHA256"].lower()
+          if not expected_cert:
+              raise SystemExit(
+                  "EXPECTED_RELEASE_CERT_SHA256 is not set. This build "
+                  "signs with com.hermesagent.hermes_android.zh and its own "
+                  "keystore, so the pinned certificate must be the SHA-256 "
+                  "of YOUR keystore, not the upstream one. Set it in "
+                  ".github/workflows/release.yml — see the comment at the top "
+                  "of this job for the keytool command."
+              )
 
           for apk_path in apk_paths:
               verified = subprocess.run(
