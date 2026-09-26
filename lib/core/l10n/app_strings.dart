@@ -995,6 +995,140 @@ abstract class AppStrings {
 
   /// Snackbar when promoting fails.
   String get workspaceSessionsPromoteFailed;
+
+  // ---- Chat (P1 batch 5) ----
+
+  /// Snackbar confirming TTS playback started.
+  String get chatReadingAloud;
+
+  /// Snackbar when TTS is unavailable.
+  String get chatReadAloudUnavailable;
+
+  /// Sheet option capturing a photo.
+  String get chatTakePhoto;
+
+  /// Sheet option selecting a remote file.
+  String get chatBrowseServerFiles;
+
+  /// Subtitle for the remote-file action.
+  String get chatInsertRemoteReference;
+
+  /// Sheet option picking local files.
+  String get chatChooseFiles;
+
+  /// Subtitle for the local-file action.
+  String get chatLocalFileTypes;
+
+  /// Snackbar when intake registration is deferred.
+  String get chatIntakePending;
+
+  /// Sheet title for the model / thinking picker.
+  String get chatModelAndThinking;
+
+  /// Subtitle showing the profile default; receives model and provider.
+  String get chatProfileDefault;
+
+  /// Generic Cancel action.
+  String get chatCancel;
+
+  /// Confirming button of the model picker.
+  String get chatApplyToThisChat;
+
+  /// Snackbar when the model list cannot be loaded.
+  String get chatModelLoadFailed;
+
+  /// Snackbar confirming a per-chat override; receives model and effort.
+  String get chatOverrideApplied;
+
+  /// Snackbar when the model change fails.
+  String get chatModelChangeFailed;
+
+  /// Snackbar when a command cannot be denied.
+  String get chatDenyFailed;
+
+  /// Snackbar when a Hermes question cannot be skipped.
+  String get chatSkipQuestionFailed;
+
+  /// Snackbar when the local close succeeds but the gateway stop fails.
+  String get chatStopFailed;
+
+  /// Snackbar when sending fails.
+  String get chatSendFailed;
+
+  /// Composer status while the response streams.
+  String get chatResponding;
+
+  /// Tooltip on the chat overflow button.
+  String get chatActions;
+
+  /// Overflow item refreshing the transcript.
+  String get chatRefresh;
+
+  /// Overflow item exporting or sharing.
+  String get chatExportShare;
+
+  /// Button dismissing a gateway notification banner.
+  String get chatDismiss;
+
+  /// Composer button label; receives the model and scope.
+  String get chatModelButton;
+
+  /// Scope shown on the model button when a per-chat override is active.
+  String get chatThisChatScope;
+
+  /// Scope shown on the model button when the profile default is used.
+  String get chatProfileDefaultScope;
+
+  /// Semantics label of the composer text field.
+  String get chatMessageField;
+
+  /// Hint text of the composer.
+  String get chatMessageHint;
+
+  /// Semantics label of the voice-reply toggle.
+  String get chatSpokenReplies;
+
+  /// Tooltip stopping the in-flight response.
+  String get chatStopResponse;
+
+  /// Tooltip sending the drafted message.
+  String get chatSend;
+
+  /// Error title when the transcript cannot be loaded.
+  String get chatLoadFailedTitle;
+
+  /// Sheet title above the per-message actions.
+  String get chatMessageActions;
+
+  /// Snackbar after copying a message.
+  String get chatMessageCopied;
+
+  /// Action copying a message.
+  String get chatCopyMessage;
+
+  /// Action reading a message aloud.
+  String get chatReadAloud;
+
+  /// Action editing and resending a message.
+  String get chatEditAndResend;
+
+  /// Action regenerating the last response.
+  String get chatRegenerate;
+
+  /// Label for the thinking-effort section of the model sheet.
+  String get chatThinkingEffort;
+
+  /// Semantics label of the model / scope button.
+  String get chatChooseModel;
+
+  /// Semantics label of the attachment-draft strip.
+  String get chatAttachmentDrafts;
+
+  /// Semantics label of the add-attachment button.
+  String get chatAddAttachment;
+
+  /// Tooltip of the add-attachment button.
+  String get chatAttachImageOrFile;
 }
 
 /// English strings.
@@ -1982,6 +2116,142 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get workspaceSessionsPromoteFailed => 'Couldn’t promote conversation';
+
+  @override
+  String get chatReadingAloud => 'Reading response aloud';
+
+  @override
+  String get chatReadAloudUnavailable =>
+      'Read aloud is unavailable on this device';
+
+  @override
+  String get chatTakePhoto => 'Take photo';
+
+  @override
+  String get chatBrowseServerFiles => 'Browse server files';
+
+  @override
+  String get chatInsertRemoteReference => 'Insert a remote @file reference';
+
+  @override
+  String get chatChooseFiles => 'Choose files';
+
+  @override
+  String get chatLocalFileTypes => 'Documents, archives, audio, video, or data';
+
+  @override
+  String get chatIntakePending =>
+      'File attached; document catalog registration is pending.';
+
+  @override
+  String get chatModelAndThinking => 'Model and thinking for this chat';
+
+  @override
+  String get chatProfileDefault => 'Profile default: {0}';
+
+  @override
+  String get chatCancel => 'Cancel';
+
+  @override
+  String get chatApplyToThisChat => 'Apply to this chat';
+
+  @override
+  String get chatModelLoadFailed =>
+      'Could not load models for this profile: {0}';
+
+  @override
+  String get chatOverrideApplied => '{0} • {1} now apply only to this chat.';
+
+  @override
+  String get chatModelChangeFailed => 'Model was not changed: {0}';
+
+  @override
+  String get chatDenyFailed => 'Could not deny the command: {0}';
+
+  @override
+  String get chatSkipQuestionFailed => 'Could not skip the Hermes question.';
+
+  @override
+  String get chatStopFailed =>
+      'Response closed locally; gateway stop failed: {0}';
+
+  @override
+  String get chatSendFailed => 'Send failed: {0}';
+
+  @override
+  String get chatResponding => 'Responding…';
+
+  @override
+  String get chatActions => 'Chat actions';
+
+  @override
+  String get chatRefresh => 'Refresh';
+
+  @override
+  String get chatExportShare => 'Export / share';
+
+  @override
+  String get chatDismiss => 'Dismiss';
+
+  @override
+  String get chatModelButton => '{0} • {1}';
+
+  @override
+  String get chatThisChatScope => 'this chat';
+
+  @override
+  String get chatProfileDefaultScope => 'profile default';
+
+  @override
+  String get chatMessageField => 'Message';
+
+  @override
+  String get chatMessageHint => 'Message Hermes…';
+
+  @override
+  String get chatSpokenReplies => 'Spoken replies';
+
+  @override
+  String get chatStopResponse => 'Stop response';
+
+  @override
+  String get chatSend => 'Send';
+
+  @override
+  String get chatLoadFailedTitle => 'Failed to load messages';
+
+  @override
+  String get chatMessageActions => 'Message actions';
+
+  @override
+  String get chatMessageCopied => 'Message copied';
+
+  @override
+  String get chatCopyMessage => 'Copy message';
+
+  @override
+  String get chatReadAloud => 'Read aloud';
+
+  @override
+  String get chatEditAndResend => 'Edit and resend';
+
+  @override
+  String get chatRegenerate => 'Regenerate response';
+
+  @override
+  String get chatThinkingEffort => 'Thinking effort';
+
+  @override
+  String get chatChooseModel => 'Choose chat model';
+
+  @override
+  String get chatAttachmentDrafts => 'Attachment drafts';
+
+  @override
+  String get chatAddAttachment => 'Add attachment';
+
+  @override
+  String get chatAttachImageOrFile => 'Attach image or file';
 }
 
 /// Simplified Chinese strings.
@@ -2919,6 +3189,138 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get workspaceSessionsPromoteFailed => '无法升级会话';
+
+  @override
+  String get chatReadingAloud => '正在朗读回复';
+
+  @override
+  String get chatReadAloudUnavailable => '此设备不支持朗读功能';
+
+  @override
+  String get chatTakePhoto => '拍摄照片';
+
+  @override
+  String get chatBrowseServerFiles => '浏览服务器文件';
+
+  @override
+  String get chatInsertRemoteReference => '插入远程 @file 引用';
+
+  @override
+  String get chatChooseFiles => '选择文件';
+
+  @override
+  String get chatLocalFileTypes => '文档、压缩包、音频、视频或数据文件';
+
+  @override
+  String get chatIntakePending => '文件已附加；文档目录注册待完成。';
+
+  @override
+  String get chatModelAndThinking => '本对话的模型与思考强度';
+
+  @override
+  String get chatProfileDefault => '配置默认：{0}';
+
+  @override
+  String get chatCancel => '取消';
+
+  @override
+  String get chatApplyToThisChat => '应用于本对话';
+
+  @override
+  String get chatModelLoadFailed => '无法加载此配置的模型：{0}';
+
+  @override
+  String get chatOverrideApplied => '{0} • {1} 现在仅应用于本对话。';
+
+  @override
+  String get chatModelChangeFailed => '模型未更改：{0}';
+
+  @override
+  String get chatDenyFailed => '无法拒绝该命令：{0}';
+
+  @override
+  String get chatSkipQuestionFailed => '无法跳过 Hermes 提问。';
+
+  @override
+  String get chatStopFailed => '响应已在本地关闭；网关停止失败：{0}';
+
+  @override
+  String get chatSendFailed => '发送失败：{0}';
+
+  @override
+  String get chatResponding => '正在响应…';
+
+  @override
+  String get chatActions => '对话操作';
+
+  @override
+  String get chatRefresh => '刷新';
+
+  @override
+  String get chatExportShare => '导出 / 分享';
+
+  @override
+  String get chatDismiss => '忽略';
+
+  @override
+  String get chatModelButton => '{0} • {1}';
+
+  @override
+  String get chatThisChatScope => '本对话';
+
+  @override
+  String get chatProfileDefaultScope => '配置默认';
+
+  @override
+  String get chatMessageField => '消息';
+
+  @override
+  String get chatMessageHint => '给 Hermes 发送消息…';
+
+  @override
+  String get chatSpokenReplies => '语音播报';
+
+  @override
+  String get chatStopResponse => '停止响应';
+
+  @override
+  String get chatSend => '发送';
+
+  @override
+  String get chatLoadFailedTitle => '无法加载消息';
+
+  @override
+  String get chatMessageActions => '消息操作';
+
+  @override
+  String get chatMessageCopied => '消息已复制';
+
+  @override
+  String get chatCopyMessage => '复制消息';
+
+  @override
+  String get chatReadAloud => '朗读';
+
+  @override
+  String get chatEditAndResend => '编辑并重新发送';
+
+  @override
+  String get chatRegenerate => '重新生成回复';
+
+  @override
+  String get chatThinkingEffort => '思考强度';
+
+  @override
+  String get chatChooseModel => '选择对话模型';
+
+  @override
+  String get chatAttachmentDrafts => '附件草稿';
+
+  @override
+  String get chatAddAttachment => '添加附件';
+
+  @override
+  String get chatAttachImageOrFile => '附加图片或文件';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
