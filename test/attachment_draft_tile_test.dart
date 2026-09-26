@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/attachment_draft.dart';
 import 'package:hermes_android/core/services/attachment_draft_service.dart';
 import 'package:hermes_android/core/widgets/attachment_draft_tile.dart';
@@ -70,8 +71,14 @@ void main() {
       );
       expect(tester.takeException(), isNull);
 
-      expect(find.byTooltip('Move attachment previous'), findsNWidgets(2));
-      expect(find.byTooltip('Move attachment next'), findsNWidgets(2));
+      expect(
+        find.byTooltip(const AppStringsEn().attachmentMovePrevious),
+        findsNWidgets(2),
+      );
+      expect(
+        find.byTooltip(const AppStringsEn().attachmentMoveNext),
+        findsNWidgets(2),
+      );
       final previousButtons = find.widgetWithIcon(
         IconButton,
         Icons.arrow_upward,
@@ -94,9 +101,13 @@ void main() {
       );
       expect(
         tester
-            .getSemantics(find.bySemanticsLabel('Move attachment next').first)
+            .getSemantics(
+              find
+                  .bySemanticsLabel(const AppStringsEn().attachmentMoveNext)
+                  .first,
+            )
             .label,
-        contains('Move attachment next'),
+        contains(const AppStringsEn().attachmentMoveNext),
       );
 
       await tester.tap(nextButtons.at(0));
@@ -145,10 +156,17 @@ void main() {
     );
 
     final attachment = tester.getSemantics(
-      find.bySemanticsLabel('Attachment 1 of 1'),
+      find.bySemanticsLabel(
+        const AppStringsEn().attachmentSemanticLabel
+            .replaceAll('{0}', '1')
+            .replaceAll('{1}', '1'),
+      ),
     );
-    expect(attachment.value, 'Upload failed');
-    expect(find.bySemanticsLabel('Retry upload'), findsOneWidget);
+    expect(attachment.value, const AppStringsEn().attachmentStatusFailed);
+    expect(
+      find.bySemanticsLabel(const AppStringsEn().attachmentRetryUpload),
+      findsOneWidget,
+    );
     expect(find.bySemanticsLabel(sensitiveName), findsNothing);
     final retry = find.widgetWithIcon(IconButton, Icons.refresh);
     expect(tester.getSize(retry), const Size(48, 48));
@@ -179,8 +197,16 @@ void main() {
       ),
     );
     expect(
-      tester.getSemantics(find.bySemanticsLabel('Attachment 1 of 1')).value,
-      'Uploading',
+      tester
+          .getSemantics(
+            find.bySemanticsLabel(
+              const AppStringsEn().attachmentSemanticLabel
+                  .replaceAll('{0}', '1')
+                  .replaceAll('{1}', '1'),
+            ),
+          )
+          .value,
+      const AppStringsEn().attachmentStatusUploading,
     );
     semantics.dispose();
   });
