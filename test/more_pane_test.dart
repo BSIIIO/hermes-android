@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/theme/hermes_theme.dart';
 import 'package:hermes_android/core/widgets/more_pane.dart';
 
@@ -38,7 +39,7 @@ Future<void> _pumpPane(
 void main() {
   group('buildMoreSections', () {
     test('exposes every roadmap destination exactly once', () {
-      final sections = buildMoreSections(dashboardReachable: true);
+      final sections = buildMoreSections(dashboardReachable: true, s: const AppStringsEn());
       final ids = [
         for (final section in sections)
           for (final entry in section.entries) entry.id,
@@ -62,7 +63,7 @@ void main() {
     });
 
     test('Unassigned chats is not mislabeled as the action Inbox', () {
-      final entry = buildMoreSections(dashboardReachable: true)
+      final entry = buildMoreSections(dashboardReachable: true, s: const AppStringsEn())
           .expand((section) => section.entries)
           .firstWhere((candidate) => candidate.id == 'unassigned');
 
@@ -71,7 +72,7 @@ void main() {
     });
 
     test('every section has a title and at least one entry', () {
-      for (final section in buildMoreSections(dashboardReachable: true)) {
+      for (final section in buildMoreSections(dashboardReachable: true, s: const AppStringsEn())) {
         expect(section.title, isNotEmpty);
         expect(section.entries, isNotEmpty);
       }
@@ -79,7 +80,7 @@ void main() {
 
     test('dashboard-backed entries are available when the dashboard is', () {
       final entries = {
-        for (final section in buildMoreSections(dashboardReachable: true))
+        for (final section in buildMoreSections(dashboardReachable: true, s: const AppStringsEn()))
           for (final entry in section.entries) entry.id: entry,
       };
 
@@ -94,7 +95,7 @@ void main() {
 
     test('a missing dashboard disables its entries with a reason', () {
       final entries = {
-        for (final section in buildMoreSections(dashboardReachable: false))
+        for (final section in buildMoreSections(dashboardReachable: false, s: const AppStringsEn()))
           for (final entry in section.entries) entry.id: entry,
       };
 
@@ -116,7 +117,7 @@ void main() {
 
     test('local settings stay reachable without a dashboard', () {
       final entries = {
-        for (final section in buildMoreSections(dashboardReachable: false))
+        for (final section in buildMoreSections(dashboardReachable: false, s: const AppStringsEn()))
           for (final entry in section.entries) entry.id: entry,
       };
 
@@ -128,7 +129,7 @@ void main() {
 
     test('contract-gated organization stays visible with exact reasons', () {
       final entries = {
-        for (final section in buildMoreSections(dashboardReachable: true))
+        for (final section in buildMoreSections(dashboardReachable: true, s: const AppStringsEn()))
           for (final entry in section.entries) entry.id: entry,
       };
 
@@ -142,7 +143,7 @@ void main() {
       'native Smart Views are available and only contract gaps are disabled',
       () {
         final entries = {
-          for (final section in buildMoreSections(dashboardReachable: true))
+          for (final section in buildMoreSections(dashboardReachable: true, s: const AppStringsEn()))
             for (final entry in section.entries) entry.id: entry,
         };
 
@@ -155,7 +156,7 @@ void main() {
 
     test('Files follows the dashboard it depends on', () {
       final entries = {
-        for (final section in buildMoreSections(dashboardReachable: false))
+        for (final section in buildMoreSections(dashboardReachable: false, s: const AppStringsEn()))
           for (final entry in section.entries) entry.id: entry,
       };
 
@@ -166,7 +167,7 @@ void main() {
 
   group('MorePane', () {
     List<MoreSection> sections({bool dashboardReachable = true}) =>
-        buildMoreSections(dashboardReachable: dashboardReachable);
+        buildMoreSections(dashboardReachable: dashboardReachable, s: const AppStringsEn());
 
     testWidgets('renders every section title and entry', (tester) async {
       final built = sections();

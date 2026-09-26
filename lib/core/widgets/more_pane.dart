@@ -18,6 +18,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../theme/hermes_theme.dart';
 import 'hermes_components.dart';
 
@@ -73,106 +74,103 @@ class MoreSection {
   const MoreSection({required this.title, required this.entries});
 }
 
-const _dashboardRequired =
-    'Needs a reachable Hermes dashboard. Check the host, port, and '
-    'credentials of this connection.';
-const _gatewayAssetsRequired =
-    'Needs a server-authoritative Assets index in the Hermes Gateway.';
-const _gatewayOrganizationRequired =
-    'Needs durable pin ordering, batch mutation, and undo contracts in the '
-    'Hermes Gateway.';
-const _gatewayAiFilingRequired =
-    'Needs a correction-aware filing contract in the Hermes Gateway.';
-
 /// Builds the More menu for the current connection.
 ///
 /// [dashboardReachable] gates the surfaces served by the Hermes Dashboard.
 /// Local device settings stay reachable regardless, so the user can always
 /// repair a broken connection from inside the app.
-List<MoreSection> buildMoreSections({required bool dashboardReachable}) {
+List<MoreSection> buildMoreSections({
+  required bool dashboardReachable,
+  required AppStrings s,
+}) {
+  String dashboardRequired = s.moreDashboardRequired;
+  String gatewayAssetsRequired = s.moreGatewayAssetsRequired;
+  String gatewayOrganizationRequired = s.moreGatewayOrganizationRequired;
+  String gatewayAiFilingRequired = s.moreGatewayAiFilingRequired;
+
   MoreEntryAvailability dashboardBacked() => dashboardReachable
       ? MoreEntryAvailability.available
       : MoreEntryAvailability.unavailable;
-  String? dashboardReason() => dashboardReachable ? null : _dashboardRequired;
+  String? dashboardReason() => dashboardReachable ? null : dashboardRequired;
 
   return [
     MoreSection(
-      title: 'Workspace',
+      title: s.moreSectionWorkspace,
       entries: [
-        const MoreEntry(
+        MoreEntry(
           id: 'unassigned',
-          title: 'Unassigned chats',
-          subtitle: 'Chats that are not assigned to a Project',
+          title: s.moreUnassignedChatsTitle,
+          subtitle: s.moreUnassignedChatsSubtitle,
           icon: Icons.inbox_outlined,
         ),
-        const MoreEntry(
+        MoreEntry(
           id: 'archived-quick',
-          title: 'Archived quick chats',
-          subtitle: 'Review or promote quick chats past their retention period',
+          title: s.moreArchivedQuickTitle,
+          subtitle: s.moreArchivedQuickSubtitle,
           icon: Icons.archive_outlined,
         ),
         MoreEntry(
           id: 'files',
-          title: 'Files',
-          subtitle: 'Browse the miniserver folders behind your projects',
+          title: s.moreFilesTitle,
+          subtitle: s.moreFilesSubtitle,
           icon: Icons.folder_open_outlined,
           availability: dashboardBacked(),
           unavailableReason: dashboardReason(),
         ),
-        const MoreEntry(
+        MoreEntry(
           id: 'assets',
-          title: 'Assets',
-          subtitle: 'Artifacts, attachments, and generated media',
+          title: s.moreAssetsTitle,
+          subtitle: s.moreAssetsSubtitle,
           icon: Icons.image_outlined,
           availability: MoreEntryAvailability.unavailable,
-          unavailableReason: _gatewayAssetsRequired,
-        ),
-      ],
-    ),
-    const MoreSection(
-      title: 'Organization',
-      entries: [
-        MoreEntry(
-          id: 'pin-batch-undo',
-          title: 'Pin, batch and undo',
-          subtitle: 'Cross-device ordering and reversible bulk organization',
-          icon: Icons.push_pin_outlined,
-          availability: MoreEntryAvailability.unavailable,
-          unavailableReason: _gatewayOrganizationRequired,
-        ),
-        MoreEntry(
-          id: 'ai-filing',
-          title: 'AI-assisted filing',
-          subtitle: 'Suggest Projects and learn from your corrections',
-          icon: Icons.auto_fix_high_outlined,
-          availability: MoreEntryAvailability.unavailable,
-          unavailableReason: _gatewayAiFilingRequired,
+          unavailableReason: gatewayAssetsRequired,
         ),
       ],
     ),
     MoreSection(
-      title: 'Automation',
+      title: s.moreSectionOrganization,
+      entries: [
+        MoreEntry(
+          id: 'pin-batch-undo',
+          title: s.morePinBatchUndoTitle,
+          subtitle: s.morePinBatchUndoSubtitle,
+          icon: Icons.push_pin_outlined,
+          availability: MoreEntryAvailability.unavailable,
+          unavailableReason: gatewayOrganizationRequired,
+        ),
+        MoreEntry(
+          id: 'ai-filing',
+          title: s.moreAiFilingTitle,
+          subtitle: s.moreAiFilingSubtitle,
+          icon: Icons.auto_fix_high_outlined,
+          availability: MoreEntryAvailability.unavailable,
+          unavailableReason: gatewayAiFilingRequired,
+        ),
+      ],
+    ),
+    MoreSection(
+      title: s.moreSectionAutomation,
       entries: [
         MoreEntry(
           id: 'cron',
-          title: 'Cron',
-          subtitle: 'Scheduled jobs and their last runs',
+          title: s.moreCronTitle,
+          subtitle: s.moreCronSubtitle,
           icon: Icons.schedule_outlined,
           availability: dashboardBacked(),
           unavailableReason: dashboardReason(),
         ),
         MoreEntry(
           id: 'skills',
-          title: 'Skills and tools',
-          subtitle: 'What Hermes knows how to do',
+          title: s.moreSkillsTitle,
+          subtitle: s.moreSkillsSubtitle,
           icon: Icons.auto_awesome_outlined,
           availability: dashboardBacked(),
           unavailableReason: dashboardReason(),
         ),
         MoreEntry(
           id: 'memory',
-          title: 'Memory',
-          subtitle: 'Durable facts Hermes keeps about you',
+          title: s.moreMemoryTitle,
+          subtitle: s.moreMemorySubtitle,
           icon: Icons.psychology_outlined,
           availability: dashboardBacked(),
           unavailableReason: dashboardReason(),
@@ -180,19 +178,18 @@ List<MoreSection> buildMoreSections({required bool dashboardReachable}) {
       ],
     ),
     MoreSection(
-      title: 'System',
+      title: s.moreSectionSystem,
       entries: [
-        const MoreEntry(
+        MoreEntry(
           id: 'settings',
-          title: 'Settings',
-          subtitle: 'Connection, appearance, and device preferences',
+          title: s.moreSettingsTitle,
+          subtitle: s.moreSettingsSubtitle,
           icon: Icons.settings_outlined,
         ),
         MoreEntry(
           id: 'dashboard',
-          title: 'Open the Hermes dashboard',
-          subtitle:
-              'Everything not yet native, in the authenticated web dashboard',
+          title: s.moreDashboardTitle,
+          subtitle: s.moreDashboardSubtitle,
           icon: Icons.open_in_new,
           availability: dashboardBacked(),
           unavailableReason: dashboardReason(),

@@ -24,6 +24,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../theme/hermes_theme.dart';
 import '../utils/activity_feed.dart';
 import 'hermes_components.dart';
@@ -112,11 +113,10 @@ class ActivityPaneState extends State<ActivityPane> {
 
     if (feed == null) {
       if (_error != null) {
+        final s = AppStrings.of(context);
         return ErrorState(
-          title: 'Could not read activity',
-          message:
-              'Activity reads the durable turn journal to know what Hermes is '
-              'doing. Check that the gateway is reachable, then try again.',
+          title: s.activityReadFailed,
+          message: s.activityReadFailedMessage,
           onRetry: _load,
         );
       }
@@ -210,7 +210,7 @@ class _OverflowNote extends StatelessWidget {
         HermesSpacing.lg,
       ),
       child: Text(
-        'and $count more',
+        AppStrings.of(context).activityAndCountMore.replaceAll('{0}', '$count'),
         style: tokens.typography.label.copyWith(color: tokens.muted),
       ),
     );
@@ -240,7 +240,7 @@ class _OfflineBanner extends StatelessWidget {
             const SizedBox(width: HermesSpacing.sm),
             Expanded(
               child: Text(
-                'Offline — showing the last known activity.',
+                AppStrings.of(context).activityOfflineBanner,
                 style: tokens.typography.label.copyWith(color: tokens.muted),
               ),
             ),
