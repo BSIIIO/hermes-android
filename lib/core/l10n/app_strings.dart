@@ -282,6 +282,188 @@ abstract class AppStrings {
 
   /// Visibility toggle tooltip when the passphrase is visible.
   String get backupHidePassphrase;
+
+  // ---- Chats: drawer navigation (P1 batch 2) ----
+
+  /// Drawer: the profile row's label.
+  String get drawerProfile;
+
+  /// Drawer: sub-label under the profile row, naming the active profile.
+  String get drawerProfileAction;
+
+  /// Drawer: Spaces entry.
+  String get drawerSpaces;
+
+  /// Drawer: Workspace entry.
+  String get drawerWorkspace;
+
+  /// Drawer: Workspace entry's subtitle.
+  String get drawerWorkspaceSubtitle;
+
+  /// Drawer: Memory entry.
+  String get drawerMemory;
+
+  /// Drawer: Cron Jobs entry.
+  String get drawerCronJobs;
+
+  /// Drawer: Skills entry.
+  String get drawerSkills;
+
+  /// Drawer: Settings entry.
+  String get drawerSettings;
+
+  // ---- Chats: list states (P1 batch 2) ----
+
+  /// Shown while the gateway connection is being established.
+  String get chatsConnecting;
+
+  /// Hint under [chatsConnecting]; a shell command the user can run.
+  String get chatsConnectingHint;
+
+  /// Title of the screen shown when the gateway is unreachable.
+  String get chatsConnectionIssue;
+
+  /// Shown when the session list is empty.
+  String get chatsNoSessions;
+
+  /// Hint under [chatsNoSessions].
+  String get chatsNoSessionsHint;
+
+  /// Row meta line: message count, model, and time.
+  String get chatsRowMeta;
+
+  // ---- Chats: actions and dialogs (P1 batch 2) ----
+
+  /// Tooltip/menu item that starts a new chat.
+  String get chatsNewChat;
+
+  /// Menu item that switches the active profile.
+  String get chatsSwitchProfile;
+
+  /// Menu item that renames a chat.
+  String get chatsRenameChat;
+
+  /// The confirm button in the rename dialog.
+  String get chatsRename;
+
+  /// Menu item that branches a chat.
+  String get chatsBranchChat;
+
+  /// Menu item that deletes a session.
+  String get chatsDelete;
+
+  /// Menu item that moves a chat to another space.
+  String get chatsMoveToSpace;
+
+  /// Title of the move-chat sheet.
+  String get chatsMoveChat;
+
+  /// Description under [chatsMoveChat].
+  String get chatsMoveChatChoose;
+
+  /// The `Unassigned` destination row.
+  String get chatsMoveUnassigned;
+
+  /// Confirmation title before deleting a session.
+  String get chatsDeleteSessionTitle;
+
+  /// Confirmation body; receives the session title.
+  String get chatsDeleteSessionBody;
+
+  /// Snackbar confirming a delete.
+  String get chatsSessionDeleted;
+
+  /// Snackbar title shown above the menus.
+  String get chatsActions;
+
+  /// Placeholder used when a session's title is blank.
+  String get chatsUntitledSession;
+
+  // ---- Chats: profile, search, and prompts (P1 batch 2) ----
+
+  /// Menu item that switches the active profile.
+  String get chatsProfile;
+
+  /// Snackbar confirming a session was renamed.
+  String get chatsRenamePrompt;
+
+  /// Snackbar confirming a branch was created.
+  String get chatsBranchCreated;
+
+  /// Snackbar after deleting a session.
+  String get chatsDeleted;
+
+  /// Error snackbar template; receives the error text.
+  String get chatsDeleteFailed;
+
+  /// Error snackbar template for a failed rename.
+  String get chatsRenameFailed;
+
+  /// Tooltip that clears the search field.
+  String get chatsClearSearch;
+
+  /// Menu item that changes which model rewrites AI searches.
+  String get chatsChangeAiSearchModel;
+
+  /// Label of the search-mode control.
+  String get chatsSearchMode;
+
+  /// Placeholder for the AI search tier.
+  String get chatsSearchHintAi;
+
+  /// Placeholder for the full-text search tier.
+  String get chatsSearchHintFullText;
+
+  /// Placeholder for the loaded-chats tier.
+  String get chatsSearchHintLoaded;
+
+  /// On-device search tier: title and description.
+  String get chatsSearchOnDevice;
+
+  /// Description of the on-device tier.
+  String get chatsSearchOnDeviceDetail;
+
+  /// Full-text search tier: title and description.
+  String get chatsSearchFullText;
+
+  /// Description of the full-text tier.
+  String get chatsSearchFullTextDetail;
+
+  /// Combined AI + full-text search tier: title.
+  String get chatsSearchAiFullText;
+
+  /// Row offering the lower on-device tier.
+  String get chatsSearchUseOnDevice;
+
+  /// Shown when a full-text search matched nothing.
+  String get chatsSearchNoMatches;
+
+  /// Shown above the query the AI actually searched for.
+  String get chatsSearchAiSearchedFor;
+
+  /// The AI-plus-full-text tier's row title.
+  String get chatsSearchAiFullTextTitle;
+
+  /// Prompt shown when no AI search model has been chosen yet.
+  String get chatsSearchAiChooseModel;
+
+  /// Title of the AI search model sheet.
+  String get chatsAiModelTitle;
+
+  /// Explanation under [chatsAiModelTitle].
+  String get chatsAiModelDescription;
+
+  /// Error template; receives the failure text.
+  String get chatsAiModelLoadFailed;
+
+  /// The disabled header row of the profile picker.
+  String get chatsProfileHeader;
+
+  /// Dialog title and confirm label for branching a chat.
+  String get chatsBranchChatTitle;
+
+  /// Confirm button in the branch dialog.
+  String get chatsBranchCreate;
 }
 
 /// English strings.
@@ -536,6 +718,184 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get backupHidePassphrase => 'Hide passphrase';
+
+  @override
+  String get drawerProfile => 'Profile';
+
+  @override
+  String get drawerProfileAction => 'Switch profile';
+
+  @override
+  String get drawerSpaces => 'Spaces';
+
+  @override
+  String get drawerWorkspace => 'Workspace';
+
+  @override
+  String get drawerWorkspaceSubtitle => 'Projects, Activity — new navigation';
+
+  @override
+  String get drawerMemory => 'Memory';
+
+  @override
+  String get drawerCronJobs => 'Cron Jobs';
+
+  @override
+  String get drawerSkills => 'Skills';
+
+  @override
+  String get drawerSettings => 'Settings';
+
+  @override
+  String get chatsConnecting => 'Connecting to {0}...';
+
+  @override
+  String get chatsConnectingHint =>
+      'Make sure the Gateway API Server is running\n(hermes gateway status)';
+
+  @override
+  String get chatsConnectionIssue => 'Connection issue';
+
+  @override
+  String get chatsNoSessions => 'No sessions yet';
+
+  @override
+  String get chatsNoSessionsHint => 'Tap the + button to start a new chat';
+
+  @override
+  String get chatsRowMeta => '{0} msgs \u2022 {1} \u2022 {2}';
+
+  @override
+  String get chatsNewChat => 'New Chat';
+
+  @override
+  String get chatsSwitchProfile => 'Switch profile';
+
+  @override
+  String get chatsRenameChat => 'Rename chat';
+
+  @override
+  String get chatsRename => 'Rename';
+
+  @override
+  String get chatsBranchChat => 'Branch chat';
+
+  @override
+  String get chatsDelete => 'Delete';
+
+  @override
+  String get chatsMoveToSpace => 'Move to space';
+
+  @override
+  String get chatsMoveChat => 'Move chat';
+
+  @override
+  String get chatsMoveChatChoose => 'Choose its destination space';
+
+  @override
+  String get chatsMoveUnassigned => 'Unassigned';
+
+  @override
+  String get chatsDeleteSessionTitle => 'Delete session?';
+
+  @override
+  String get chatsDeleteSessionBody =>
+      'Delete "{0}" from the remote Hermes history? This cannot be undone.';
+
+  @override
+  String get chatsSessionDeleted => 'Session deleted from remote Hermes.';
+
+  @override
+  String get chatsActions => 'Chat actions';
+
+  @override
+  String get chatsUntitledSession => 'Untitled session';
+
+  @override
+  String get chatsProfile => 'Profile';
+
+  @override
+  String get chatsRenamePrompt => 'Rename chat';
+
+  @override
+  String get chatsBranchCreated => 'Branch created in Hermes history.';
+
+  @override
+  String get chatsDeleted => 'Session deleted from remote Hermes.';
+
+  @override
+  String get chatsDeleteFailed => 'Could not delete session: {0}';
+
+  @override
+  String get chatsRenameFailed => 'Could not rename chat: {0}';
+
+  @override
+  String get chatsClearSearch => 'Clear search';
+
+  @override
+  String get chatsChangeAiSearchModel => 'Change AI search model';
+
+  @override
+  String get chatsSearchMode => 'Search mode';
+
+  @override
+  String get chatsSearchHintAi => 'Ask AI to find a conversation';
+
+  @override
+  String get chatsSearchHintFullText => 'Search all message content';
+
+  @override
+  String get chatsSearchHintLoaded => 'Search loaded chats';
+
+  @override
+  String get chatsSearchOnDevice => 'On-device';
+
+  @override
+  String get chatsSearchOnDeviceDetail => 'Titles, previews, and models';
+
+  @override
+  String get chatsSearchFullText => 'Full-text';
+
+  @override
+  String get chatsSearchFullTextDetail => 'All stored message content';
+
+  @override
+  String get chatsSearchAiFullText => 'AI + full-text';
+
+  @override
+  String get chatsSearchUseOnDevice => 'Use on-device';
+
+  @override
+  String get chatsSearchNoMatches => 'No message-content matches';
+
+  @override
+  String get chatsSearchAiSearchedFor => 'AI searched for: {0}';
+
+  @override
+  String get chatsSearchAiFullTextTitle => 'AI + full-text';
+
+  @override
+  String get chatsSearchAiChooseModel => 'Choose a small model to rewrite queries';
+
+  @override
+  String get chatsAiModelTitle => 'AI search model';
+
+  @override
+  String get chatsAiModelDescription =>
+      'The model only rewrites your question into a short full-text query. '
+      'Hermes uses the provider credentials already configured on the host.';
+
+  @override
+  String get chatsAiModelLoadFailed => 'Could not load AI search models: {0}';
+
+  @override
+  String get chatsProfileHeader => 'Profile';
+
+  @override
+  String get chatsBranchChatTitle => 'Branch chat';
+
+  @override
+  String get chatsBranchCreate => 'Create branch';
 }
 
 /// Simplified Chinese strings.
@@ -776,6 +1136,182 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get backupHidePassphrase => '隐藏口令';
+
+  @override
+  String get drawerProfile => '个人资料';
+
+  @override
+  String get drawerProfileAction => '切换个人资料';
+
+  @override
+  String get drawerSpaces => '空间';
+
+  @override
+  String get drawerWorkspace => '工作区';
+
+  @override
+  String get drawerWorkspaceSubtitle => '项目、动态 — 全新导航';
+
+  @override
+  String get drawerMemory => '记忆';
+
+  @override
+  String get drawerCronJobs => '定时任务';
+
+  @override
+  String get drawerSkills => '技能';
+
+  @override
+  String get drawerSettings => '设置';
+
+  @override
+  String get chatsConnecting => '正在连接 {0}...';
+
+  @override
+  String get chatsConnectingHint => '请确认 Gateway API Server 正在运行\n(hermes gateway status)';
+
+  @override
+  String get chatsConnectionIssue => '连接问题';
+
+  @override
+  String get chatsNoSessions => '暂无会话';
+
+  @override
+  String get chatsNoSessionsHint => '点按 + 按钮开始新会话';
+
+  @override
+  String get chatsRowMeta => '{0} 条消息 \u2022 {1} \u2022 {2}';
+
+  @override
+  String get chatsNewChat => '新会话';
+
+  @override
+  String get chatsSwitchProfile => '切换个人资料';
+
+  @override
+  String get chatsRenameChat => '重命名会话';
+
+  @override
+  String get chatsRename => '重命名';
+
+  @override
+  String get chatsBranchChat => '分叉会话';
+
+  @override
+  String get chatsDelete => '删除';
+
+  @override
+  String get chatsMoveToSpace => '移动到空间';
+
+  @override
+  String get chatsMoveChat => '移动会话';
+
+  @override
+  String get chatsMoveChatChoose => '选择目标空间';
+
+  @override
+  String get chatsMoveUnassigned => '未分配';
+
+  @override
+  String get chatsDeleteSessionTitle => '删除会话？';
+
+  @override
+  String get chatsDeleteSessionBody =>
+      '要从远端 Hermes 历史中删除“{0}”吗？此操作无法撤销。';
+
+  @override
+  String get chatsSessionDeleted => '已从远端 Hermes 历史中删除会话。';
+
+  @override
+  String get chatsActions => '会话操作';
+
+  @override
+  String get chatsUntitledSession => '未命名会话';
+
+  @override
+  String get chatsProfile => '个人资料';
+
+  @override
+  String get chatsRenamePrompt => '重命名会话';
+
+  @override
+  String get chatsBranchCreated => '已在 Hermes 历史中创建分叉。';
+
+  @override
+  String get chatsDeleted => '已从远端 Hermes 历史中删除会话。';
+
+  @override
+  String get chatsDeleteFailed => '删除会话失败：{0}';
+
+  @override
+  String get chatsRenameFailed => '重命名会话失败：{0}';
+
+  @override
+  String get chatsClearSearch => '清除搜索';
+
+  @override
+  String get chatsChangeAiSearchModel => '更改 AI 搜索模型';
+
+  @override
+  String get chatsSearchMode => '搜索模式';
+
+  @override
+  String get chatsSearchHintAi => '让 AI 查找会话';
+
+  @override
+  String get chatsSearchHintFullText => '搜索全部消息内容';
+
+  @override
+  String get chatsSearchHintLoaded => '搜索已加载的会话';
+
+  @override
+  String get chatsSearchOnDevice => '设备端';
+
+  @override
+  String get chatsSearchOnDeviceDetail => '标题、预览和模型';
+
+  @override
+  String get chatsSearchFullText => '全文';
+
+  @override
+  String get chatsSearchFullTextDetail => '全部已存储的消息内容';
+
+  @override
+  String get chatsSearchAiFullText => 'AI + 全文';
+
+  @override
+  String get chatsSearchUseOnDevice => '使用设备端搜索';
+
+  @override
+  String get chatsSearchNoMatches => '没有匹配的消息内容';
+
+  @override
+  String get chatsSearchAiSearchedFor => 'AI 实际搜索：{0}';
+
+  @override
+  String get chatsSearchAiFullTextTitle => 'AI + 全文';
+
+  @override
+  String get chatsSearchAiChooseModel => '选择一个小模型来改写查询';
+
+  @override
+  String get chatsAiModelTitle => 'AI 搜索模型';
+
+  @override
+  String get chatsAiModelDescription =>
+      '该模型只把你的问题改写成简短的全文查询。Hermes 使用主机上已配置的服务提供商凭据。';
+
+  @override
+  String get chatsAiModelLoadFailed => '加载 AI 搜索模型失败：{0}';
+
+  @override
+  String get chatsProfileHeader => '个人资料';
+
+  @override
+  String get chatsBranchChatTitle => '分叉会话';
+
+  @override
+  String get chatsBranchCreate => '创建分叉';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
