@@ -110,10 +110,10 @@ class ActivityPaneState extends State<ActivityPane> {
   @override
   Widget build(BuildContext context) {
     final feed = _feed;
+    final s = AppStrings.of(context);
 
     if (feed == null) {
       if (_error != null) {
-        final s = AppStrings.of(context);
         return ErrorState(
           title: s.activityReadFailed,
           message: s.activityReadFailedMessage,
@@ -153,12 +153,11 @@ class ActivityPaneState extends State<ActivityPane> {
                     ? Icons.inbox_outlined
                     : Icons.bolt_outlined,
                 title: widget.actionableOnly
-                    ? 'Inbox is clear'
-                    : 'Nothing is running',
+                    ? s.activityEmptyTitleActionable
+                    : s.activityEmptyTitleRunning,
                 message: widget.actionableOnly
-                    ? 'No turn needs your input or has failed.'
-                    : 'No turn is blocked, in flight, or recently finished. '
-                          'Work you start will show up here.',
+                    ? s.activityEmptyMessageActionable
+                    : s.activityEmptyMessageRunning,
               ),
             )
           else
