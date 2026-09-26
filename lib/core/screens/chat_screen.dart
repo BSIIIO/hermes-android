@@ -69,21 +69,26 @@ class _ModelSelection {
   const _ModelSelection({required this.choice, required this.reasoningEffort});
 }
 
-const _reasoningEffortLabels = <String, String>{
-  'none': 'Off (no thinking)',
+/// Labels for each reasoning-effort wire value, in the active language.
+///
+/// A function rather than a const map because the values are translated: only
+/// the keys come from the gateway, never the labels.
+///
+/// `minimal` through `ultra` keep the gateway's own enum names verbatim — they
+/// have no natural Chinese equivalent, and translating them would make the
+/// dropdown unreadable against the gateway's docs, config and logs.
+Map<String, String> _reasoningEffortLabels(AppStrings s) => <String, String>{
+  'none': s.chatReasoningEffortOff,
   'minimal': 'Minimal',
   'low': 'Low',
   'medium': 'Medium',
   'high': 'High',
-  'xhigh': 'Extra High',
+  'xhigh': s.chatReasoningEffortExtraHigh,
   'max': 'Max',
   'ultra': 'Ultra',
 };
 
 enum _ResponseTransport { none, rest, desktop }
-
-const _legacyTransportNotice =
-    'Background recovery unavailable — legacy transport';
 
 @visibleForTesting
 typedef TestRemotePromptSubmit =
@@ -501,7 +506,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       );
     } catch (e) {
       if (!mounted) return;
-      setState(() => _voiceStatus = 'Voice setup failed: $e');
+      setState(
+        () => _voiceStatus = AppStrings.of(
+          context,
+        ).chatVoiceSetupFailed.replaceAll('{0}', '$e'),
+      );
     }
   }
 
@@ -518,7 +527,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           content: Text(
             _voiceComposer.status ??
                 _voiceStatus ??
-                'Speech recognition is unavailable',
+                AppStrings.of(context).chatSpeechRecognitionUnavailable,
           ),
         ),
       );
@@ -568,9 +577,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   void _onTurnSettled(GatewayTurnRecoveryState state) {
     if (!mounted || !_appInBackground) return;
     final turnId = state.turnId ?? state.clientTurnId;
+    final s = AppStrings.of(context);
     final summary = state.isTerminal && !state.isFailClosed
-        ? 'Response ready'
-        : 'Turn completed';
+        ? s.chatResponseReady
+        : s.chatTurnCompleted;
     unawaited(
       _turnNotifications.showTurnCompleted(
         turnSummary: '${widget.session.title}: $summary',
@@ -777,9 +787,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     if (mounted && !_streaming) {
       setState(() {
         _sending = true;
-        _gatewayTurnStatus = const GatewayTurnStatus(
+        _gatewayTurnStatus = GatewayTurnStatus(
           kind: 'recovery',
-          text: 'Recovering Hermes…',
+          text: AppStrings.of(context).chatRecoveryRestarting,
         );
       });
     }
@@ -817,7 +827,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       setState(() {
         _gatewayTurnStatus = GatewayTurnStatus(
           kind: 'recovery',
-          text: 'Hermes recovery is unavailable: $error',
+          text: AppStrings.of(
+            context,
+          ).chatRecoveryUnavailable.replaceAll('{0}', '$error'),
         );
       });
     } finally {
@@ -879,9 +891,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         _streaming = false;
         _awaitingVoiceReply = false;
         _gatewayTurnStatus = projection.isFailClosed
-            ? const GatewayTurnStatus(
+            ? GatewayTurnStatus(
                 kind: 'recovery_failed',
-                text: 'Hermes stopped recovery safely. No prompt was resent.',
+                text: AppStrings.of(context).chatRecoveryStoppedSafely,
               )
             : null;
       }
@@ -930,10 +942,15 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   String _gatewayRecoveryStatusText(GatewayRecoveryTurnStatus? status) {
+    if (status == null) return '';
+    final s = AppStrings.of(context);
     return switch (status) {
-      GatewayRecoveryTurnStatus.waitingInput => 'Hermes is waiting for input…',
-      GatewayRecoveryTurnStatus.running => 'Hermes is responding…',
-      _ => 'Recovering Hermes…',
+      GatewayRecoveryTurnStatus.accepted => s.chatRecoveryRestarting,
+      GatewayRecoveryTurnStatus.running => s.chatRecoveryResponding,
+      GatewayRecoveryTurnStatus.waitingInput => s.chatRecoveryWaitingInput,
+      GatewayRecoveryTurnStatus.completed => s.chatRecoveryRestarting,
+      GatewayRecoveryTurnStatus.failed => s.chatRecoveryFailed,
+      GatewayRecoveryTurnStatus.interrupted => s.chatRecoveryRestarting,
     };
   }
 
@@ -980,7 +997,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
               title: Text(
-                _desktopGateway == null ? 'Choose image' : 'Choose images',
+                _desktopGateway == null
+                    ? s.chatChooseImage
+                    : s.chatChooseImages,
               ),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -1053,6 +1072,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _pickGalleryImages() async {
+    final s = AppStrings.of(context);
     try {
       final mode = _desktopGateway == null
           ? AttachmentDraftMode.rest
@@ -1074,11 +1094,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       );
       if (images.isNotEmpty) await _preparePickedImages(images);
     } catch (_) {
-      _showAttachmentError('Unable to prepare this image. Try another one.');
+      _showAttachmentError(s.chatUnableToPrepareImage);
     }
   }
 
   Future<void> _pickCameraImage() async {
+    final s = AppStrings.of(context);
     try {
       final image = await _imagePicker.pickImage(
         source: ImageSource.camera,
@@ -1088,17 +1109,18 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       );
       if (image != null) await _preparePickedImages([image]);
     } catch (_) {
-      _showAttachmentError('Unable to prepare this image. Try another one.');
+      _showAttachmentError(s.chatUnableToPrepareImage);
     }
   }
 
   Future<void> _recoverLostImage() async {
+    final s = AppStrings.of(context);
     final response = await _imagePicker.retrieveLostData();
     if (response.isEmpty) return;
 
     final files = response.files;
     if (files == null || files.isEmpty) {
-      _showAttachmentError('Image selection was interrupted. Try again.');
+      _showAttachmentError(s.chatImageSelectionInterrupted);
       return;
     }
 
@@ -1106,6 +1128,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _preparePickedImages(List<XFile> images) async {
+    final s = AppStrings.of(context);
     final isRemote = _desktopGateway != null;
     final prepared = <AttachmentDraft>[];
     final errors = <String>[];
@@ -1126,7 +1149,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       } on AttachmentDraftException catch (error) {
         errors.add(error.message);
       } catch (_) {
-        errors.add('Unable to prepare ${image.name}.');
+        errors.add(s.chatUnableToPrepareNamed.replaceAll('{0}', image.name));
       }
     }
     if (!mounted) {
@@ -1152,10 +1175,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _pickFiles() async {
+    final s = AppStrings.of(context);
     if (_desktopGateway == null) {
-      _showAttachmentError(
-        'Configure a valid Desktop Gateway URL before attaching files.',
-      );
+      _showAttachmentError(s.chatConfigureGatewayBeforeAttaching);
       return;
     }
     try {
@@ -1169,7 +1191,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       final available = maxRemoteAttachmentDrafts - _attachmentDrafts.length;
       if (available <= 0) {
         _showAttachmentError(
-          'You can attach up to $maxRemoteAttachmentDrafts items.',
+          s.chatAttachmentLimit.replaceAll('{0}', '$maxRemoteAttachmentDrafts'),
         );
         return;
       }
@@ -1200,11 +1222,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       setState(() => _attachmentDrafts.addAll(prepared));
       if (files.length > available || rejected > 0) {
         _showAttachmentError(
-          '${files.length - prepared.length} file(s) skipped: limit, size, unreadable, or sensitive filename.',
+          AppStrings.of(context).chatAttachmentsSkipped.replaceAll(
+            '{0}',
+            '${files.length - prepared.length}',
+          ),
         );
       }
     } catch (_) {
-      _showAttachmentError('Unable to prepare this file. Try another one.');
+      _showAttachmentError(AppStrings.of(context).chatUnableToPrepareFile);
     }
   }
 
@@ -1257,7 +1282,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       _sending = true;
       _gatewayTurnStatus = GatewayTurnStatus(
         kind: 'upload',
-        text: 'Retrying ${draft.name}…',
+        text: AppStrings.of(
+          context,
+        ).chatRetryingAttachment.replaceAll('{0}', draft.name),
       );
     });
     try {
@@ -1277,7 +1304,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       }
     } catch (error) {
       _showAttachmentError(
-        'Retry failed for ${draft.name}. The draft and prompt were kept.',
+        AppStrings.of(
+          context,
+        ).chatAttachmentRetryFailed.replaceAll('{0}', draft.name),
       );
     } finally {
       if (mounted) {
@@ -1390,7 +1419,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         child: DropdownButton<String>(
                           isExpanded: true,
                           value: selectedEffort,
-                          items: _reasoningEffortLabels.entries
+                          items: _reasoningEffortLabels(s).entries
                               .map(
                                 (entry) => DropdownMenuItem(
                                   value: entry.key,
@@ -1548,7 +1577,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 .replaceAll('{0}', choice.model)
                 .replaceAll(
                   '{1}',
-                  _reasoningEffortLabels[selection.reasoningEffort] ?? '',
+                  _reasoningEffortLabels(s)[selection.reasoningEffort] ?? '',
                 ),
           ),
         ),
@@ -1607,10 +1636,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       try {
         imageDataUrl = await _attachmentDraftService.readDataUrl(pendingImage);
       } catch (_) {
-        if (mounted) setState(() => _sending = false);
-        _showAttachmentError(
-          'Unable to read the selected image. The selection was kept.',
-        );
+        if (!mounted) return;
+        setState(() => _sending = false);
+        _showAttachmentError(AppStrings.of(context).chatUnableToReadImage);
         return;
       }
       if (!mounted) return;
@@ -1639,9 +1667,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     setState(() {
       _sending = true;
       _streaming = true;
-      _gatewayTurnStatus = const GatewayTurnStatus(
+      _gatewayTurnStatus = GatewayTurnStatus(
         kind: 'starting',
-        text: 'Starting Hermes…',
+        text: AppStrings.of(context).chatStartingHermes,
       );
       _messages.add({'role': 'user', 'content': localContent});
       // Insert a placeholder streaming message
@@ -1746,7 +1774,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     final testRemotePromptSubmit = widget.testRemotePromptSubmit;
     if (desktopGateway == null && testRemotePromptSubmit == null) {
       _showAttachmentError(
-        'Desktop Gateway is not configured for this connection.',
+        AppStrings.of(context).chatDesktopGatewayNotConfigured,
       );
       return;
     }
@@ -1764,9 +1792,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     setState(() {
       _sending = true;
-      _gatewayTurnStatus = const GatewayTurnStatus(
+      _gatewayTurnStatus = GatewayTurnStatus(
         kind: 'upload',
-        text: 'Preparing attachments…',
+        text: AppStrings.of(context).chatPreparingAttachments,
       );
     });
 
@@ -1794,8 +1822,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               final index = attachments.indexOf(draft);
               _gatewayTurnStatus = GatewayTurnStatus(
                 kind: 'upload',
-                text:
-                    'Uploading ${index + 1}/${attachments.length}: ${draft.name}',
+                text: AppStrings.of(context).chatUploadingAttachment
+                    .replaceAll('{0}', '${index + 1}')
+                    .replaceAll('{1}', '${attachments.length}')
+                    .replaceAll('{2}', draft.name),
               );
             }
           });
@@ -1822,9 +1852,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           _scrollCoordinator.beginStreaming(isNearEnd: _isNearEnd());
           setState(() {
             _streaming = true;
-            _gatewayTurnStatus = const GatewayTurnStatus(
+            _gatewayTurnStatus = GatewayTurnStatus(
               kind: 'starting',
-              text: 'Starting Hermes…',
+              text: AppStrings.of(context).chatStartingHermes,
             );
             _attachmentDrafts.clear();
             _messages.add({'role': 'user', 'content': localContent});
@@ -1931,9 +1961,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     setState(() {
       _sending = true;
-      _gatewayTurnStatus = const GatewayTurnStatus(
+      _gatewayTurnStatus = GatewayTurnStatus(
         kind: 'upload',
-        text: 'Preparing attachments…',
+        text: AppStrings.of(context).chatPreparingAttachments,
       );
     });
 
@@ -1997,9 +2027,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _scrollCoordinator.beginStreaming(isNearEnd: _isNearEnd());
     setState(() {
       _streaming = true;
-      _gatewayTurnStatus = const GatewayTurnStatus(
+      _gatewayTurnStatus = GatewayTurnStatus(
         kind: 'starting',
-        text: 'Starting Hermes…',
+        text: AppStrings.of(context).chatStartingHermes,
       );
       _attachmentDrafts.clear();
       _messages.add({'role': 'user', 'content': localContent});
@@ -2047,9 +2077,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         return;
       }
       setState(() {
-        _gatewayTurnStatus = const GatewayTurnStatus(
+        _gatewayTurnStatus = GatewayTurnStatus(
           kind: 'recovery',
-          text: 'Delivery is uncertain; recovering without resending…',
+          text: AppStrings.of(context).chatDeliveryUncertain,
         );
       });
       await _recoverPendingTurn();
@@ -2239,7 +2269,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       if (!update.isComplete) {
         _gatewayTurnStatus = GatewayTurnStatus(
           kind: 'subagent',
-          text: 'Delegated task: ${update.goal}',
+          text: AppStrings.of(
+            context,
+          ).chatDelegatedTask.replaceAll('{0}', update.goal),
         );
       }
     });
@@ -2561,9 +2593,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            interrupted
-                ? 'Response stopped.'
-                : 'Response closed locally; no active gateway turn was found.',
+            interrupted ? s.chatResponseStopped : s.chatResponseClosedLocally,
           ),
         ),
       );
@@ -2668,7 +2698,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         centerTitle: false,
         title: Text(
           widget.session.title.trim().isEmpty
-              ? 'Untitled chat'
+              ? AppStrings.of(context).chatUntitled
               : widget.session.title,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
@@ -2748,7 +2778,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     vertical: 10,
                   ),
                   child: Text(
-                    _legacyTransportNotice,
+                    s.chatLegacyTransportNotice,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onTertiaryContainer,
@@ -3016,8 +3046,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       }
                     },
                     tooltip: _voiceReplyEnabled
-                        ? 'Spoken replies on'
-                        : 'Spoken replies off',
+                        ? s.chatSpokenRepliesOn
+                        : s.chatSpokenRepliesOff,
                     constraints: const BoxConstraints.tightFor(
                       width: 48,
                       height: 48,
@@ -3026,7 +3056,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
                 const SizedBox(width: 4),
                 Semantics(
-                  label: _streaming ? 'Stop response' : 'Send message',
+                  label: _streaming
+                      ? AppStrings.of(context).chatStopResponse
+                      : AppStrings.of(context).chatSendMessage,
                   button: true,
                   enabled:
                       _streaming ||

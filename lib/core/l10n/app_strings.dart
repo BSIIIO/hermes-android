@@ -1412,6 +1412,171 @@ abstract class AppStrings {
 
   /// No turn needs your input or has failed.
   String get activityEmptyMessageActionable;
+
+  /// Off (no thinking)
+  String get chatReasoningEffortOff;
+
+  /// Extra High
+  String get chatReasoningEffortExtraHigh;
+
+  /// Background recovery unavailable — legacy transport
+  String get chatLegacyTransportNotice;
+
+  /// Voice setup failed: {0}
+  String get chatVoiceSetupFailed;
+
+  /// Speech recognition is unavailable
+  String get chatSpeechRecognitionUnavailable;
+
+  /// Response ready
+  String get chatResponseReady;
+
+  /// Turn completed
+  String get chatTurnCompleted;
+
+  /// Hermes is waiting for input…
+  String get chatRecoveryWaitingInput;
+
+  /// Hermes is responding…
+  String get chatRecoveryResponding;
+
+  /// Recovering Hermes…
+  String get chatRecoveryRestarting;
+
+  /// Recovering Hermes failed…
+  String get chatRecoveryFailed;
+
+  /// Choose image
+  String get chatChooseImage;
+
+  /// Choose images
+  String get chatChooseImages;
+
+  /// Spoken replies on
+  String get chatSpokenRepliesOn;
+
+  /// Spoken replies off
+  String get chatSpokenRepliesOff;
+
+  /// Hermes recovery is unavailable: {0}
+  String get chatRecoveryUnavailable;
+
+  /// Hermes stopped recovery safely. No prompt was resent.
+  String get chatRecoveryStoppedSafely;
+
+  /// Retrying {0}…
+  String get chatRetryingAttachment;
+
+  /// Starting Hermes…
+  String get chatStartingHermes;
+
+  /// Preparing attachments…
+  String get chatPreparingAttachments;
+
+  /// Uploading {0}/{1}: {2}
+  String get chatUploadingAttachment;
+
+  /// Delivery is uncertain; recovering without resending…
+  String get chatDeliveryUncertain;
+
+  /// Unable to prepare this image. Try another one.
+  String get chatUnableToPrepareImage;
+
+  /// Image selection was interrupted. Try again.
+  String get chatImageSelectionInterrupted;
+
+  /// Unable to prepare {0}.
+  String get chatUnableToPrepareNamed;
+
+  /// Configure a valid Desktop Gateway URL before attaching files.
+  String get chatConfigureGatewayBeforeAttaching;
+
+  /// You can attach up to {0} items.
+  String get chatAttachmentLimit;
+
+  /// {0} file(s) skipped: limit, size, unreadable, or sensitive filename.
+  String get chatAttachmentsSkipped;
+
+  /// Retry failed for {0}. The draft and prompt were kept.
+  String get chatAttachmentRetryFailed;
+
+  /// Unable to read the selected image. The selection was kept.
+  String get chatUnableToReadImage;
+
+  /// Desktop Gateway is not configured for this connection.
+  String get chatDesktopGatewayNotConfigured;
+
+  /// Untitled chat
+  String get chatUntitled;
+
+  /// Send message
+  String get chatSendMessage;
+
+  /// Response stopped.
+  String get chatResponseStopped;
+
+  /// Response closed locally; no active gateway turn was found.
+  String get chatResponseClosedLocally;
+
+  /// Delegated task: {0}
+  String get chatDelegatedTask;
+
+  /// Unable to prepare this file. Try another one.
+  String get chatUnableToPrepareFile;
+
+  /// The backup could not be restored.
+  String get configBackupRestoreFailed;
+
+  /// API_SERVER_KEY from ~/.hermes/.env
+  String get connectionApiKeyHint;
+
+  /// Invalid port number.
+  String get connectionInvalidPort;
+
+  /// 192.168.1.50, 100.x.y.z, or hermes-machine.tailnet.ts.net
+  String get connectionHostHint;
+
+  /// 8642 (API Server)
+  String get connectionPortHint;
+
+  /// {0}:{1}{2}  \u2022  Key: {3}
+  String get connectionSummary;
+
+  /// Restore configuration
+  String get restoreConfiguration;
+
+  /// Hermes profile must be a plain profile name such as "sol", not a path.
+  String get connHermesProfileInvalid;
+
+  /// Update API Key
+  String get updateApiKey;
+
+  /// The API key could not be stored securely.
+  String get apiKeyStoreFailed;
+
+  /// The dashboard credentials could not be stored securely.
+  String get dashboardCredentialsStoreFailed;
+
+  /// The connection could not be deleted safely.
+  String get connectionDeleteFailed;
+
+  /// The connection could not be stored securely.
+  String get connectionStoreFailed;
+
+  /// Cannot reach {0}:{1}. Check the host and port.
+  String get connectionUnreachable;
+
+  /// Edit Connection
+  String get editConnection;
+
+  /// Could not reach/authenticate the dashboard at {0}:{1}. Check the port and credentials.
+  String get dashboardUnreachable;
+
+  /// Dashboard / Proxy Settings
+  String get dashboardProxySettings;
+
+  /// Gateway connected, but the dashboard could not be reached or authenticated. Check the dashboard details, or clear them to skip.
+  String get dashboardSkippedWarning;
 }
 
 /// English strings.
@@ -2807,6 +2972,192 @@ class AppStringsEn extends AppStrings {
   @override
   String get activityEmptyMessageActionable =>
       'No turn needs your input or has failed.';
+
+  @override
+  String get chatReasoningEffortOff => 'Off (no thinking)';
+
+  @override
+  String get chatReasoningEffortExtraHigh => 'Extra High';
+
+  @override
+  String get chatLegacyTransportNotice =>
+      'Background recovery unavailable — legacy transport';
+
+  @override
+  String get chatVoiceSetupFailed => 'Voice setup failed: {0}';
+
+  @override
+  String get chatSpeechRecognitionUnavailable =>
+      'Speech recognition is unavailable';
+
+  @override
+  String get chatResponseReady => 'Response ready';
+
+  @override
+  String get chatTurnCompleted => 'Turn completed';
+
+  @override
+  String get chatRecoveryWaitingInput => 'Hermes is waiting for input…';
+
+  @override
+  String get chatRecoveryResponding => 'Hermes is responding…';
+
+  @override
+  String get chatRecoveryRestarting => 'Recovering Hermes…';
+
+  @override
+  String get chatRecoveryFailed => 'Recovering Hermes failed…';
+
+  @override
+  String get chatChooseImage => 'Choose image';
+
+  @override
+  String get chatChooseImages => 'Choose images';
+
+  @override
+  String get chatSpokenRepliesOn => 'Spoken replies on';
+
+  @override
+  String get chatSpokenRepliesOff => 'Spoken replies off';
+
+  @override
+  String get chatRecoveryUnavailable => 'Hermes recovery is unavailable: {0}';
+
+  @override
+  String get chatRecoveryStoppedSafely =>
+      'Hermes stopped recovery safely. No prompt was resent.';
+
+  @override
+  String get chatRetryingAttachment => 'Retrying {0}…';
+
+  @override
+  String get chatStartingHermes => 'Starting Hermes…';
+
+  @override
+  String get chatPreparingAttachments => 'Preparing attachments…';
+
+  @override
+  String get chatUploadingAttachment => 'Uploading {0}/{1}: {2}';
+
+  @override
+  String get chatDeliveryUncertain =>
+      'Delivery is uncertain; recovering without resending…';
+
+  @override
+  String get chatUnableToPrepareImage =>
+      'Unable to prepare this image. Try another one.';
+
+  @override
+  String get chatImageSelectionInterrupted =>
+      'Image selection was interrupted. Try again.';
+
+  @override
+  String get chatUnableToPrepareNamed => 'Unable to prepare {0}.';
+
+  @override
+  String get chatConfigureGatewayBeforeAttaching =>
+      'Configure a valid Desktop Gateway URL before attaching files.';
+
+  @override
+  String get chatAttachmentLimit => 'You can attach up to {0} items.';
+
+  @override
+  String get chatAttachmentsSkipped =>
+      '{0} file(s) skipped: limit, size, unreadable, or sensitive filename.';
+
+  @override
+  String get chatAttachmentRetryFailed =>
+      'Retry failed for {0}. The draft and prompt were kept.';
+
+  @override
+  String get chatUnableToReadImage =>
+      'Unable to read the selected image. The selection was kept.';
+
+  @override
+  String get chatDesktopGatewayNotConfigured =>
+      'Desktop Gateway is not configured for this connection.';
+
+  @override
+  String get chatUntitled => 'Untitled chat';
+
+  @override
+  String get chatSendMessage => 'Send message';
+
+  @override
+  String get chatResponseStopped => 'Response stopped.';
+
+  @override
+  String get chatResponseClosedLocally =>
+      'Response closed locally; no active gateway turn was found.';
+
+  @override
+  String get chatDelegatedTask => 'Delegated task: {0}';
+
+  @override
+  String get chatUnableToPrepareFile =>
+      'Unable to prepare this file. Try another one.';
+
+  @override
+  String get configBackupRestoreFailed => 'The backup could not be restored.';
+
+  @override
+  String get connectionApiKeyHint => 'API_SERVER_KEY from ~/.hermes/.env';
+
+  @override
+  String get connectionInvalidPort => 'Invalid port number.';
+
+  @override
+  String get connectionHostHint =>
+      '192.168.1.50, 100.x.y.z, or hermes-machine.tailnet.ts.net';
+
+  @override
+  String get connectionPortHint => '8642 (API Server)';
+
+  @override
+  String get connectionSummary => '{0}:{1}{2}  \u2022  Key: {3}';
+
+  @override
+  String get restoreConfiguration => 'Restore configuration';
+
+  @override
+  String get connHermesProfileInvalid =>
+      'Hermes profile must be a plain profile name such as "sol", not a path.';
+
+  @override
+  String get updateApiKey => 'Update API Key';
+
+  @override
+  String get apiKeyStoreFailed => 'The API key could not be stored securely.';
+
+  @override
+  String get dashboardCredentialsStoreFailed =>
+      'The dashboard credentials could not be stored securely.';
+
+  @override
+  String get connectionDeleteFailed =>
+      'The connection could not be deleted safely.';
+
+  @override
+  String get connectionStoreFailed =>
+      'The connection could not be stored securely.';
+
+  @override
+  String get connectionUnreachable =>
+      'Cannot reach {0}:{1}. Check the host and port.';
+
+  @override
+  String get editConnection => 'Edit Connection';
+
+  @override
+  String get dashboardUnreachable =>
+      'Could not reach/authenticate the dashboard at {0}:{1}. Check the port and credentials.';
+
+  @override
+  String get dashboardProxySettings => 'Dashboard / Proxy Settings';
+
+  @override
+  String get dashboardSkippedWarning =>
+      'Gateway connected, but the dashboard could not be reached or authenticated. Check the dashboard details, or clear them to skip.';
 }
 
 /// Simplified Chinese strings.
@@ -4129,6 +4480,174 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get activityEmptyMessageActionable => '没有回合需要你的输入，也没有失败的回合。';
+
+  @override
+  String get chatReasoningEffortOff => '关闭（不思考）';
+
+  @override
+  String get chatReasoningEffortExtraHigh => '超高';
+
+  @override
+  String get chatLegacyTransportNotice => '旧版传输通道不支持后台恢复';
+
+  @override
+  String get chatVoiceSetupFailed => '语音设置失败：{0}';
+
+  @override
+  String get chatSpeechRecognitionUnavailable => '语音识别不可用';
+
+  @override
+  String get chatResponseReady => '回复已就绪';
+
+  @override
+  String get chatTurnCompleted => '回合已完成';
+
+  @override
+  String get chatRecoveryWaitingInput => 'Hermes 正在等待输入…';
+
+  @override
+  String get chatRecoveryResponding => 'Hermes 正在回复…';
+
+  @override
+  String get chatRecoveryRestarting => '正在恢复 Hermes…';
+
+  @override
+  String get chatRecoveryFailed => '恢复 Hermes 失败…';
+
+  @override
+  String get chatChooseImage => '选择图片';
+
+  @override
+  String get chatChooseImages => '选择多张图片';
+
+  @override
+  String get chatSpokenRepliesOn => '已开启语音播报';
+
+  @override
+  String get chatSpokenRepliesOff => '已关闭语音播报';
+
+  @override
+  String get chatRecoveryUnavailable => '无法恢复 Hermes：{0}';
+
+  @override
+  String get chatRecoveryStoppedSafely => 'Hermes 已安全停止恢复，未重新发送请求。';
+
+  @override
+  String get chatRetryingAttachment => '正在重试 {0}…';
+
+  @override
+  String get chatStartingHermes => '正在启动 Hermes…';
+
+  @override
+  String get chatPreparingAttachments => '正在准备附件…';
+
+  @override
+  String get chatUploadingAttachment => '正在上传 {0}/{1}：{2}';
+
+  @override
+  String get chatDeliveryUncertain => '投递结果不确定，正在恢复且不重新发送…';
+
+  @override
+  String get chatUnableToPrepareImage => '无法处理这张图片，换一张试试。';
+
+  @override
+  String get chatImageSelectionInterrupted => '图片选择被中断，请重试。';
+
+  @override
+  String get chatUnableToPrepareNamed => '无法处理 {0}。';
+
+  @override
+  String get chatConfigureGatewayBeforeAttaching =>
+      '附加文件前请先配置有效的 Desktop Gateway URL。';
+
+  @override
+  String get chatAttachmentLimit => '最多可以附加 {0} 个项目。';
+
+  @override
+  String get chatAttachmentsSkipped => '已跳过 {0} 个文件：超出数量限制、体积过大、无法读取，或文件名敏感。';
+
+  @override
+  String get chatAttachmentRetryFailed => '重试 {0} 失败，草稿和输入内容已保留。';
+
+  @override
+  String get chatUnableToReadImage => '无法读取所选图片，选择已保留。';
+
+  @override
+  String get chatDesktopGatewayNotConfigured => '此连接未配置 Desktop Gateway。';
+
+  @override
+  String get chatUntitled => '未命名会话';
+
+  @override
+  String get chatSendMessage => '发送消息';
+
+  @override
+  String get chatResponseStopped => '已停止回复。';
+
+  @override
+  String get chatResponseClosedLocally => '已在本地关闭回复，未找到进行中的网关回合。';
+
+  @override
+  String get chatDelegatedTask => '委派任务：{0}';
+
+  @override
+  String get chatUnableToPrepareFile => '无法处理这个文件，换一个试试。';
+
+  @override
+  String get configBackupRestoreFailed => '无法恢复备份。';
+
+  @override
+  String get connectionApiKeyHint => '来自 ~/.hermes/.env 的 API_SERVER_KEY';
+
+  @override
+  String get connectionInvalidPort => '端口号无效。';
+
+  @override
+  String get connectionHostHint =>
+      '例如 192.168.1.50、100.x.y.z，或 hermes-machine.tailnet.ts.net';
+
+  @override
+  String get connectionPortHint => '8642（API Server）';
+
+  @override
+  String get connectionSummary => '{0}:{1}{2}  \u2022  密钥：{3}';
+
+  @override
+  String get restoreConfiguration => '恢复配置';
+
+  @override
+  String get connHermesProfileInvalid =>
+      'Hermes profile 必须是形如 "sol" 的纯配置名，不能是路径。';
+
+  @override
+  String get updateApiKey => '更新 API 密钥';
+
+  @override
+  String get apiKeyStoreFailed => 'API 密钥无法安全存储。';
+
+  @override
+  String get dashboardCredentialsStoreFailed => '仪表盘凭据无法安全存储。';
+
+  @override
+  String get connectionDeleteFailed => '无法安全删除连接。';
+
+  @override
+  String get connectionStoreFailed => '无法安全存储连接。';
+
+  @override
+  String get connectionUnreachable => '无法连接到 {0}:{1}，请检查主机和端口。';
+
+  @override
+  String get editConnection => '编辑连接';
+
+  @override
+  String get dashboardUnreachable => '无法连接或无法验证 {0}:{1} 上的仪表盘，请检查端口和凭据。';
+
+  @override
+  String get dashboardProxySettings => 'Dashboard / 代理设置';
+
+  @override
+  String get dashboardSkippedWarning => '网关已连接，但无法连接或无法验证仪表盘。请检查仪表盘信息，或清空以跳过。';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
