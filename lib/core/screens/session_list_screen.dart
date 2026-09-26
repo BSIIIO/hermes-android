@@ -302,7 +302,10 @@ class _SessionListScreenState extends State<SessionListScreen> {
                         title: Text(choice.model),
                         subtitle: Text(
                           choice.isRecommended
-                              ? '${choice.provider} • Recommended: small and inexpensive'
+                              ? s.chatsSearchAiModelRecommended.replaceAll(
+                                  '{0}',
+                                  choice.provider,
+                                )
                               : choice.provider,
                         ),
                         trailing: isSelected
@@ -344,6 +347,9 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   Future<void> _runServerSearch(String query) async {
+    // Resolved before the first await: the catch branch below reports a failure
+    // message, and a BuildContext must not be read after an async gap.
+    final s = AppStrings.of(context);
     if (!mounted || query.isEmpty) return;
     final requestGeneration = ++_searchRequestGeneration;
     final requestMode = _searchMode;
@@ -362,8 +368,8 @@ class _SessionListScreenState extends State<SessionListScreen> {
       if (requestMode == SessionSearchMode.ai) {
         final selected = _aiSearchModel;
         if (selected == null) {
-          throw const AiSearchRewriteException(
-            'Choose an AI search model before using AI search.',
+          throw AiSearchRewriteException(
+            AppStrings.of(context).chatsSearchAiChooseModel,
           );
         }
         effectiveQuery = await _ensureAiRewriter().rewrite(
@@ -399,7 +405,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
     } catch (error) {
       if (!requestIsCurrent()) return;
       setState(() {
-        _searchError = 'Session search failed: $error';
+        _searchError = s.chatsSearchFailed.replaceAll('{0}', '$error');
         _serverResults = null;
         _searching = false;
       });
@@ -526,23 +532,25 @@ class _SessionListScreenState extends State<SessionListScreen> {
       await _fetchSessions();
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(s.chatsRenameFailed.replaceAll('{0}', '$error'))));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s.chatsRenameFailed.replaceAll('{0}', '$error')),
+        ),
+      );
     }
   }
 
   Future<void> _branchSession(Session session) async {
     final gateway = _desktopGateway;
     if (gateway == null || _branchingSessionIds.contains(session.id)) return;
-    final s = AppStrings.of(context);
     final knownSessionIds = _sessions.map((item) => item.id).toSet();
     String? requestedName;
     setState(() => _branchingSessionIds.add(session.id));
     try {
+      final s = AppStrings.of(context);
       final name = await _askForName(
         title: s.chatsBranchChatTitle,
-        initialValue: '${session.title} branch',
+        initialValue: s.chatsBranchDefaultName.replaceAll('{0}', session.title),
         actionLabel: s.chatsBranchCreate,
         cancelLabel: s.commonCancel,
       );
@@ -567,9 +575,10 @@ class _SessionListScreenState extends State<SessionListScreen> {
         _showBranchCreated();
         return;
       }
+      final s = AppStrings.of(context);
       final message = error is JsonRpcError && error.code == 4008
-          ? 'This chat has no messages available in the Desktop session yet.'
-          : 'Could not branch chat: $error';
+          ? s.chatsBranchNoMessages
+          : s.chatsBranchFailed.replaceAll('{0}', '$error');
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text(message)));
@@ -582,9 +591,9 @@ class _SessionListScreenState extends State<SessionListScreen> {
 
   void _showBranchCreated() {
     final s = AppStrings.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(s.chatsBranchCreated)),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(s.chatsBranchCreated)));
   }
 
   Future<void> _handleSessionAction(String action, Session session) async {
@@ -692,9 +701,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(s.chatsDeleteSessionTitle),
-        content: Text(
-          s.chatsDeleteSessionBody.replaceAll('{0}', title),
-        ),
+        content: Text(s.chatsDeleteSessionBody.replaceAll('{0}', title)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -732,9 +739,9 @@ class _SessionListScreenState extends State<SessionListScreen> {
         _sessions.removeWhere((item) => item.id == session.id);
         _deletingSessionIds.remove(session.id);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(s.chatsDeleted)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(s.chatsDeleted)));
     } catch (e) {
       if (!mounted) return;
       setState(() => _deletingSessionIds.remove(session.id));
@@ -748,7 +755,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
     final sessionId = GatewayChatClient.generateSessionId();
     final session = Session(
       id: sessionId,
-      title: 'New Chat',
+      title: AppStrings.of(context).chatsNewChatTitle,
       model: 'hermes-agent',
       source: 'mobile',
       messageCount: 0,
@@ -788,15 +795,16 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   String get _spaceScopeLabel {
+    final s = AppStrings.of(context);
     return switch (_spaceScope.kind) {
-      ChatSpaceScopeKind.all => 'All chats',
-      ChatSpaceScopeKind.unassigned => 'Unassigned',
+      ChatSpaceScopeKind.all => s.chatsAllChats,
+      ChatSpaceScopeKind.unassigned => s.chatsMoveUnassigned,
       ChatSpaceScopeKind.space =>
         _spaceState.spaces
                 .where((space) => space.id == _spaceScope.spaceId)
                 .map((space) => space.name)
                 .firstOrNull ??
-            'Space',
+            s.chatsSpace,
     };
   }
 
@@ -848,7 +856,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
       ),
       drawer: _buildDrawer(),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'New Chat',
+        tooltip: AppStrings.of(context).chatsNewChatTitle,
         onPressed: _createNewSession,
         child: const Icon(Icons.chat, color: Colors.black),
       ),
@@ -970,10 +978,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _checkHealth,
-              child: Text(s.commonRetry),
-            ),
+            ElevatedButton(onPressed: _checkHealth, child: Text(s.commonRetry)),
           ],
         ),
       );
@@ -1254,8 +1259,8 @@ class _SessionListScreenState extends State<SessionListScreen> {
                     Center(
                       child: Text(
                         _spaceScope.kind == ChatSpaceScopeKind.space
-                            ? 'No chats in this space yet. Tap + to start one.'
-                            : 'No unassigned chats.',
+                            ? s.chatsNoChatsInSpaceYet
+                            : s.chatsNoUnassignedChats,
                         textAlign: TextAlign.center,
                       ),
                     ),

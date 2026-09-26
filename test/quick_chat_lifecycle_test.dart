@@ -15,6 +15,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/connection.dart';
 import 'package:hermes_android/core/models/session.dart';
 import 'package:hermes_android/core/screens/workspace_screen.dart';
@@ -208,7 +209,9 @@ void main() {
 
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(NewChatMode.quickChat.label));
+      await tester.tap(
+        find.text(NewChatMode.quickChat.label(const AppStringsEn())),
+      );
       await tester.pumpAndSettle();
 
       final prefs = await SharedPreferences.getInstance();
@@ -241,7 +244,9 @@ void main() {
 
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(NewChatMode.projectChat.label));
+      await tester.tap(
+        find.text(NewChatMode.projectChat.label(const AppStringsEn())),
+      );
       await tester.pumpAndSettle();
 
       final prefs = await SharedPreferences.getInstance();

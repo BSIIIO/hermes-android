@@ -14,6 +14,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/hermes_project.dart';
 import '../theme/hermes_theme.dart';
 import '../utils/new_chat_options.dart';
@@ -26,6 +27,7 @@ class NewChatSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
 
     return SafeArea(
@@ -50,8 +52,8 @@ class NewChatSheet extends StatelessWidget {
               enabled: option.enabled,
               // A disabled row still explains itself, so the reason replaces
               // the description rather than hiding beside it.
-              title: Text(option.label),
-              subtitle: Text(option.disabledReason ?? option.description),
+              title: Text(option.label(s)),
+              subtitle: Text(option.disabledReason ?? option.description(s)),
               leading: Icon(
                 option.mode == NewChatMode.quickChat
                     ? Icons.bolt_outlined

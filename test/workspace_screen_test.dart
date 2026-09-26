@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/attachment_draft.dart';
 import 'package:hermes_android/core/models/connection.dart';
 import 'package:hermes_android/core/models/session.dart';
@@ -1258,8 +1259,9 @@ void main() {
       await tester.pumpAndSettle();
 
       for (final mode in NewChatMode.values) {
-        expect(find.text(mode.label), findsOneWidget);
-        expect(find.text(mode.description), findsOneWidget);
+        final strings = const AppStringsEn();
+        expect(find.text(mode.label(strings)), findsOneWidget);
+        expect(find.text(mode.description(strings)), findsOneWidget);
       }
     });
 
@@ -1273,10 +1275,13 @@ void main() {
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
 
-      expect(find.text(NewChatMode.projectChat.label), findsOneWidget);
+      expect(
+        find.text(NewChatMode.projectChat.label(const AppStringsEn())),
+        findsOneWidget,
+      );
       final blocked = tester.widget<ListTile>(
         find.ancestor(
-          of: find.text(NewChatMode.projectChat.label),
+          of: find.text(NewChatMode.projectChat.label(const AppStringsEn())),
           matching: find.byType(ListTile),
         ),
       );
@@ -1284,7 +1289,7 @@ void main() {
 
       final quick = tester.widget<ListTile>(
         find.ancestor(
-          of: find.text(NewChatMode.quickChat.label),
+          of: find.text(NewChatMode.quickChat.label(const AppStringsEn())),
           matching: find.byType(ListTile),
         ),
       );
@@ -1305,7 +1310,9 @@ void main() {
 
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(NewChatMode.quickChat.label));
+      await tester.tap(
+        find.text(NewChatMode.quickChat.label(const AppStringsEn())),
+      );
       await tester.pumpAndSettle();
 
       expect(opened, hasLength(1));
@@ -1330,7 +1337,10 @@ void main() {
       expect(opened, hasLength(1));
       expect(opened.single.isQuick, isTrue);
       expect(opened.single.projectId, isNull);
-      expect(find.text(NewChatMode.quickChat.label), findsNothing);
+      expect(
+        find.text(NewChatMode.quickChat.label(const AppStringsEn())),
+        findsNothing,
+      );
     });
 
     testWidgets('a project chat asks which project and carries it', (
@@ -1353,7 +1363,9 @@ void main() {
 
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(NewChatMode.projectChat.label));
+      await tester.tap(
+        find.text(NewChatMode.projectChat.label(const AppStringsEn())),
+      );
       await tester.pumpAndSettle();
 
       expect(find.text('ScriptHive'), findsOneWidget);
@@ -1390,7 +1402,9 @@ void main() {
 
         await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
         await tester.pumpAndSettle();
-        await tester.tap(find.text(NewChatMode.projectChat.label));
+        await tester.tap(
+          find.text(NewChatMode.projectChat.label(const AppStringsEn())),
+        );
         await tester.pumpAndSettle();
 
         expect(opened, hasLength(1));
@@ -1425,7 +1439,9 @@ void main() {
 
         await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
         await tester.pumpAndSettle();
-        await tester.tap(find.text(NewChatMode.projectChat.label));
+        await tester.tap(
+          find.text(NewChatMode.projectChat.label(const AppStringsEn())),
+        );
         await tester.pumpAndSettle();
 
         expect(opened, isEmpty);
@@ -1462,7 +1478,9 @@ void main() {
 
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(NewChatMode.projectChat.label));
+      await tester.tap(
+        find.text(NewChatMode.projectChat.label(const AppStringsEn())),
+      );
       await tester.pumpAndSettle();
 
       expect(opened, hasLength(1));
@@ -1482,7 +1500,9 @@ void main() {
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
       Navigator.of(
-        tester.element(find.text(NewChatMode.quickChat.label)),
+        tester.element(
+          find.text(NewChatMode.quickChat.label(const AppStringsEn())),
+        ),
       ).pop();
       await tester.pumpAndSettle();
 
@@ -1503,7 +1523,9 @@ void main() {
       for (var i = 0; i < 2; i++) {
         await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
         await tester.pumpAndSettle();
-        await tester.tap(find.text(NewChatMode.quickChat.label));
+        await tester.tap(
+          find.text(NewChatMode.quickChat.label(const AppStringsEn())),
+        );
         await tester.pumpAndSettle();
       }
 
@@ -1519,7 +1541,9 @@ void main() {
 
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(NewChatMode.quickChat.label));
+      await tester.tap(
+        find.text(NewChatMode.quickChat.label(const AppStringsEn())),
+      );
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));
 
@@ -1883,7 +1907,9 @@ void main() {
 
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(NewChatMode.projectChat.label));
+      await tester.tap(
+        find.text(NewChatMode.projectChat.label(const AppStringsEn())),
+      );
       await tester.pumpAndSettle();
 
       // A single Project skips the picker and opens the chat directly.
@@ -1934,7 +1960,9 @@ void main() {
 
       await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(NewChatMode.projectChat.label));
+      await tester.tap(
+        find.text(NewChatMode.projectChat.label(const AppStringsEn())),
+      );
       await tester.pumpAndSettle();
 
       // A single Project skips the picker and opens the chat directly.

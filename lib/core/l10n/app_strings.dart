@@ -1748,6 +1748,102 @@ abstract class AppStrings {
 
   /// WhatsApp messages
   String get sessionSourceWhatsapp;
+
+  /// Durable work inside one of your projects, shared with Desktop.
+  String get newChatModeProjectDescription;
+
+  /// A one-off question. Archives itself after 72 hours; anything worth keeping is still remembered.
+  String get newChatModeQuickDescription;
+
+  /// Still loading your projects.
+  String get newChatBlockerLoadingProjects;
+
+  /// This gateway does not host projects yet. Update the gateway to organize chats across your devices.
+  String get newChatBlockerGatewayTooOld;
+
+  /// Create a project first, then chats can live inside it.
+  String get newChatBlockerNoProjectsYet;
+
+  /// New chat
+  String get newChatUntitled;
+
+  /// New chat · {0}
+  String get newChatTitled;
+
+  /// All chats
+  String get chatsAllChats;
+
+  /// Space
+  String get chatsSpace;
+
+  /// {0} • Recommended: small and inexpensive
+  String get chatsSearchAiModelRecommended;
+
+  /// Session search failed: {0}
+  String get chatsSearchFailed;
+
+  /// {0} branch
+  String get chatsBranchDefaultName;
+
+  /// This chat has no messages available in the Desktop session yet.
+  String get chatsBranchNoMessages;
+
+  /// Could not branch chat: {0}
+  String get chatsBranchFailed;
+
+  /// New Chat
+  String get chatsNewChatTitle;
+
+  /// No chats in this space yet. Tap + to start one.
+  String get chatsNoChatsInSpaceYet;
+
+  /// No unassigned chats.
+  String get chatsNoUnassignedChats;
+
+  /// Today
+  String get chatsBucketToday;
+
+  /// Yesterday
+  String get chatsBucketYesterday;
+
+  /// This week
+  String get chatsBucketThisWeek;
+
+  /// Earlier
+  String get chatsBucketEarlier;
+
+  /// Nothing here
+  String get chatsNothingHere;
+
+  /// No matches
+  String get chatsNoMatches;
+
+  /// Every conversation is already assigned to a Project.
+  String get chatsEmptyAllAssigned;
+
+  /// Archived conversations appear here.
+  String get chatsEmptyArchivedConversations;
+
+  /// Quick chats appear here after their retention period.
+  String get chatsEmptyArchivedQuickChats;
+
+  /// No conversation matches this view.
+  String get chatsEmptyNoMatches;
+
+  /// All
+  String get chatsFilterAll;
+
+  /// Recent
+  String get chatsFilterRecent;
+
+  /// Unassigned
+  String get chatsFilterUnassigned;
+
+  /// Archived
+  String get chatsFilterArchived;
+
+  /// Nothing changed in the last seven days.
+  String get chatsEmptyRecent;
 }
 
 /// English strings.
@@ -3506,6 +3602,112 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get sessionSourceWhatsapp => 'WhatsApp messages';
+
+  @override
+  String get newChatModeProjectDescription =>
+      'Durable work inside one of your projects, shared with Desktop.';
+
+  @override
+  String get newChatModeQuickDescription =>
+      'A one-off question. Archives itself after 72 hours; anything worth keeping is still remembered.';
+
+  @override
+  String get newChatBlockerLoadingProjects => 'Still loading your projects.';
+
+  @override
+  String get newChatBlockerGatewayTooOld =>
+      'This gateway does not host projects yet. Update the gateway to organize chats across your devices.';
+
+  @override
+  String get newChatBlockerNoProjectsYet =>
+      'Create a project first, then chats can live inside it.';
+
+  @override
+  String get newChatUntitled => 'New chat';
+
+  @override
+  String get newChatTitled => 'New chat · {0}';
+
+  @override
+  String get chatsAllChats => 'All chats';
+
+  @override
+  String get chatsSpace => 'Space';
+
+  @override
+  String get chatsSearchAiModelRecommended =>
+      '{0} • Recommended: small and inexpensive';
+
+  @override
+  String get chatsSearchFailed => 'Session search failed: {0}';
+
+  @override
+  String get chatsBranchDefaultName => '{0} branch';
+
+  @override
+  String get chatsBranchNoMessages =>
+      'This chat has no messages available in the Desktop session yet.';
+
+  @override
+  String get chatsBranchFailed => 'Could not branch chat: {0}';
+
+  @override
+  String get chatsNewChatTitle => 'New Chat';
+
+  @override
+  String get chatsNoChatsInSpaceYet =>
+      'No chats in this space yet. Tap + to start one.';
+
+  @override
+  String get chatsNoUnassignedChats => 'No unassigned chats.';
+
+  @override
+  String get chatsBucketToday => 'Today';
+
+  @override
+  String get chatsBucketYesterday => 'Yesterday';
+
+  @override
+  String get chatsBucketThisWeek => 'This week';
+
+  @override
+  String get chatsBucketEarlier => 'Earlier';
+
+  @override
+  String get chatsNothingHere => 'Nothing here';
+
+  @override
+  String get chatsNoMatches => 'No matches';
+
+  @override
+  String get chatsEmptyAllAssigned =>
+      'Every conversation is already assigned to a Project.';
+
+  @override
+  String get chatsEmptyArchivedConversations =>
+      'Archived conversations appear here.';
+
+  @override
+  String get chatsEmptyArchivedQuickChats =>
+      'Quick chats appear here after their retention period.';
+
+  @override
+  String get chatsEmptyNoMatches => 'No conversation matches this view.';
+
+  @override
+  String get chatsFilterAll => 'All';
+
+  @override
+  String get chatsFilterRecent => 'Recent';
+
+  @override
+  String get chatsFilterUnassigned => 'Unassigned';
+
+  @override
+  String get chatsFilterArchived => 'Archived';
+
+  @override
+  String get chatsEmptyRecent => 'Nothing changed in the last seven days.';
 }
 
 /// Simplified Chinese strings.
@@ -5167,6 +5369,102 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get sessionSourceWhatsapp => 'WhatsApp 消息';
+
+  @override
+  String get newChatModeProjectDescription => '项目里的长期工作，与桌面端同步。';
+
+  @override
+  String get newChatModeQuickDescription => '一次性提问，72 小时后自动归档；值得保留的内容仍会被记住。';
+
+  @override
+  String get newChatBlockerLoadingProjects => '仍在加载你的项目。';
+
+  @override
+  String get newChatBlockerGatewayTooOld => '此网关尚不支持项目功能。请升级网关，才能跨设备组织会话。';
+
+  @override
+  String get newChatBlockerNoProjectsYet => '请先创建一个项目，之后会话就能归属其中。';
+
+  @override
+  String get newChatUntitled => '新会话';
+
+  @override
+  String get newChatTitled => '新会话 · {0}';
+
+  @override
+  String get chatsAllChats => '全部会话';
+
+  @override
+  String get chatsSpace => '空间';
+
+  @override
+  String get chatsSearchAiModelRecommended => '{0} • 推荐：便宜又快';
+
+  @override
+  String get chatsSearchFailed => '搜索会话失败：{0}';
+
+  @override
+  String get chatsBranchDefaultName => '{0} 分支';
+
+  @override
+  String get chatsBranchNoMessages => '此会话在桌面端暂无可用的消息。';
+
+  @override
+  String get chatsBranchFailed => '无法创建会话分支：{0}';
+
+  @override
+  String get chatsNewChatTitle => '新会话';
+
+  @override
+  String get chatsNoChatsInSpaceYet => '这个空间还没有会话，点 + 开始一个。';
+
+  @override
+  String get chatsNoUnassignedChats => '没有未分类的会话。';
+
+  @override
+  String get chatsBucketToday => '今天';
+
+  @override
+  String get chatsBucketYesterday => '昨天';
+
+  @override
+  String get chatsBucketThisWeek => '本周';
+
+  @override
+  String get chatsBucketEarlier => '更早';
+
+  @override
+  String get chatsNothingHere => '这里还没有内容';
+
+  @override
+  String get chatsNoMatches => '没有匹配项';
+
+  @override
+  String get chatsEmptyAllAssigned => '所有会话都已经归入项目。';
+
+  @override
+  String get chatsEmptyArchivedConversations => '归档的会话会显示在这里。';
+
+  @override
+  String get chatsEmptyArchivedQuickChats => '快速会话过了保留期后会归档到这里。';
+
+  @override
+  String get chatsEmptyNoMatches => '没有符合当前视图的会话。';
+
+  @override
+  String get chatsFilterAll => '全部';
+
+  @override
+  String get chatsFilterRecent => '最近';
+
+  @override
+  String get chatsFilterUnassigned => '未分配';
+
+  @override
+  String get chatsFilterArchived => '已归档';
+
+  @override
+  String get chatsEmptyRecent => '最近七天没有任何变化。';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.

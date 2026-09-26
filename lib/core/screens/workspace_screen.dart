@@ -497,6 +497,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
                   GatewayChatClient.generateSessionId)
               .call(),
       now: DateTime.now(),
+      s: AppStrings.of(context),
     );
     final expiresAt = draft.expiresAt;
     if (expiresAt != null) {
@@ -575,6 +576,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
               .call(),
       now: DateTime.now(),
       project: project,
+      s: AppStrings.of(context),
     );
     final expiresAt = draft.expiresAt;
     if (draft.isQuick && expiresAt != null) {
@@ -922,6 +924,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
               .call(),
       now: DateTime.now(),
       project: project,
+      s: AppStrings.of(context),
     );
     await _finishNewChat(draft);
   }
@@ -937,7 +940,9 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
 
     final mode = await showModalBottomSheet<NewChatMode>(
       context: context,
-      builder: (_) => NewChatSheet(options: buildNewChatOptionsFor(view)),
+      builder: (_) => NewChatSheet(
+        options: buildNewChatOptionsFor(view, s: AppStrings.of(context)),
+      ),
     );
     if (mode == null || !mounted) return;
 
@@ -966,6 +971,7 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
               .call(),
       now: DateTime.now(),
       project: project,
+      s: AppStrings.of(context),
     );
 
     // Start the retention clock now, before the chat opens. Recorded even
