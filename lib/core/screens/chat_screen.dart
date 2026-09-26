@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../controllers/voice_composer_controller.dart';
+import '../l10n/app_strings.dart';
 import '../services/connection_manager.dart';
 import '../services/attachment_draft_service.dart';
 import '../services/chat_model_override_store.dart';
@@ -541,9 +542,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
-            content: Text('Reading response aloud'),
-            duration: Duration(seconds: 2),
+          SnackBar(
+            content: Text(AppStrings.of(context).chatReadingAloud),
+            duration: const Duration(seconds: 2),
           ),
         );
     }
@@ -556,9 +557,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(
-          const SnackBar(
-            content: Text('Read aloud is unavailable on this device'),
-            duration: Duration(seconds: 3),
+          SnackBar(
+            content: Text(AppStrings.of(context).chatReadAloudUnavailable),
+            duration: const Duration(seconds: 3),
           ),
         );
     }
@@ -967,6 +968,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _showAttachmentPicker() async {
+    final s = AppStrings.of(context);
     if (_loading || _streaming || _sending) return;
 
     await showModalBottomSheet<void>(
@@ -987,7 +989,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Take photo'),
+              title: Text(s.chatTakePhoto),
               onTap: () {
                 Navigator.pop(sheetContext);
                 _pickCameraImage();
@@ -995,8 +997,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ),
             ListTile(
               leading: const Icon(Icons.cloud_outlined),
-              title: const Text('Browse server files'),
-              subtitle: const Text('Insert a remote @file reference'),
+              title: Text(s.chatBrowseServerFiles),
+              subtitle: Text(s.chatInsertRemoteReference),
               onTap: () {
                 Navigator.pop(sheetContext);
                 unawaited(_pickServerFile());
@@ -1005,10 +1007,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             if (_desktopGateway != null)
               ListTile(
                 leading: const Icon(Icons.description_outlined),
-                title: const Text('Choose files'),
-                subtitle: const Text(
-                  'Documents, archives, audio, video, or data',
-                ),
+                title: Text(s.chatChooseFiles),
+                subtitle: Text(s.chatLocalFileTypes),
                 onTap: () {
                   Navigator.pop(sheetContext);
                   _pickFiles();
@@ -1272,11 +1272,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       if (receipt.atlasIntakeAccepted == false) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text(
-              'File attached; document catalog registration is pending.',
-            ),
-          ),
+          SnackBar(content: Text(AppStrings.of(context).chatIntakePending)),
         );
       }
     } catch (error) {
@@ -1308,7 +1304,24 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     password: widget.connection.dashboardPassword,
   );
 
+  /// The "Profile default" line of the model sheet.
+  ///
+  /// Builds `model • provider` (provider omitted when absent) and substitutes
+  /// it into the localized template, so the label can be translated without
+  /// keeping the English "Profile default:" prefix in the Zh value.
+  String _profileDefaultSubtitle({required Map<String, dynamic> modelInfo}) {
+    final s = AppStrings.of(context);
+    final model = (modelInfo['model'] as String?)?.trim();
+    final provider = (modelInfo['provider'] as String?)?.trim();
+    final parts = <String>[
+      (model == null || model.isEmpty) ? 'unknown' : model,
+      if (provider != null && provider.isNotEmpty) provider,
+    ];
+    return s.chatProfileDefault.replaceAll('{0}', parts.join(' • '));
+  }
+
   Future<void> _showModelSelector() async {
+    final s = AppStrings.of(context);
     final desktopGateway = _desktopGateway;
     final restClient = desktopGateway == null ? _modelListingClient() : null;
 
@@ -1361,18 +1374,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 children: [
                   ListTile(
                     leading: const Icon(Icons.tune),
-                    title: const Text('Model and thinking for this chat'),
+                    title: Text(s.chatModelAndThinking),
                     subtitle: Text(
-                      'Profile default: ${modelInfo['model'] ?? 'unknown'}'
-                      '${modelInfo['provider'] == null ? '' : ' • ${modelInfo['provider']}'}',
+                      _profileDefaultSubtitle(modelInfo: modelInfo),
                     ),
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
                     child: InputDecorator(
-                      decoration: const InputDecoration(
-                        labelText: 'Thinking effort',
-                        border: OutlineInputBorder(),
+                      decoration: InputDecoration(
+                        labelText: s.chatThinkingEffort,
+                        border: const OutlineInputBorder(),
                       ),
                       child: DropdownButtonHideUnderline(
                         child: DropdownButton<String>(
@@ -1428,7 +1440,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                       children: [
                         TextButton(
                           onPressed: () => Navigator.pop(sheetContext),
-                          child: const Text('Cancel'),
+                          child: Text(s.chatCancel),
                         ),
                         const SizedBox(width: 8),
                         FilledButton(
@@ -1439,7 +1451,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                               reasoningEffort: selectedEffort,
                             ),
                           ),
-                          child: const Text('Apply to this chat'),
+                          child: Text(s.chatApplyToThisChat),
                         ),
                       ],
                     ),
@@ -1457,7 +1469,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Could not load models for this profile: $error'),
+          content: Text(s.chatModelLoadFailed.replaceAll('{0}', '$error')),
         ),
       );
     } finally {
@@ -1493,6 +1505,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _setSessionModel(_ModelSelection selection) async {
+    final s = AppStrings.of(context);
     final desktopGateway = _desktopGateway;
     if (_changingModel) return;
     final choice = selection.choice;
@@ -1531,16 +1544,22 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${choice.model} • ${_reasoningEffortLabels[selection.reasoningEffort]} '
-            'now apply only to this chat.',
+            s.chatOverrideApplied
+                .replaceAll('{0}', choice.model)
+                .replaceAll(
+                  '{1}',
+                  _reasoningEffortLabels[selection.reasoningEffort] ?? '',
+                ),
           ),
         ),
       );
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Model was not changed: $error')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(s.chatModelChangeFailed.replaceAll('{0}', '$error')),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _changingModel = false);
     }
@@ -1785,11 +1804,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           if (!mounted || responseGeneration != _responseGeneration) return;
           if (attachments.any((draft) => draft.atlasIntakeAccepted == false)) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'File attached; document catalog registration is pending.',
-                ),
-              ),
+              SnackBar(content: Text(AppStrings.of(context).chatIntakePending)),
             );
           }
           final prompt = [
@@ -2238,6 +2253,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     _approvalDialogOpen = true;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final s = AppStrings.of(context);
       if (!mounted || responseGeneration != _responseGeneration) {
         _approvalDialogOpen = false;
         return;
@@ -2277,7 +2293,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Could not deny the command: $error'),
+              content: Text(s.chatDenyFailed.replaceAll('{0}', '$error')),
               backgroundColor: Colors.orange,
             ),
           );
@@ -2421,7 +2437,9 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             (pending) => pending.request.identityKey == request.identityKey,
           );
       if (duplicate) continue;
-      _clarifyPromptQueue.add(_PendingClarifyPrompt(request, responseGeneration));
+      _clarifyPromptQueue.add(
+        _PendingClarifyPrompt(request, responseGeneration),
+      );
     }
     _drainClarifyPromptQueue();
   }
@@ -2487,8 +2505,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         } catch (_) {
           if (!mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Could not skip the Hermes question.'),
+            SnackBar(
+              content: Text(AppStrings.of(context).chatSkipQuestionFailed),
               backgroundColor: Colors.orange,
             ),
           );
@@ -2500,6 +2518,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _stopResponse() async {
+    final s = AppStrings.of(context);
     if (!_streaming) return;
 
     final transport = _activeResponseTransport;
@@ -2550,7 +2569,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Response closed locally; gateway stop failed: $error'),
+          content: Text(s.chatStopFailed.replaceAll('{0}', '$error')),
           backgroundColor: Colors.orange,
           duration: const Duration(seconds: 6),
         ),
@@ -2559,6 +2578,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   void _handleSendError(Object e, {bool removePendingUserMessage = false}) {
+    final s = AppStrings.of(context);
     _scrollCoordinator.cancelStreaming();
     setState(() {
       _sending = false;
@@ -2576,7 +2596,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Send failed: $e'),
+          content: Text(s.chatSendFailed.replaceAll('{0}', '$e')),
           backgroundColor: Colors.orange,
           duration: const Duration(seconds: 6),
         ),
@@ -2636,6 +2656,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
         centerTitle: false,
@@ -2659,8 +2680,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         ),
         actions: [
           if (_streaming)
-            const Padding(
-              padding: EdgeInsets.only(right: 8),
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
               child: Row(
                 children: [
                   SizedBox(
@@ -2669,30 +2690,33 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                   SizedBox(width: 8),
-                  Text('Responding…', style: TextStyle(fontSize: 13)),
+                  Text(
+                    AppStrings.of(context).chatResponding,
+                    style: const TextStyle(fontSize: 13),
+                  ),
                 ],
               ),
             )
           else
             PopupMenuButton<String>(
-              tooltip: 'Chat actions',
+              tooltip: s.chatActions,
               onSelected: (action) {
                 if (action == 'refresh') _fetchMessages();
                 if (action == 'export') _exportConversation();
               },
-              itemBuilder: (_) => const [
+              itemBuilder: (_) => [
                 PopupMenuItem(
                   value: 'refresh',
                   child: ListTile(
-                    leading: Icon(Icons.refresh),
-                    title: Text('Refresh'),
+                    leading: const Icon(Icons.refresh),
+                    title: Text(s.chatRefresh),
                   ),
                 ),
                 PopupMenuItem(
                   value: 'export',
                   child: ListTile(
-                    leading: Icon(Icons.ios_share_outlined),
-                    title: Text('Export / share'),
+                    leading: const Icon(Icons.ios_share_outlined),
+                    title: Text(s.chatExportShare),
                   ),
                 ),
               ],
@@ -2752,6 +2776,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildGatewayNotification(GatewayNotification notification) {
+    final s = AppStrings.of(context);
     final scheme = Theme.of(context).colorScheme;
     final color = switch (notification.level) {
       GatewayNotificationLevel.success => Colors.green,
@@ -2769,13 +2794,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             _notificationTimers.remove(notification.key)?.cancel();
             setState(() => _gatewayNotifications.remove(notification.key));
           },
-          child: const Text('Dismiss'),
+          child: Text(s.chatDismiss),
         ),
       ],
     );
   }
 
   Widget _buildInputBar() {
+    final s = AppStrings.of(context);
     return Container(
       key: const Key('chat-input-bar'),
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -2826,7 +2852,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(4, 2, 4, 4),
                 child: Semantics(
-                  label: 'Choose chat model',
+                  label: s.chatChooseModel,
                   value: _sessionModel ?? widget.session.model,
                   button: true,
                   enabled:
@@ -2853,8 +2879,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                             )
                           : const Icon(Icons.tune, size: 18),
                       label: Text(
-                        '${_sessionModel ?? widget.session.model} • '
-                        '${_sessionModelOverride ? 'this chat' : 'profile default'}',
+                        s.chatModelButton
+                            .replaceAll(
+                              '{0}',
+                              _sessionModel ?? widget.session.model,
+                            )
+                            .replaceAll(
+                              '{1}',
+                              _sessionModelOverride
+                                  ? s.chatThisChatScope
+                                  : s.chatProfileDefaultScope,
+                            ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -2873,7 +2908,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Semantics(
-                  label: 'Attachment drafts',
+                  label: s.chatAttachmentDrafts,
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
                       maxHeight: MediaQuery.sizeOf(context).height * 0.32,
@@ -2908,7 +2943,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             Row(
               children: [
                 Semantics(
-                  label: 'Add attachment',
+                  label: s.chatAddAttachment,
                   button: true,
                   enabled: !_loading && !_streaming && !_sending,
                   excludeSemantics: true,
@@ -2917,7 +2952,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     onPressed: (!_loading && !_streaming && !_sending)
                         ? _showAttachmentPicker
                         : null,
-                    tooltip: 'Attach image or file',
+                    tooltip: s.chatAttachImageOrFile,
                     constraints: const BoxConstraints.tightFor(
                       width: 48,
                       height: 48,
@@ -2926,13 +2961,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 ),
                 Expanded(
                   child: Semantics(
-                    label: 'Message',
+                    label: s.chatMessageField,
                     textField: true,
                     child: TextField(
                       key: const Key('chat-message-composer'),
                       controller: _textController,
                       decoration: InputDecoration(
-                        hintText: 'Message Hermes…',
+                        hintText: s.chatMessageHint,
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(24),
                         ),
@@ -2959,7 +2994,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                     onPressed: _startVoiceInput,
                   ),
                 Semantics(
-                  label: 'Spoken replies',
+                  label: s.chatSpokenReplies,
                   value: _voiceReplyEnabled ? 'On' : 'Off',
                   toggled: _voiceReplyEnabled,
                   button: true,
@@ -3002,7 +3037,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                           ? IconButton(
                               icon: const Icon(Icons.stop_rounded, size: 20),
                               onPressed: _stopResponse,
-                              tooltip: 'Stop response',
+                              tooltip: s.chatStopResponse,
                               constraints: const BoxConstraints.tightFor(
                                 width: 48,
                                 height: 48,
@@ -3016,7 +3051,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                       _voiceComposer.listening
                                   ? null
                                   : _sendMessage,
-                              tooltip: 'Send',
+                              tooltip: s.chatSend,
                               constraints: const BoxConstraints.tightFor(
                                 width: 48,
                                 height: 48,
@@ -3034,6 +3069,8 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Widget _buildBody() {
+    final s = AppStrings.of(context);
+    final chatRetryLabel = s.commonRetry;
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -3048,7 +3085,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               const Icon(Icons.warning_amber, size: 48, color: Colors.orange),
               const SizedBox(height: 16),
               Text(
-                'Failed to load messages',
+                s.chatLoadFailedTitle,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
@@ -3060,7 +3097,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: _fetchMessages,
-                child: const Text('Retry'),
+                child: Text(chatRetryLabel),
               ),
             ],
           ),
@@ -3184,8 +3221,8 @@ class MessageBubble extends StatelessWidget {
     messenger
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text('Message copied'),
+        SnackBar(
+          content: Text(AppStrings.of(context).chatMessageCopied),
           duration: Duration(seconds: 2),
         ),
       );
@@ -3257,6 +3294,7 @@ class MessageBubble extends StatelessWidget {
   }
 
   Future<void> _showActions(BuildContext context) async {
+    final s = AppStrings.of(context);
     await showModalBottomSheet<void>(
       context: context,
       showDragHandle: true,
@@ -3272,14 +3310,14 @@ class MessageBubble extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
                 child: Text(
-                  'Message actions',
+                  s.chatMessageActions,
                   style: Theme.of(sheetContext).textTheme.titleSmall,
                 ),
               ),
               _actionTile(
                 sheetContext,
-                label: 'Copy message',
-                tooltip: 'Copy message',
+                label: s.chatCopyMessage,
+                tooltip: s.chatCopyMessage,
                 icon: Icons.copy_outlined,
                 onTap: () {
                   Navigator.of(sheetContext).pop();
@@ -3289,8 +3327,8 @@ class MessageBubble extends StatelessWidget {
               if (onReadAloud != null)
                 _actionTile(
                   sheetContext,
-                  label: 'Read aloud',
-                  tooltip: 'Read aloud',
+                  label: s.chatReadAloud,
+                  tooltip: s.chatReadAloud,
                   icon: Icons.volume_up_outlined,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -3300,8 +3338,8 @@ class MessageBubble extends StatelessWidget {
               if (onEdit != null)
                 _actionTile(
                   sheetContext,
-                  label: 'Edit and resend',
-                  tooltip: 'Edit and resend',
+                  label: s.chatEditAndResend,
+                  tooltip: s.chatEditAndResend,
                   icon: Icons.edit_outlined,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
@@ -3311,8 +3349,8 @@ class MessageBubble extends StatelessWidget {
               if (onRetry != null)
                 _actionTile(
                   sheetContext,
-                  label: 'Regenerate response',
-                  tooltip: 'Regenerate response',
+                  label: s.chatRegenerate,
+                  tooltip: s.chatRegenerate,
                   icon: Icons.refresh,
                   onTap: () {
                     Navigator.of(sheetContext).pop();
