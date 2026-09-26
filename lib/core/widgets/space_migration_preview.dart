@@ -13,6 +13,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../services/projects_repository.dart';
 import '../theme/hermes_theme.dart';
 import 'hermes_components.dart';
@@ -38,20 +39,23 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
   SpaceMigrationResult? _result;
   Object? _error;
 
-  static String _chats(int count) => count == 1 ? '1 chat' : '$count chats';
+  static String _chats(AppStrings s, int count) => count == 1
+      ? s.migrationOneChat
+      : s.migrationChatCount.replaceAll('{0}', '$count');
 
   String get _summary {
+    final s = AppStrings.of(context);
     final plan = widget.plan;
     final spaces = plan.entries.length == 1
-        ? '1 space'
-        : '${plan.entries.length} spaces';
+        ? s.migrationOneSpace
+        : s.migrationSpaceCount.replaceAll('{0}', '${plan.entries.length}');
     final toCreate = plan.projectsToCreate;
     final projects = switch (toCreate) {
-      0 => 'no new projects needed',
-      1 => '1 project to create',
-      _ => '$toCreate projects to create',
+      0 => s.migrationNoProjectsNeeded,
+      1 => s.migrationOneProjectToCreate,
+      _ => s.migrationProjectsToCreate.replaceAll('{0}', '$toCreate'),
     };
-    return '$spaces · ${_chats(plan.sessionsToLink)} · $projects';
+    return '$spaces · ${_chats(s, plan.sessionsToLink)} · $projects';
   }
 
   Future<void> _runMigration() async {
@@ -75,6 +79,7 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
     final plan = widget.plan;
 
@@ -82,15 +87,13 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const EmptyState(
+          EmptyState(
             icon: Icons.swap_horiz_rounded,
-            title: 'Nothing to migrate',
-            message:
-                'No local spaces were found for this connection, so Projects '
-                'are already the only organization in use here.',
+            title: s.migrationNothingToMigrate,
+            message: s.migrationNoLocalSpaces,
           ),
           if (widget.onDismiss != null)
-            TextButton(onPressed: widget.onDismiss, child: const Text('Close')),
+            TextButton(onPressed: widget.onDismiss, child: Text(s.close)),
         ],
       );
     }
@@ -98,7 +101,7 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
     return ListView(
       padding: const EdgeInsets.only(bottom: HermesSpacing.xl),
       children: [
-        const SectionHeader(title: 'Migration preview'),
+        SectionHeader(title: s.migrationPreview),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: HermesSpacing.lg),
           child: Text(
@@ -110,7 +113,7 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: HermesSpacing.lg),
           child: Text(
-            'Nothing has moved yet — this is only what a migration would do.',
+            s.migrationPreviewOnly,
             style: tokens.typography.label.copyWith(color: tokens.muted),
           ),
         ),
@@ -124,22 +127,25 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
                 children: [
                   Text(
                     result.isComplete
-                        ? 'Migration complete'
-                        : 'Migration incomplete',
+                        ? s.migrationComplete
+                        : s.migrationIncomplete,
                     style: tokens.typography.section.copyWith(
                       color: tokens.onSurface,
                     ),
                   ),
                   const SizedBox(height: HermesSpacing.xs),
                   Text(
-                    '${result.linkedSessions} chats migrated · '
-                    '${result.createdProjects} projects created',
+                    s.migrationResultSummary
+                        .replaceAll('{0}', '${result.linkedSessions}')
+                        .replaceAll('{1}', '${result.createdProjects}'),
                     style: tokens.typography.body.copyWith(color: tokens.muted),
                   ),
                   if (result.unlinkedSessions > 0)
                     Text(
-                      '${result.unlinkedSessions} chats stayed in local Spaces '
-                      'and can be retried safely.',
+                      s.migrationUnlinkedWarning.replaceAll(
+                        '{0}',
+                        '${result.unlinkedSessions}',
+                      ),
                       style: tokens.typography.body.copyWith(
                         color: tokens.muted,
                       ),
@@ -154,7 +160,7 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: HermesSpacing.lg),
             child: Text(
-              'Migration failed. Local Spaces were kept unchanged.',
+              s.migrationFailedUnchanged,
               style: tokens.typography.body.copyWith(color: tokens.danger),
             ),
           ),
@@ -181,7 +187,7 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : const Icon(Icons.swap_horiz_rounded),
-              label: Text(_migrating ? 'Migrating…' : 'Migrate'),
+              label: Text(_migrating ? s.migrating : s.migrate),
             ),
           ),
         if (widget.onDismiss != null)
@@ -189,7 +195,7 @@ class _SpaceMigrationPreviewState extends State<SpaceMigrationPreview> {
             padding: const EdgeInsets.symmetric(horizontal: HermesSpacing.lg),
             child: TextButton(
               onPressed: _migrating ? null : widget.onDismiss,
-              child: const Text('Close'),
+              child: Text(s.close),
             ),
           ),
       ],
@@ -204,11 +210,15 @@ class _EntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
     final matched = entry.matchedProject;
     final assigned = entry.sessionCount == 1
-        ? '1 assigned chat'
-        : '${entry.sessionCount} assigned chats';
+        ? s.migrationOneAssignedChat
+        : s.migrationAssignedChatCount.replaceAll(
+            '{0}',
+            '${entry.sessionCount}',
+          );
 
     return HermesCard(
       child: Column(
@@ -232,15 +242,17 @@ class _EntryCard extends StatelessWidget {
                 status: matched == null
                     ? HermesStatus.blocked
                     : HermesStatus.completed,
-                label: matched == null ? 'New project' : 'Matched',
+                label: matched == null ? s.migrationNewProject : s.matched,
               ),
             ],
           ),
           const SizedBox(height: HermesSpacing.xs),
           Text(
             matched == null
-                ? 'No server project matches this name · $assigned'
-                : 'Matches ${matched.name} · $assigned',
+                ? s.migrationNoServerProject.replaceAll('{0}', assigned)
+                : s.migrationMatchesProject
+                      .replaceAll('{0}', matched.name)
+                      .replaceAll('{1}', assigned),
             style: tokens.typography.body.copyWith(color: tokens.muted),
           ),
         ],

@@ -1,21 +1,32 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../services/android_share_intent_service.dart';
 import '../theme/hermes_theme.dart';
 import '../utils/new_chat_options.dart';
 
 enum ShareFavoriteAction {
-  useAsIs('Use as is', Icons.edit_note_rounded),
-  summarize('Summarize', Icons.summarize_rounded),
-  explain('Explain', Icons.lightbulb_outline_rounded),
-  research('Research', Icons.travel_explore_rounded),
-  extractTasks('Extract tasks', Icons.task_alt_rounded),
-  remember('Remember', Icons.memory_rounded),
-  fillFromDocument('Fill from document', Icons.description_outlined);
+  useAsIs(Icons.edit_note_rounded),
+  summarize(Icons.summarize_rounded),
+  explain(Icons.lightbulb_outline_rounded),
+  research(Icons.travel_explore_rounded),
+  extractTasks(Icons.task_alt_rounded),
+  remember(Icons.memory_rounded),
+  fillFromDocument(Icons.description_outlined);
 
-  final String label;
   final IconData icon;
-  const ShareFavoriteAction(this.label, this.icon);
+  const ShareFavoriteAction(this.icon);
+
+  /// User-visible label in the active language.
+  String label(AppStrings s) => switch (this) {
+    ShareFavoriteAction.useAsIs => s.useAsIs,
+    ShareFavoriteAction.summarize => s.summarize,
+    ShareFavoriteAction.explain => s.explain,
+    ShareFavoriteAction.research => s.research,
+    ShareFavoriteAction.extractTasks => s.extractTasks,
+    ShareFavoriteAction.remember => s.remember,
+    ShareFavoriteAction.fillFromDocument => s.fillFromDocument,
+  };
 }
 
 String buildSharedPrompt(
@@ -83,6 +94,7 @@ class _ShareTextReviewSheetState extends State<ShareTextReviewSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return SafeArea(
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -99,13 +111,13 @@ class _ShareTextReviewSheetState extends State<ShareTextReviewSheet> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Share to Hermes',
+                      s.shareToHermes,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     const SizedBox(height: HermesSpacing.sm),
                     Text(
                       widget.sharedText.trim().isEmpty
-                          ? 'No text shared'
+                          ? s.noTextShared
                           : widget.sharedText,
                       maxLines: 4,
                       overflow: TextOverflow.ellipsis,
@@ -114,7 +126,12 @@ class _ShareTextReviewSheetState extends State<ShareTextReviewSheet> {
                     if (widget.sharedFiles.isNotEmpty) ...[
                       const SizedBox(height: HermesSpacing.md),
                       Text(
-                        '${widget.sharedFiles.length} ${widget.sharedFiles.length == 1 ? 'attachment' : 'attachments'}',
+                        widget.sharedFiles.length == 1
+                            ? s.oneAttachment
+                            : s.attachmentsCount.replaceAll(
+                                '{0}',
+                                '${widget.sharedFiles.length}',
+                              ),
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                       const SizedBox(height: HermesSpacing.xs),
@@ -148,7 +165,7 @@ class _ShareTextReviewSheetState extends State<ShareTextReviewSheet> {
                         for (final action in ShareFavoriteAction.values)
                           ChoiceChip(
                             avatar: Icon(action.icon, size: 18),
-                            label: Text(action.label),
+                            label: Text(action.label(s)),
                             selected: _action == action,
                             onSelected: (_) => setState(() => _action = action),
                           ),
@@ -166,19 +183,19 @@ class _ShareTextReviewSheetState extends State<ShareTextReviewSheet> {
                       },
                       child: Column(
                         children: [
-                          const RadioListTile<NewChatMode>(
+                          RadioListTile<NewChatMode>(
                             contentPadding: EdgeInsets.zero,
-                            title: Text('Quick chat'),
-                            subtitle: Text('Auto-archives after 72 hours'),
+                            title: Text(s.quickChat),
+                            subtitle: Text(s.quickChatAutoArchive),
                             value: NewChatMode.quickChat,
                           ),
                           RadioListTile<NewChatMode>(
                             contentPadding: EdgeInsets.zero,
-                            title: const Text('Project chat'),
+                            title: Text(s.projectChat),
                             subtitle: Text(
                               widget.projectChatEnabled
-                                  ? 'Choose an active Project next'
-                                  : 'No active Projects on this Gateway',
+                                  ? s.projectChatChooseNext
+                                  : s.noActiveProjectsOnGateway,
                             ),
                             value: NewChatMode.projectChat,
                             enabled: widget.projectChatEnabled,
