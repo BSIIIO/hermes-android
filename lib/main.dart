@@ -293,7 +293,7 @@ class HomeScreenState extends State<HomeScreen> {
   void _showRestoreError(Object error) {
     final message = error is ConfigBackupException
         ? error.message
-        : 'The backup could not be restored.';
+        : AppStrings.of(context).configBackupRestoreFailed;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text(message)));
@@ -475,7 +475,7 @@ class HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setDialogState) => AlertDialog(
-          title: const Text('Update API Key'),
+          title: Text(s.updateApiKey),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -513,9 +513,9 @@ class HomeScreenState extends State<HomeScreen> {
                 ),
               TextField(
                 controller: ctrl,
-                decoration: const InputDecoration(
-                  labelText: 'API Key',
-                  hintText: 'API_SERVER_KEY from ~/.hermes/.env',
+                decoration: InputDecoration(
+                  labelText: s.connectionApiKey,
+                  hintText: s.connectionApiKeyHint,
                 ),
                 obscureText: true,
                 enabled: !validating,
@@ -564,13 +564,15 @@ class HomeScreenState extends State<HomeScreen> {
                       } on CredentialStorageException {
                         if (!ctx.mounted) return;
                         setDialogState(() {
-                          error = 'The API key could not be stored securely.';
+                          error = s.apiKeyStoreFailed;
                           validating = false;
                         });
                       } catch (_) {
                         if (!ctx.mounted) return;
                         setDialogState(() {
-                          error = 'Cannot reach ${conn.host}:${conn.port}.';
+                          error = s.connectionUnreachable
+                              .replaceAll('{0}', conn.host)
+                              .replaceAll('{1}', '${conn.port}');
                           validating = false;
                         });
                       }
@@ -731,7 +733,7 @@ class HomeScreenState extends State<HomeScreen> {
                           ? null
                           : int.tryParse(portText);
                       if (portText.isNotEmpty && (port == null || port <= 0)) {
-                        setDialogState(() => error = 'Invalid port number.');
+                        setDialogState(() => error = s.connectionInvalidPort);
                         return;
                       }
                       final user = userCtrl.text.trim();
@@ -792,18 +794,19 @@ class HomeScreenState extends State<HomeScreen> {
                         client.close();
                         if (!ctx.mounted) return;
                         setDialogState(() {
-                          error =
-                              'The dashboard credentials could not be stored securely.';
+                          error = s.dashboardCredentialsStoreFailed;
                           validating = false;
                         });
                       } catch (_) {
                         client.close();
                         if (!ctx.mounted) return;
                         setDialogState(() {
-                          error =
-                              'Could not reach/authenticate the dashboard at '
-                              '${conn.host}:${port ?? conn.dashboardPort}. '
-                              'Check the port and credentials.';
+                          error = s.dashboardUnreachable
+                              .replaceAll('{0}', conn.host)
+                              .replaceAll(
+                                '{1}',
+                                '${port ?? conn.dashboardPort}',
+                              );
                           validating = false;
                         });
                       }
@@ -839,8 +842,16 @@ class HomeScreenState extends State<HomeScreen> {
         leading: const Icon(Icons.router, color: Color(0xFFD4AF37)),
         title: Text(conn.label),
         subtitle: Text(
-          '${conn.host}:${conn.port}${conn.gatewayPrefix != null && conn.gatewayPrefix!.isNotEmpty ? conn.gatewayPrefix! : ''}'
-          '  \u2022  Key: ${conn.apiKey.isNotEmpty ? "\u2713" : "\u2717"}',
+          s.connectionSummary
+              .replaceAll('{0}', conn.host)
+              .replaceAll('{1}', '${conn.port}')
+              .replaceAll(
+                '{2}',
+                conn.gatewayPrefix != null && conn.gatewayPrefix!.isNotEmpty
+                    ? conn.gatewayPrefix!
+                    : '',
+              )
+              .replaceAll('{3}', conn.apiKey.isNotEmpty ? '\u2713' : '\u2717'),
           style: TextStyle(color: Colors.grey[600]),
         ),
         trailing: PopupMenuButton<String>(
@@ -852,11 +863,7 @@ class HomeScreenState extends State<HomeScreen> {
               } on CredentialStorageException {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                      'The connection could not be deleted safely.',
-                    ),
-                  ),
+                  SnackBar(content: Text(s.connectionDeleteFailed)),
                 );
               }
             } else if (v == 'edit') {
@@ -868,11 +875,11 @@ class HomeScreenState extends State<HomeScreen> {
             }
           },
           itemBuilder: (_) => [
-            const PopupMenuItem(value: 'edit', child: Text('Edit Connection')),
-            const PopupMenuItem(value: 'apikey', child: Text('Update API Key')),
-            const PopupMenuItem(
+            PopupMenuItem(value: 'edit', child: Text(s.editConnection)),
+            PopupMenuItem(value: 'apikey', child: Text(s.updateApiKey)),
+            PopupMenuItem(
               value: 'dashboard',
-              child: Text('Dashboard / Proxy Settings'),
+              child: Text(s.dashboardProxySettings),
             ),
             PopupMenuItem(
               value: 'delete',
@@ -937,7 +944,7 @@ class HomeScreenState extends State<HomeScreen> {
                     key: const Key('home_restore_config_button'),
                     onPressed: _showRestoreConfig,
                     icon: const Icon(Icons.settings_backup_restore),
-                    label: const Text('Restore configuration'),
+                    label: Text(s.restoreConfiguration),
                   ),
                 ],
               ),
@@ -1058,6 +1065,9 @@ class _AddDialogState extends State<_AddDialog> {
   }
 
   Future<void> _validateAndSave() async {
+    // Resolved before the first await: the failure branches below set an error
+    // message, and a BuildContext must not be read after an async gap.
+    final s = AppStrings.of(context);
     final label = _label.text.trim();
     final host = _host.text.trim();
     final port = int.tryParse(_port.text.trim()) ?? 8642;
@@ -1100,6 +1110,7 @@ class _AddDialogState extends State<_AddDialog> {
         return;
       }
 
+      final s = AppStrings.of(context);
       final dashPortText = _dashPort.text.trim();
       final dashUser = _dashUser.text.trim();
       final dashPass = _dashPass.text.trim();
@@ -1108,9 +1119,7 @@ class _AddDialogState extends State<_AddDialog> {
       if (gatewayProfile.contains('/') ||
           gatewayProfile.contains(RegExp(r'\s'))) {
         setState(() {
-          _error =
-              'Hermes profile must be a plain profile name such as "sol", '
-              'not a path.';
+          _error = s.connHermesProfileInvalid;
           _validating = false;
           _showDashboard = true;
         });
@@ -1149,9 +1158,7 @@ class _AddDialogState extends State<_AddDialog> {
           dashClient.close();
           if (!mounted) return;
           setState(() {
-            _error =
-                'Gateway connected, but the dashboard could not be reached or '
-                'authenticated. Check the dashboard details, or clear them to skip.';
+            _error = s.dashboardSkippedWarning;
             _validating = false;
             _showDashboard = true;
           });
@@ -1179,13 +1186,15 @@ class _AddDialogState extends State<_AddDialog> {
     } on CredentialStorageException {
       if (!mounted) return;
       setState(() {
-        _error = 'The connection could not be stored securely.';
+        _error = s.connectionStoreFailed;
         _validating = false;
       });
     } catch (_) {
       if (!mounted) return;
       setState(() {
-        _error = 'Cannot reach $host:$port. Check the host and port.';
+        _error = s.connectionUnreachable
+            .replaceAll('{0}', host)
+            .replaceAll('{1}', '$port');
         _validating = false;
       });
     }
@@ -1237,8 +1246,7 @@ class _AddDialogState extends State<_AddDialog> {
               controller: _host,
               decoration: InputDecoration(
                 labelText: s.connectionHost,
-                hintText:
-                    '192.168.1.50, 100.x.y.z, or hermes-machine.tailnet.ts.net',
+                hintText: s.connectionHostHint,
               ),
               keyboardType: TextInputType.text,
               autocorrect: false,
@@ -1248,7 +1256,7 @@ class _AddDialogState extends State<_AddDialog> {
               controller: _port,
               decoration: InputDecoration(
                 labelText: s.connectionPort,
-                hintText: '8642 (API Server)',
+                hintText: s.connectionPortHint,
               ),
               keyboardType: TextInputType.number,
             ),
@@ -1257,7 +1265,7 @@ class _AddDialogState extends State<_AddDialog> {
               controller: _apiKey,
               decoration: InputDecoration(
                 labelText: s.connectionApiKey,
-                hintText: 'API_SERVER_KEY from ~/.hermes/.env',
+                hintText: s.connectionApiKeyHint,
               ),
               obscureText: true,
             ),
