@@ -11,6 +11,7 @@ import '../services/gateway_turn_application_controller.dart';
 import '../services/session_search_client.dart';
 import '../services/session_search_preferences.dart';
 import '../services/ws_client.dart';
+import '../l10n/app_strings.dart';
 import 'chat_screen.dart';
 import 'settings_screen.dart';
 import 'memory_screen.dart';
@@ -24,6 +25,7 @@ Future<String?> showSessionNameDialog({
   required String title,
   required String initialValue,
   required String actionLabel,
+  String cancelLabel = 'Cancel',
 }) async {
   var draft = initialValue;
   final result = await showDialog<String>(
@@ -40,7 +42,7 @@ Future<String?> showSessionNameDialog({
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(dialogContext),
-          child: const Text('Cancel'),
+          child: Text(cancelLabel),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(dialogContext, draft.trim()),
@@ -247,6 +249,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   Future<AiSearchModel?> _showAiModelSelector() async {
+    final s = AppStrings.of(context);
     if (_loadingAiModels) return null;
     setState(() => _loadingAiModels = true);
     try {
@@ -273,15 +276,11 @@ class _SessionListScreenState extends State<SessionListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'AI search model',
+                        s.chatsAiModelTitle,
                         style: Theme.of(sheetContext).textTheme.titleLarge,
                       ),
                       const SizedBox(height: 4),
-                      const Text(
-                        'The model only rewrites your question into a short '
-                        'full-text query. Hermes uses the provider credentials '
-                        'already configured on the host.',
-                      ),
+                      Text(s.chatsAiModelDescription),
                     ],
                   ),
                 ),
@@ -333,7 +332,9 @@ class _SessionListScreenState extends State<SessionListScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not load AI search models: $error')),
+          SnackBar(
+            content: Text(s.chatsAiModelLoadFailed.replaceAll('{0}', '$error')),
+          ),
         );
       }
       return null;
@@ -442,14 +443,18 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   PopupMenuButton<String> _buildProfileSelector() {
+    final s = AppStrings.of(context);
     return PopupMenuButton<String>(
-      tooltip: 'Switch profile',
+      tooltip: s.chatsSwitchProfile,
       icon: const Icon(Icons.account_tree_outlined),
       onSelected: _switchProfile,
       itemBuilder: (context) => [
-        const PopupMenuItem<String>(
+        PopupMenuItem<String>(
           enabled: false,
-          child: Text('Profile', style: TextStyle(fontWeight: FontWeight.w700)),
+          child: Text(
+            s.chatsProfileHeader,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
         ),
         ..._profiles.map(
           (profile) => PopupMenuItem<String>(
@@ -496,20 +501,24 @@ class _SessionListScreenState extends State<SessionListScreen> {
     required String title,
     required String initialValue,
     required String actionLabel,
+    required String cancelLabel,
   }) => showSessionNameDialog(
     context: context,
     title: title,
     initialValue: initialValue,
     actionLabel: actionLabel,
+    cancelLabel: cancelLabel,
   );
 
   Future<void> _renameSession(Session session) async {
     final gateway = _desktopGateway;
     if (gateway == null) return;
+    final s = AppStrings.of(context);
     final title = await _askForName(
-      title: 'Rename chat',
+      title: s.chatsRenameChat,
       initialValue: session.title,
-      actionLabel: 'Rename',
+      actionLabel: s.chatsRename,
+      cancelLabel: s.commonCancel,
     );
     if (title == null || !mounted) return;
     try {
@@ -519,21 +528,23 @@ class _SessionListScreenState extends State<SessionListScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Could not rename chat: $error')));
+      ).showSnackBar(SnackBar(content: Text(s.chatsRenameFailed.replaceAll('{0}', '$error'))));
     }
   }
 
   Future<void> _branchSession(Session session) async {
     final gateway = _desktopGateway;
     if (gateway == null || _branchingSessionIds.contains(session.id)) return;
+    final s = AppStrings.of(context);
     final knownSessionIds = _sessions.map((item) => item.id).toSet();
     String? requestedName;
     setState(() => _branchingSessionIds.add(session.id));
     try {
       final name = await _askForName(
-        title: 'Branch chat',
+        title: s.chatsBranchChatTitle,
         initialValue: '${session.title} branch',
-        actionLabel: 'Create branch',
+        actionLabel: s.chatsBranchCreate,
+        cancelLabel: s.commonCancel,
       );
       if (name == null || !mounted) return;
       requestedName = name;
@@ -570,8 +581,9 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   void _showBranchCreated() {
+    final s = AppStrings.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Branch created in Hermes history.')),
+      SnackBar(content: Text(s.chatsBranchCreated)),
     );
   }
 
@@ -595,6 +607,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
   Future<void> _moveSession(Session session) async {
     final store = _spaceStore;
     if (store == null) return;
+    final s = AppStrings.of(context);
     final selected = await showModalBottomSheet<String?>(
       context: context,
       showDragHandle: true,
@@ -602,13 +615,13 @@ class _SessionListScreenState extends State<SessionListScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const ListTile(
-              title: Text('Move chat'),
-              subtitle: Text('Choose its destination space'),
+            ListTile(
+              title: Text(s.chatsMoveChat),
+              subtitle: Text(s.chatsMoveChatChoose),
             ),
             ListTile(
               leading: const Icon(Icons.inbox_outlined),
-              title: const Text('Unassigned'),
+              title: Text(s.chatsMoveUnassigned),
               onTap: () => Navigator.pop(sheetContext, ''),
             ),
             for (final space in _spaceState.spaces)
@@ -669,27 +682,30 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   Future<void> _confirmDeleteSession(Session session) async {
+    final s = AppStrings.of(context);
+    // A blank title would render an empty quote pair, so fall back to a
+    // placeholder the same way the list row does.
     final title = session.title.trim().isEmpty
-        ? 'Untitled session'
+        ? s.chatsUntitledSession
         : session.title;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete session?'),
+        title: Text(s.chatsDeleteSessionTitle),
         content: Text(
-          'Delete "$title" from the remote Hermes history? This cannot be undone.',
+          s.chatsDeleteSessionBody.replaceAll('{0}', title),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
+            child: Text(s.commonCancel),
           ),
           TextButton(
             style: TextButton.styleFrom(
               foregroundColor: Theme.of(dialogContext).colorScheme.error,
             ),
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Delete'),
+            child: Text(s.chatsDelete),
           ),
         ],
       ),
@@ -701,6 +717,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   Future<void> _deleteSession(Session session) async {
+    final s = AppStrings.of(context);
     if (_deletingSessionIds.contains(session.id)) return;
     setState(() => _deletingSessionIds.add(session.id));
 
@@ -716,14 +733,14 @@ class _SessionListScreenState extends State<SessionListScreen> {
         _deletingSessionIds.remove(session.id);
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Session deleted from remote Hermes.')),
+        SnackBar(content: Text(s.chatsDeleted)),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _deletingSessionIds.remove(session.id));
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Could not delete session: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.chatsDeleteFailed.replaceAll('{0}', '$e'))),
+      );
     }
   }
 
@@ -840,6 +857,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   Widget _buildDrawer() {
+    final s = AppStrings.of(context);
     return Drawer(
       child: SafeArea(
         child: Column(
@@ -874,7 +892,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
             ListTile(
               key: const Key('open-spaces'),
               leading: const Icon(Icons.folder_copy_outlined),
-              title: const Text('Spaces'),
+              title: Text(s.drawerSpaces),
               subtitle: Text(_spaceScopeLabel),
               enabled: _spaceStore != null,
               onTap: () => _openSpaces(closeDrawer: true),
@@ -882,8 +900,8 @@ class _SessionListScreenState extends State<SessionListScreen> {
             ListTile(
               key: const Key('open-workspace'),
               leading: const Icon(Icons.dashboard_outlined),
-              title: const Text('Workspace'),
-              subtitle: const Text('Projects, Activity — new navigation'),
+              title: Text(s.drawerWorkspace),
+              subtitle: Text(s.drawerWorkspaceSubtitle),
               onTap: () {
                 Navigator.pop(context);
                 _openScreen(
@@ -899,26 +917,26 @@ class _SessionListScreenState extends State<SessionListScreen> {
             const Divider(),
             ListTile(
               leading: const Icon(Icons.memory),
-              title: const Text('Memory'),
+              title: Text(s.drawerMemory),
               onTap: () =>
                   _openScreen(MemoryScreen(connection: widget.connection)),
             ),
             ListTile(
               leading: const Icon(Icons.schedule),
-              title: const Text('Cron Jobs'),
+              title: Text(s.drawerCronJobs),
               onTap: () =>
                   _openScreen(CronScreen(connection: widget.connection)),
             ),
             ListTile(
               leading: const Icon(Icons.auto_awesome),
-              title: const Text('Skills'),
+              title: Text(s.drawerSkills),
               onTap: () =>
                   _openScreen(SkillsScreen(connection: widget.connection)),
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
+              title: Text(s.drawerSettings),
               onTap: () =>
                   _openScreen(SettingsScreen(connection: widget.connection)),
             ),
@@ -929,6 +947,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
   }
 
   Widget _buildBody() {
+    final s = AppStrings.of(context);
     if (!_healthOk) {
       return Center(
         child: Column(
@@ -941,17 +960,20 @@ class _SessionListScreenState extends State<SessionListScreen> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Connecting to ${widget.connection.baseUrl}...',
+              s.chatsConnecting.replaceAll('{0}', widget.connection.baseUrl),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
             Text(
-              'Make sure the Gateway API Server is running\n(hermes gateway status)',
+              s.chatsConnectingHint,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 24),
-            ElevatedButton(onPressed: _checkHealth, child: const Text('Retry')),
+            ElevatedButton(
+              onPressed: _checkHealth,
+              child: Text(s.commonRetry),
+            ),
           ],
         ),
       );
@@ -967,7 +989,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
             Icon(Icons.error_outline, size: 48, color: Colors.orange),
             const SizedBox(height: 16),
             Text(
-              'Connection issue',
+              s.chatsConnectionIssue,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
@@ -982,7 +1004,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: _fetchSessions,
-              child: const Text('Retry'),
+              child: Text(s.commonRetry),
             ),
           ],
         ),
@@ -997,12 +1019,12 @@ class _SessionListScreenState extends State<SessionListScreen> {
             Icon(Icons.chat_bubble_outline, size: 48, color: Colors.grey),
             const SizedBox(height: 16),
             Text(
-              'No sessions yet',
+              s.chatsNoSessions,
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'Tap the + button to start a new chat',
+              s.chatsNoSessionsHint,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -1075,14 +1097,14 @@ class _SessionListScreenState extends State<SessionListScreen> {
                           )
                         : const Icon(Icons.search),
                     hintText: aiMode
-                        ? 'Ask AI to find a conversation'
+                        ? s.chatsSearchHintAi
                         : serverMode
-                        ? 'Search all message content'
-                        : 'Search loaded chats',
+                        ? s.chatsSearchHintFullText
+                        : s.chatsSearchHintLoaded,
                     trailing: [
                       if (rawQuery.isNotEmpty)
                         IconButton(
-                          tooltip: 'Clear search',
+                          tooltip: s.chatsClearSearch,
                           icon: const Icon(Icons.close),
                           onPressed: () {
                             _searchDebounceTimer?.cancel();
@@ -1099,7 +1121,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
                         ),
                       if (aiMode)
                         IconButton(
-                          tooltip: 'Change AI search model',
+                          tooltip: s.chatsChangeAiSearchModel,
                           icon: _loadingAiModels
                               ? const SizedBox.square(
                                   dimension: 18,
@@ -1113,7 +1135,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
                               : _showAiModelSelector,
                         ),
                       PopupMenuButton<SessionSearchMode>(
-                        tooltip: 'Search mode',
+                        tooltip: s.chatsSearchMode,
                         icon: Icon(
                           aiMode
                               ? Icons.auto_awesome
@@ -1126,22 +1148,22 @@ class _SessionListScreenState extends State<SessionListScreen> {
                           CheckedPopupMenuItem(
                             value: SessionSearchMode.local,
                             checked: !serverMode,
-                            child: const ListTile(
+                            child: ListTile(
                               contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.phone_android),
-                              title: Text('On-device'),
-                              subtitle: Text('Titles, previews, and models'),
+                              leading: const Icon(Icons.phone_android),
+                              title: Text(s.chatsSearchOnDevice),
+                              subtitle: Text(s.chatsSearchOnDeviceDetail),
                             ),
                           ),
                           CheckedPopupMenuItem(
                             value: SessionSearchMode.server,
                             enabled: _serverSearchAvailable,
                             checked: _searchMode == SessionSearchMode.server,
-                            child: const ListTile(
+                            child: ListTile(
                               contentPadding: EdgeInsets.zero,
-                              leading: Icon(Icons.manage_search),
-                              title: Text('Full-text'),
-                              subtitle: Text('All stored message content'),
+                              leading: const Icon(Icons.manage_search),
+                              title: Text(s.chatsSearchFullText),
+                              subtitle: Text(s.chatsSearchFullTextDetail),
                             ),
                           ),
                           CheckedPopupMenuItem(
@@ -1151,10 +1173,10 @@ class _SessionListScreenState extends State<SessionListScreen> {
                             child: ListTile(
                               contentPadding: EdgeInsets.zero,
                               leading: const Icon(Icons.auto_awesome),
-                              title: const Text('AI + full-text'),
+                              title: Text(s.chatsSearchAiFullTextTitle),
                               subtitle: Text(
                                 _aiSearchModel == null
-                                    ? 'Choose a small model to rewrite queries'
+                                    ? s.chatsSearchAiChooseModel
                                     : '${_aiSearchModel!.provider} • ${_aiSearchModel!.model}',
                               ),
                             ),
@@ -1178,7 +1200,10 @@ class _SessionListScreenState extends State<SessionListScreen> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            'AI searched for: $_aiRewrittenQuery',
+                            s.chatsSearchAiSearchedFor.replaceAll(
+                              '{0}',
+                              '$_aiRewrittenQuery',
+                            ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
                             style: Theme.of(context).textTheme.bodySmall,
@@ -1217,7 +1242,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
                             TextButton(
                               onPressed: () =>
                                   _setSearchMode(SessionSearchMode.local),
-                              child: const Text('Use on-device'),
+                              child: Text(s.chatsSearchUseOnDevice),
                             ),
                           ],
                         ),
@@ -1242,7 +1267,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
                       serverHitsCurrent != null &&
                       serverHitsCurrent.isEmpty) ...[
                     const SizedBox(height: 16),
-                    const Center(child: Text('No message-content matches')),
+                    Center(child: Text(s.chatsSearchNoMatches)),
                   ],
                 ],
               ),
@@ -1267,38 +1292,38 @@ class _SessionListScreenState extends State<SessionListScreen> {
                       child: CircularProgressIndicator(strokeWidth: 2),
                     )
                   : PopupMenuButton<String>(
-                      tooltip: 'Chat actions',
+                      tooltip: s.chatsActions,
                       onSelected: (action) =>
                           _handleSessionAction(action, session),
                       itemBuilder: (_) => [
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'move',
                           child: ListTile(
-                            leading: Icon(Icons.drive_file_move_outline),
-                            title: Text('Move to space'),
+                            leading: const Icon(Icons.drive_file_move_outline),
+                            title: Text(s.chatsMoveToSpace),
                           ),
                         ),
                         if (_desktopGateway != null)
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'rename',
                             child: ListTile(
-                              leading: Icon(Icons.edit_outlined),
-                              title: Text('Rename'),
+                              leading: const Icon(Icons.edit_outlined),
+                              title: Text(s.chatsRenameChat),
                             ),
                           ),
                         if (_desktopGateway != null)
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'branch',
                             child: ListTile(
-                              leading: Icon(Icons.call_split_outlined),
-                              title: Text('Branch'),
+                              leading: const Icon(Icons.call_split_outlined),
+                              title: Text(s.chatsBranchChat),
                             ),
                           ),
-                        const PopupMenuItem(
+                        PopupMenuItem(
                           value: 'delete',
                           child: ListTile(
-                            leading: Icon(Icons.delete_outline),
-                            title: Text('Delete'),
+                            leading: const Icon(Icons.delete_outline),
+                            title: Text(s.chatsDelete),
                           ),
                         ),
                       ],
@@ -1312,7 +1337,10 @@ class _SessionListScreenState extends State<SessionListScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${session.messageCount} msgs \u2022 ${session.model} \u2022 ${_formatTime(session.startedAt)}',
+                    s.chatsRowMeta
+                        .replaceAll('{0}', '${session.messageCount}')
+                        .replaceAll('{1}', session.model)
+                        .replaceAll('{2}', _formatTime(session.startedAt)),
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                   if (searchHit?.snippet.isNotEmpty == true)
