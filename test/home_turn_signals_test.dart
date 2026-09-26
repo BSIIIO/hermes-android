@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hermes_android/core/models/connection.dart';
 import 'package:hermes_android/core/models/gateway_turn_contract.dart';
 import 'package:hermes_android/core/services/desktop_gateway_client.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/services/gateway_turn_journal.dart';
 import 'package:hermes_android/core/services/gateway_turn_recovery.dart';
 import 'package:hermes_android/core/utils/home_turn_signals.dart';
@@ -77,6 +78,7 @@ HomeTurnSignals _signals(
   return buildHomeTurnSignals(
     snapshot: GatewayTurnJournalSnapshot(bindings: bindings, entries: entries),
     now: now ?? _now,
+    s: const AppStringsEn(),
     connectionId: connectionId,
     endpointDigest: endpointDigest,
   );
@@ -412,6 +414,7 @@ void main() {
       final signals = await readHomeTurnSignals(
         journal: journal,
         connectionId: 'connection-a',
+        s: const AppStringsEn(),
         endpointDigest: _digestA,
         now: _now,
       );
@@ -428,6 +431,7 @@ void main() {
         readHomeTurnSignals(
           journal: GatewayTurnJournal(store: store),
           connectionId: 'connection-a',
+          s: const AppStringsEn(),
           endpointDigest: _digestA,
           now: _now,
         ),

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../l10n/app_strings.dart';
 import 'package:flutter/services.dart';
 
 /// Splits raw markdown into text segments and fenced code blocks.
@@ -50,15 +52,13 @@ class _MarkdownCodeBlockState extends State<MarkdownCodeBlock> {
   bool _wrap = false;
 
   Future<void> _copy() async {
+    final s = AppStrings.of(context);
     await Clipboard.setData(ClipboardData(text: widget.code));
     if (!mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text('Code copied'),
-          duration: Duration(seconds: 2),
-        ),
+        SnackBar(content: Text(s.codeCopied), duration: Duration(seconds: 2)),
       );
   }
 
@@ -130,7 +130,7 @@ class _MarkdownCodeBlockState extends State<MarkdownCodeBlock> {
                 ),
                 if (_wrap)
                   Tooltip(
-                    message: 'Scroll horizontally',
+                    message: AppStrings.of(context).codeScrollHorizontally,
                     child: IconButton(
                       icon: const Icon(Icons.swap_horiz, size: 18),
                       onPressed: () => setState(() => _wrap = false),
@@ -141,7 +141,7 @@ class _MarkdownCodeBlockState extends State<MarkdownCodeBlock> {
                     ),
                   ),
                 Tooltip(
-                  message: 'Wrap lines',
+                  message: AppStrings.of(context).codeWrapLines,
                   child: IconButton(
                     icon: const Icon(Icons.wrap_text, size: 18),
                     onPressed: () => setState(() => _wrap = true),
@@ -152,7 +152,7 @@ class _MarkdownCodeBlockState extends State<MarkdownCodeBlock> {
                   ),
                 ),
                 Tooltip(
-                  message: 'Copy code',
+                  message: AppStrings.of(context).codeCopy,
                   child: IconButton(
                     icon: const Icon(Icons.copy_outlined, size: 18),
                     onPressed: _copy,

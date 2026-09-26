@@ -256,7 +256,7 @@ class _SessionListScreenState extends State<SessionListScreen> {
       final options = await _client.getModelOptions();
       final choices = AiSearchModel.configuredFromOptions(options);
       if (choices.isEmpty) {
-        throw StateError('Hermes returned no configured selectable models.');
+        throw StateError(s.aiSearchNoConfiguredModels);
       }
 
       if (!mounted) return null;
