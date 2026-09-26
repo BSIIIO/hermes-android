@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../services/config_backup.dart';
 import '../services/config_backup_service.dart';
+import '../l10n/app_strings.dart';
 
 /// Result of the export sheet: the passphrase the user chose.
 class ExportPassphraseChoice {
@@ -59,6 +60,7 @@ class _ExportPassphraseSheetState extends State<ExportPassphraseSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -71,14 +73,13 @@ class _ExportPassphraseSheetState extends State<ExportPassphraseSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Protect this backup',
+            s.backupProtectTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          const Text(
-            'The file contains your API keys and dashboard password, so it is '
-            'encrypted. Without this passphrase the backup cannot be restored.',
-            style: TextStyle(color: Colors.grey),
+          Text(
+            s.backupProtectDescription,
+            style: const TextStyle(color: Colors.grey),
           ),
           const SizedBox(height: 16),
           TextField(
@@ -87,12 +88,14 @@ class _ExportPassphraseSheetState extends State<ExportPassphraseSheet> {
             obscureText: _obscure,
             autofocus: true,
             decoration: InputDecoration(
-              labelText: 'Passphrase',
+              labelText: s.backupPassphrase,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => _obscure = !_obscure),
-                tooltip: _obscure ? 'Show passphrase' : 'Hide passphrase',
+                tooltip: _obscure
+                    ? s.backupShowPassphrase
+                    : s.backupHidePassphrase,
               ),
             ),
           ),
@@ -101,9 +104,9 @@ class _ExportPassphraseSheetState extends State<ExportPassphraseSheet> {
             key: const Key('export_passphrase_confirm_field'),
             controller: _confirm,
             obscureText: _obscure,
-            decoration: const InputDecoration(
-              labelText: 'Confirm passphrase',
-              border: OutlineInputBorder(),
+            decoration: InputDecoration(
+              labelText: s.backupConfirmPassphrase,
+              border: const OutlineInputBorder(),
             ),
             onSubmitted: (_) => _submit(),
           ),
@@ -119,14 +122,14 @@ class _ExportPassphraseSheetState extends State<ExportPassphraseSheet> {
             children: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(s.backupCancel),
               ),
               const Spacer(),
               FilledButton.icon(
                 key: const Key('export_confirm_button'),
                 onPressed: _submit,
                 icon: const Icon(Icons.lock),
-                label: const Text('Export'),
+                label: Text(s.backupExport),
               ),
             ],
           ),
@@ -168,6 +171,7 @@ class _ImportOptionsSheetState extends State<ImportOptionsSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Padding(
       padding: EdgeInsets.only(
         left: 20,
@@ -180,7 +184,7 @@ class _ImportOptionsSheetState extends State<ImportOptionsSheet> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Restore configuration',
+            s.backupRestoreTitle,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 16),
@@ -190,12 +194,14 @@ class _ImportOptionsSheetState extends State<ImportOptionsSheet> {
             obscureText: _obscure,
             autofocus: true,
             decoration: InputDecoration(
-              labelText: 'Passphrase',
+              labelText: s.backupPassphrase,
               border: const OutlineInputBorder(),
               suffixIcon: IconButton(
                 icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
                 onPressed: () => setState(() => _obscure = !_obscure),
-                tooltip: _obscure ? 'Show passphrase' : 'Hide passphrase',
+                tooltip: _obscure
+                    ? s.backupShowPassphrase
+                    : s.backupHidePassphrase,
               ),
             ),
             onSubmitted: (_) => _submit(),
@@ -204,26 +210,21 @@ class _ImportOptionsSheetState extends State<ImportOptionsSheet> {
           RadioGroup<ConfigImportMode>(
             groupValue: _mode,
             onChanged: (value) => setState(() => _mode = value!),
-            child: const Column(
+            child: Column(
               mainAxisSize: MainAxisSize.min,
               children: <Widget>[
                 RadioListTile<ConfigImportMode>(
                   key: Key('import_mode_merge'),
                   value: ConfigImportMode.merge,
-                  title: Text('Merge'),
-                  subtitle: Text(
-                    'Add and update connections from the backup, keep the '
-                    'rest.',
-                  ),
+                  title: Text(s.backupMerge),
+                  subtitle: Text(s.backupMergeDescription),
                   contentPadding: EdgeInsets.zero,
                 ),
                 RadioListTile<ConfigImportMode>(
                   key: Key('import_mode_replace'),
                   value: ConfigImportMode.replace,
-                  title: Text('Replace'),
-                  subtitle: Text(
-                    'Delete connections that are not in the backup.',
-                  ),
+                  title: Text(s.backupReplace),
+                  subtitle: Text(s.backupReplaceDescription),
                   contentPadding: EdgeInsets.zero,
                 ),
               ],
@@ -241,14 +242,14 @@ class _ImportOptionsSheetState extends State<ImportOptionsSheet> {
             children: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(s.backupCancel),
               ),
               const Spacer(),
               FilledButton.icon(
                 key: const Key('import_confirm_button'),
                 onPressed: _submit,
                 icon: const Icon(Icons.restore),
-                label: const Text('Restore'),
+                label: Text(s.backupRestore),
               ),
             ],
           ),
@@ -378,6 +379,7 @@ class _ConfigBackupCardState extends State<ConfigBackupCard> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -392,16 +394,15 @@ class _ConfigBackupCardState extends State<ConfigBackupCard> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Backup & restore',
+                  s.backupTitle,
                   style: Theme.of(context).textTheme.titleSmall,
                 ),
               ],
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Save your connections and settings to an encrypted file, then '
-              'restore them after reinstalling or on another device.',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              s.backupDescription,
+              style: const TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 16),
             if (_busy)
@@ -417,7 +418,7 @@ class _ConfigBackupCardState extends State<ConfigBackupCard> {
                       key: const Key('config_export_button'),
                       onPressed: _runExport,
                       icon: const Icon(Icons.upload_file),
-                      label: const Text('Export'),
+                      label: Text(s.backupExport),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -426,7 +427,7 @@ class _ConfigBackupCardState extends State<ConfigBackupCard> {
                       key: const Key('config_import_button'),
                       onPressed: _runImport,
                       icon: const Icon(Icons.download),
-                      label: const Text('Import'),
+                      label: Text(s.backupImport),
                     ),
                   ),
                 ],

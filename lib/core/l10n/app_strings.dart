@@ -156,6 +156,132 @@ abstract class AppStrings {
   /// Row label for Simplified Chinese. Endonym: identical in both interface
   /// languages.
   String get languageChinese;
+
+  // ---- Settings: Profile default model ----
+
+  /// Settings section header.
+  String get settingsProfileDefaultModel;
+
+  /// Section explanation: what changing this affects.
+  String get settingsProfileDefaultModelDescription;
+
+  /// Label above the resolved provider/model line.
+  String get settingsCurrentProfileDefault;
+
+  /// `Context: N tokens`.
+  String get settingsContextTokens;
+
+  /// Button that sets the current model as the profile default.
+  String get settingsSetProfileDefault;
+
+  /// The provider picker's label.
+  String get settingsProvider;
+
+  /// The model picker's label.
+  String get settingsModel;
+
+  // ---- Settings: Voice ----
+
+  /// Section header, and the TTS dropdown's label.
+  String get settingsVoice;
+
+  /// Dropdown row meaning "no explicit choice".
+  String get settingsVoiceAuto;
+
+  /// Empty state when the device exposes no TTS voices.
+  String get settingsVoiceNoneFound;
+
+  // ---- Settings: Verbose mode ----
+
+  /// ListTile title.
+  String get settingsVerboseMode;
+
+  /// ListTile subtitle.
+  String get settingsVerboseModeDescription;
+
+  // ---- Settings: About ----
+
+  /// Section header.
+  String get settingsAbout;
+
+  /// Section header for the session-source filter.
+  String get settingsSessionSources;
+
+  /// Section header for the connection card.
+  String get settingsConnection;
+
+  /// Section header for backup and restore.
+  String get settingsBackupRestore;
+
+  /// The product name shown above the version line.
+  String get settingsAboutProduct;
+
+  /// One-line product description.
+  String get settingsAboutDescription;
+
+  /// `Version x.y.z`. Receives the version name; the digits are never
+  /// localised.
+  String get settingsVersion;
+
+  /// Error line shown when package info could not be read.
+  String get settingsLoadFailed;
+
+  /// App bar refresh action.
+  String get commonRefresh;
+
+  // ---- Settings: Backup & restore ----
+
+  /// The card's own title. Same wording as [settingsBackupRestore]; the card
+  /// repeats it because it is also reachable from elsewhere.
+  String get backupTitle;
+
+  /// Card explanation of what a backup is.
+  String get backupDescription;
+
+  /// Export button.
+  String get backupExport;
+
+  /// Import button.
+  String get backupImport;
+
+  /// Title of the export passphrase sheet.
+  String get backupProtectTitle;
+
+  /// Explanation above the passphrase field in the export sheet.
+  String get backupProtectDescription;
+
+  /// Passphrase field label, in both sheets.
+  String get backupPassphrase;
+
+  /// Passphrase confirmation field label, export sheet only.
+  String get backupConfirmPassphrase;
+
+  /// Title of the restore sheet.
+  String get backupRestoreTitle;
+
+  /// Merge strategy row: title and description.
+  String get backupMerge;
+
+  /// Merge strategy description.
+  String get backupMergeDescription;
+
+  /// Replace strategy row: title and description.
+  String get backupReplace;
+
+  /// Replace strategy description.
+  String get backupReplaceDescription;
+
+  /// Restore button in the restore sheet.
+  String get backupRestore;
+
+  /// Sheet-level cancel action.
+  String get backupCancel;
+
+  /// Visibility toggle tooltip when the passphrase is currently hidden.
+  String get backupShowPassphrase;
+
+  /// Visibility toggle tooltip when the passphrase is visible.
+  String get backupHidePassphrase;
 }
 
 /// English strings.
@@ -283,6 +409,133 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get languageChinese => '简体中文';
+
+  @override
+  String get settingsProfileDefaultModel => 'Profile default model';
+
+  @override
+  String get settingsProfileDefaultModelDescription =>
+      'Changes the default for {0}. Use the selector in a chat to override '
+      'only that conversation.';
+
+  @override
+  String get settingsCurrentProfileDefault => 'Current profile default';
+
+  @override
+  String get settingsContextTokens => 'Context: {0} tokens';
+
+  @override
+  String get settingsSetProfileDefault => 'Set profile default';
+
+  @override
+  String get settingsProvider => 'Provider';
+
+  @override
+  String get settingsModel => 'Model';
+
+  @override
+  String get settingsVoice => 'Voice';
+
+  @override
+  String get settingsVoiceAuto => 'Auto (device default)';
+
+  @override
+  String get settingsVoiceNoneFound =>
+      'No TTS voices found.\n'
+      'Install Google Text-to-Speech and download voice data.';
+
+  @override
+  String get settingsVerboseMode => 'Verbose Mode';
+
+  @override
+  String get settingsVerboseModeDescription =>
+      'Show tool calls, thinking, and message metadata';
+
+  @override
+  String get settingsAbout => 'About';
+
+  @override
+  String get settingsSessionSources => 'Session Sources';
+
+  @override
+  String get settingsConnection => 'Connection';
+
+  @override
+  String get settingsBackupRestore => 'Backup & restore';
+
+  @override
+  String get settingsAboutProduct => 'Hermes Agent for Android';
+
+  @override
+  String get settingsAboutDescription =>
+      'Browse and manage your Hermes Agent sessions from your phone. '
+      'Connects to a Hermes dashboard running on your local network.';
+
+  @override
+  String get settingsVersion => 'Version {0}';
+
+  @override
+  String get settingsLoadFailed => 'Failed to load settings';
+
+  @override
+  String get commonRefresh => 'Refresh';
+
+  @override
+  String get backupTitle => 'Backup & restore';
+
+  @override
+  String get backupDescription =>
+      'Save your connections and settings to an encrypted file, then restore '
+      'them after reinstalling or on another device.';
+
+  @override
+  String get backupExport => 'Export';
+
+  @override
+  String get backupImport => 'Import';
+
+  @override
+  String get backupProtectTitle => 'Protect this backup';
+
+  @override
+  String get backupProtectDescription =>
+      'The file contains your API keys and dashboard password, so it is '
+      'encrypted. Without this passphrase the backup cannot be restored.';
+
+  @override
+  String get backupPassphrase => 'Passphrase';
+
+  @override
+  String get backupConfirmPassphrase => 'Confirm passphrase';
+
+  @override
+  String get backupRestoreTitle => 'Restore configuration';
+
+  @override
+  String get backupMerge => 'Merge';
+
+  @override
+  String get backupMergeDescription =>
+      'Add and update connections from the backup, keep the rest.';
+
+  @override
+  String get backupReplace => 'Replace';
+
+  @override
+  String get backupReplaceDescription =>
+      'Delete connections that are not in the backup.';
+
+  @override
+  String get backupRestore => 'Restore';
+
+  @override
+  String get backupCancel => 'Cancel';
+
+  @override
+  String get backupShowPassphrase => 'Show passphrase';
+
+  @override
+  String get backupHidePassphrase => 'Hide passphrase';
 }
 
 /// Simplified Chinese strings.
@@ -404,6 +657,125 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get languageChinese => '简体中文';
+
+  @override
+  String get settingsProfileDefaultModel => '个人资料默认模型';
+
+  @override
+  String get settingsProfileDefaultModelDescription =>
+      '更改 {0} 的默认模型。在某个会话里用选择器可只覆盖该会话。';
+
+  @override
+  String get settingsCurrentProfileDefault => '当前个人资料默认值';
+
+  @override
+  String get settingsContextTokens => '上下文：{0} tokens';
+
+  @override
+  String get settingsSetProfileDefault => '设为个人资料默认';
+
+  @override
+  String get settingsProvider => '服务提供商';
+
+  @override
+  String get settingsModel => '模型';
+
+  @override
+  String get settingsVoice => '语音';
+
+  @override
+  String get settingsVoiceAuto => '自动（设备默认）';
+
+  @override
+  String get settingsVoiceNoneFound => '未找到 TTS 语音。\n请安装 Google 文字转语音并下载语音数据。';
+
+  @override
+  String get settingsVerboseMode => '详细模式';
+
+  @override
+  String get settingsVerboseModeDescription => '显示工具调用、思考过程和消息元数据';
+
+  @override
+  String get settingsAbout => '关于';
+
+  @override
+  String get settingsSessionSources => '会话来源';
+
+  @override
+  String get settingsConnection => '连接';
+
+  @override
+  String get settingsBackupRestore => '备份与恢复';
+
+  @override
+  String get settingsAboutProduct => 'Hermes Agent for Android';
+
+  @override
+  String get settingsAboutDescription =>
+      '在手机上浏览和管理你的 Hermes Agent 会话，连接到本地网络上的 Hermes dashboard。';
+
+  @override
+  String get settingsVersion => '版本 {0}';
+
+  @override
+  String get settingsLoadFailed => '设置加载失败';
+
+  @override
+  String get commonRefresh => '刷新';
+
+  @override
+  String get backupTitle => '备份与恢复';
+
+  @override
+  String get backupDescription =>
+      '把连接和设置保存到加密文件，重装或换设备后再恢复。';
+
+  @override
+  String get backupExport => '导出';
+
+  @override
+  String get backupImport => '导入';
+
+  @override
+  String get backupProtectTitle => '保护此备份';
+
+  @override
+  String get backupProtectDescription =>
+      '该文件包含你的 API 密钥和 dashboard 密码，因此会加密。'
+      '没有这个口令就无法恢复备份。';
+
+  @override
+  String get backupPassphrase => '口令';
+
+  @override
+  String get backupConfirmPassphrase => '确认口令';
+
+  @override
+  String get backupRestoreTitle => '恢复配置';
+
+  @override
+  String get backupMerge => '合并';
+
+  @override
+  String get backupMergeDescription => '添加并更新备份中的连接，保留其余连接。';
+
+  @override
+  String get backupReplace => '替换';
+
+  @override
+  String get backupReplaceDescription => '删除不在备份中的连接。';
+
+  @override
+  String get backupRestore => '恢复';
+
+  @override
+  String get backupCancel => '取消';
+
+  @override
+  String get backupShowPassphrase => '显示口令';
+
+  @override
+  String get backupHidePassphrase => '隐藏口令';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.

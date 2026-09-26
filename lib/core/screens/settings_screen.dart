@@ -151,7 +151,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _loading ? null : _loadData,
-            tooltip: 'Refresh',
+            tooltip: s.commonRefresh,
           ),
         ],
       ),
@@ -175,7 +175,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               const Icon(Icons.error_outline, size: 48, color: Colors.orange),
               const SizedBox(height: 16),
               Text(
-                'Failed to load settings',
+                s.settingsLoadFailed,
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: 8),
@@ -199,9 +199,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       padding: const EdgeInsets.all(16),
       children: [
         // ---- Section: Model ----
-        _buildSectionHeader('Profile default model'),
+        _buildSectionHeader(s.settingsProfileDefaultModel),
         Text(
-          'Changes the default for ${widget.connection.label}. Use the selector in a chat to override only that conversation.',
+          s.settingsProfileDefaultModelDescription.replaceAll(
+            '{0}',
+            widget.connection.label,
+          ),
           style: Theme.of(context).textTheme.bodySmall,
         ),
         const SizedBox(height: 8),
@@ -220,7 +223,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        'Current profile default',
+                        s.settingsCurrentProfileDefault,
                         style: Theme.of(context).textTheme.titleSmall,
                       ),
                     ],
@@ -235,7 +238,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Text(
-                        'Context: ${_modelInfo!['effective_context_length']} tokens',
+                        s.settingsContextTokens.replaceAll(
+                          '{0}',
+                          '${_modelInfo!['effective_context_length']}',
+                        ),
                         style: Theme.of(
                           context,
                         ).textTheme.bodySmall?.copyWith(color: Colors.grey),
@@ -250,7 +256,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         // Provider picker
         if (_providers.isNotEmpty) ...[
           _buildDropdown<String>(
-            label: 'Provider',
+            label: s.settingsProvider,
             value:
                 _selectedProvider.isNotEmpty &&
                     _providers.contains(_selectedProvider)
@@ -279,7 +285,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         if (_selectedProvider.isNotEmpty &&
             _providerModels.containsKey(_selectedProvider)) ...[
           _buildDropdown<String>(
-            label: 'Model',
+            label: s.settingsModel,
             value: _selectedModel,
             items: _providerModels[_selectedProvider]!.map((m) {
               final id = m['id'] as String? ?? '';
@@ -296,7 +302,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: FilledButton.icon(
               onPressed: _applyModel,
               icon: const Icon(Icons.check),
-              label: const Text('Set profile default'),
+              label: Text(s.settingsSetProfileDefault),
             ),
           ),
         ],
@@ -357,17 +363,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 16),
 
         // ---- Section: Voice ----
-        _buildSectionHeader('Voice'),
+        _buildSectionHeader(s.settingsVoice),
         _VoicePicker(),
         const SizedBox(height: 16),
 
         // ---- Section: Session Sources ----
-        _buildSectionHeader('Session Sources'),
+        _buildSectionHeader(s.settingsSessionSources),
         _SessionSourcesFilter(connectionId: widget.connection.id),
         const SizedBox(height: 16),
 
         // ---- Section: Connection ----
-        _buildSectionHeader('Connection'),
+        _buildSectionHeader(s.settingsConnection),
         Card(
           child: Padding(
             padding: const EdgeInsets.all(16),
@@ -388,7 +394,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 16),
 
         // ---- Section: Backup ----
-        _buildSectionHeader('Backup & restore'),
+        _buildSectionHeader(s.settingsBackupRestore),
         ConfigBackupCard(
           onExport: _exportConfig,
           onDeliverExport: _deliverExport,
@@ -398,7 +404,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 16),
 
         // ---- Section: About ----
-        _buildSectionHeader('About'),
+        _buildSectionHeader(s.settingsAbout),
         _AboutCard(),
       ],
     );
@@ -517,23 +523,23 @@ class _AboutCardState extends State<_AboutCard> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Hermes Agent for Android',
-              style: TextStyle(fontWeight: FontWeight.bold),
+            Text(
+              s.settingsAboutProduct,
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 4),
-            Text('Version ${_version.isNotEmpty ? _version : '…'}'),
+            Text(s.settingsVersion.replaceAll('{0}', _version.isNotEmpty ? _version : '…')),
             const SizedBox(height: 8),
-            const Text(
-              'Browse and manage your Hermes Agent sessions from your phone. '
-              'Connects to a Hermes dashboard running on your local network.',
-              style: TextStyle(color: Colors.grey),
+            Text(
+              s.settingsAboutDescription,
+              style: const TextStyle(color: Colors.grey),
             ),
           ],
         ),
@@ -570,10 +576,11 @@ class _VerboseToggleState extends State<_VerboseToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Card(
       child: SwitchListTile(
-        title: const Text('Verbose Mode'),
-        subtitle: const Text('Show tool calls, thinking, and message metadata'),
+        title: Text(s.settingsVerboseMode),
+        subtitle: Text(s.settingsVerboseModeDescription),
         secondary: const Icon(Icons.terminal),
         value: _verbose,
         onChanged: _set,
@@ -726,6 +733,7 @@ class _VoicePickerState extends State<_VoicePicker> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     if (_loading) {
       return const Card(
         child: Padding(
@@ -736,20 +744,22 @@ class _VoicePickerState extends State<_VoicePicker> {
     }
 
     if (_voices.isEmpty) {
-      return const Card(
+      return Card(
         child: Padding(
-          padding: EdgeInsets.all(16),
+          padding: const EdgeInsets.all(16),
           child: Text(
-            'No TTS voices found.\\n'
-            'Install Google Text-to-Speech and download voice data.',
-            style: TextStyle(color: Colors.grey),
+            s.settingsVoiceNoneFound,
+            style: const TextStyle(color: Colors.grey),
           ),
         ),
       );
     }
 
     final items = <DropdownMenuItem<Map<String, String>?>>[
-      const DropdownMenuItem(value: null, child: Text('Auto (device default)')),
+      DropdownMenuItem(
+        value: null,
+        child: Text(s.settingsVoiceAuto),
+      ),
       ..._voices.map(
         (v) => DropdownMenuItem(
           value: v,
@@ -768,10 +778,10 @@ class _VoicePickerState extends State<_VoicePicker> {
 
     return DropdownButtonFormField<Map<String, String>?>(
       initialValue: current,
-      decoration: const InputDecoration(
-        labelText: 'Voice',
-        border: OutlineInputBorder(),
-        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: InputDecoration(
+        labelText: s.settingsVoice,
+        border: const OutlineInputBorder(),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
       ),
       items: items,
       onChanged: _set,
