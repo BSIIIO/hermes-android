@@ -2,8 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'core/l10n/app_strings.dart';
 import 'core/services/android_launch_intent_service.dart';
 import 'core/services/android_share_intent_service.dart';
+import 'core/services/app_language.dart';
 import 'core/services/config_backup.dart';
 import 'core/services/config_backup_io.dart';
 import 'core/services/config_backup_service.dart';
@@ -72,6 +74,26 @@ class HermesApp extends StatefulWidget {
   static TextSizePreference getTextSizePreference(SharedPreferences prefs) {
     return TextSizePreferenceStore(prefs).read();
   }
+
+  /// The interface language to build with.
+  ///
+  /// [AppLanguage.system] resolves to null so `MaterialApp` keeps following
+  /// the Android system language, exactly as it did before a language picker
+  /// existed.
+  static Locale? getAppLocale(SharedPreferences prefs) {
+    return AppLanguageStore(prefs).read().locale;
+  }
+
+  /// The strings matching the stored (or inherited) interface language.
+  ///
+  /// Kept beside [getAppLocale] so the two can never disagree: both read the
+  /// same preference through the same store.
+  static AppStrings getAppStrings(SharedPreferences prefs) {
+    final language = AppLanguageStore(prefs).read();
+    return language == AppLanguage.chinese
+        ? const AppStringsZh()
+        : const AppStringsEn();
+  }
 }
 
 class HermesAppState extends State<HermesApp> {
@@ -88,23 +110,45 @@ class HermesAppState extends State<HermesApp> {
     if (mounted) setState(() {});
   }
 
+  /// Switches the interface language and rebuilds the whole app.
+  ///
+  /// Same mechanism as theme and text size: persist, then let the root
+  /// `setState` rebuild `MaterialApp`, which re-resolves `locale` and
+  /// reinstalls a fresh [AppStringsScope].
+  Future<void> setAppLanguage(AppLanguage language) async {
+    await AppLanguageStore(widget.connManager.prefs).save(language);
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Hermes Agent',
+      title: AppStrings.of(context).appTitle,
+      // Deliberately NOT passing `supportedLocales`: the only localisation the
+      // app needs is its own [AppStrings], published through AppStringsScope.
+      // Declaring locales without the matching Material delegate (which ships
+      // in flutter_localizations, a dependency this app does not carry) makes
+      // Flutter warn about every unsupported locale and drop MaterialApp's
+      // built-in MaterialLocalizations, which crashes AppBar, Dialog, and
+      // every text field's label. So: pin `locale`, keep the default delegate.
+      locale: HermesApp.getAppLocale(widget.connManager.prefs),
       themeMode: HermesApp.getThemeMode(widget.connManager.prefs),
       theme: hermesTheme(Brightness.light),
       darkTheme: hermesTheme(Brightness.dark),
       builder: (context, child) {
+        final strings = HermesApp.getAppStrings(widget.connManager.prefs);
         final systemMediaQuery = MediaQuery.of(context);
         final preference = HermesApp.getTextSizePreference(
           widget.connManager.prefs,
         );
-        return MediaQuery(
-          data: systemMediaQuery.copyWith(
-            textScaler: preference.applyTo(systemMediaQuery.textScaler),
+        return AppStringsScope(
+          strings: strings,
+          child: MediaQuery(
+            data: systemMediaQuery.copyWith(
+              textScaler: preference.applyTo(systemMediaQuery.textScaler),
+            ),
+            child: child!,
           ),
-          child: child!,
         );
       },
       home: HomeScreen(
@@ -422,6 +466,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void _showApiKeyDialog(SavedConnection conn) {
+    final s = AppStrings.of(context);
     final ctrl = TextEditingController(text: conn.apiKey);
     bool validating = false;
     String? error;
@@ -480,7 +525,7 @@ class HomeScreenState extends State<HomeScreen> {
           actions: [
             TextButton(
               onPressed: validating ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(s.commonCancel),
             ),
             FilledButton(
               onPressed: validating
@@ -539,7 +584,7 @@ class HomeScreenState extends State<HomeScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Save'),
+                  : Text(s.commonSave),
             ),
           ],
         ),
@@ -548,6 +593,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   void _showDashboardAuthDialog(SavedConnection conn) {
+    final s = AppStrings.of(context);
     final gatewayPrefixCtrl = TextEditingController(
       text: conn.gatewayPrefix ?? '',
     );
@@ -679,7 +725,7 @@ class HomeScreenState extends State<HomeScreen> {
           actions: [
             TextButton(
               onPressed: validating ? null : () => Navigator.pop(ctx),
-              child: const Text('Cancel'),
+              child: Text(s.commonCancel),
             ),
             FilledButton(
               onPressed: validating
@@ -776,7 +822,7 @@ class HomeScreenState extends State<HomeScreen> {
                         color: Colors.white,
                       ),
                     )
-                  : const Text('Save'),
+                  : Text(s.commonSave),
             ),
           ],
         ),
@@ -791,6 +837,7 @@ class HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildConnectionCard(SavedConnection conn) {
+    final s = AppStrings.of(context);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       child: ListTile(
@@ -832,9 +879,12 @@ class HomeScreenState extends State<HomeScreen> {
               value: 'dashboard',
               child: Text('Dashboard / Proxy Settings'),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'delete',
-              child: Text('Delete', style: TextStyle(color: Colors.red)),
+              child: Text(
+                s.commonDelete,
+                style: const TextStyle(color: Colors.red),
+              ),
             ),
           ],
         ),
@@ -845,9 +895,10 @@ class HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           'HERMES',
           style: TextStyle(
             fontFamily: 'Cinzel',
@@ -861,7 +912,7 @@ class HomeScreenState extends State<HomeScreen> {
           if (_connections.isNotEmpty)
             IconButton(
               key: const Key('home_restore_config_menu'),
-              tooltip: 'Restore configuration',
+              tooltip: s.commonRestoreConfiguration,
               onPressed: _showRestoreConfig,
               icon: const Icon(Icons.settings_backup_restore),
             ),
@@ -875,12 +926,12 @@ class HomeScreenState extends State<HomeScreen> {
                   Icon(Icons.cloud_outlined, size: 64, color: Colors.grey[800]),
                   const SizedBox(height: 16),
                   Text(
-                    'No connections',
+                    s.homeNoConnections,
                     style: Theme.of(context).textTheme.headlineSmall,
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Tap + to add a remote Hermes Gateway\n(API Server, port 8642)',
+                    s.homeNoConnectionsHint,
                     style: Theme.of(
                       context,
                     ).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
@@ -919,7 +970,7 @@ class HomeScreenState extends State<HomeScreen> {
               },
             ),
       floatingActionButton: FloatingActionButton(
-        tooltip: 'Add Connection',
+        tooltip: s.commonAddConnection,
         onPressed: _showAddDialog,
         child: const Icon(Icons.add, color: Colors.black),
       ),
@@ -1147,9 +1198,10 @@ class _AddDialogState extends State<_AddDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return AlertDialog(
       title: Text(
-        _isEditing ? 'Edit Gateway Connection' : 'Add Gateway Connection',
+        _isEditing ? s.commonEditConnection : s.commonAddConnection,
       ),
       content: SingleChildScrollView(
         child: Column(
@@ -1185,13 +1237,13 @@ class _AddDialogState extends State<_AddDialog> {
             ],
             TextField(
               controller: _label,
-              decoration: const InputDecoration(labelText: 'Label'),
+              decoration: InputDecoration(labelText: s.connectionLabel),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _host,
-              decoration: const InputDecoration(
-                labelText: 'Host',
+              decoration: InputDecoration(
+                labelText: s.connectionHost,
                 hintText:
                     '192.168.1.50, 100.x.y.z, or hermes-machine.tailnet.ts.net',
               ),
@@ -1201,8 +1253,8 @@ class _AddDialogState extends State<_AddDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _port,
-              decoration: const InputDecoration(
-                labelText: 'Port',
+              decoration: InputDecoration(
+                labelText: s.connectionPort,
                 hintText: '8642 (API Server)',
               ),
               keyboardType: TextInputType.number,
@@ -1210,8 +1262,8 @@ class _AddDialogState extends State<_AddDialog> {
             const SizedBox(height: 12),
             TextField(
               controller: _apiKey,
-              decoration: const InputDecoration(
-                labelText: 'API Key',
+              decoration: InputDecoration(
+                labelText: s.connectionApiKey,
                 hintText: 'API_SERVER_KEY from ~/.hermes/.env',
               ),
               obscureText: true,
@@ -1334,7 +1386,7 @@ class _AddDialogState extends State<_AddDialog> {
       actions: [
         TextButton(
           onPressed: _validating ? null : () => Navigator.pop(context),
-          child: const Text('Cancel'),
+          child: Text(s.commonCancel),
         ),
         FilledButton(
           onPressed: _validating ? null : _validateAndSave,
@@ -1347,7 +1399,7 @@ class _AddDialogState extends State<_AddDialog> {
                     color: Colors.white,
                   ),
                 )
-              : Text(_isEditing ? 'Save Changes' : 'Connect'),
+              : Text(_isEditing ? s.commonSaveChanges : s.commonConnect),
         ),
       ],
     );

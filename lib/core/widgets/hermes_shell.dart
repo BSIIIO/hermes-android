@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../theme/hermes_theme.dart';
 
 /// A top-level destination of the Hermes app.
@@ -39,6 +40,27 @@ enum HermesDestination {
         return 'Activity';
       case HermesDestination.more:
         return 'More';
+    }
+  }
+
+  /// The label in the current interface language.
+  ///
+  /// [label] stays English on purpose: it is a stable identifier that tests,
+  /// tooling, and docs refer to, and changing it would break contracts that
+  /// have nothing to do with display language. Only the rendered bar and rail
+  /// read [localizedLabel].
+  String localizedLabel(AppStrings strings) {
+    switch (this) {
+      case HermesDestination.home:
+        return strings.navHome;
+      case HermesDestination.chats:
+        return strings.navChats;
+      case HermesDestination.projects:
+        return strings.navProjects;
+      case HermesDestination.activity:
+        return strings.navActivity;
+      case HermesDestination.more:
+        return strings.navMore;
     }
   }
 
@@ -143,6 +165,7 @@ class _HermesShellState extends State<HermesShell> {
   @override
   Widget build(BuildContext context) {
     final tokens = HermesTokens.of(context);
+    final strings = AppStrings.of(context);
     final useRail =
         MediaQuery.sizeOf(context).width >= HermesShell.railBreakpoint;
 
@@ -173,7 +196,7 @@ class _HermesShellState extends State<HermesShell> {
                   NavigationRailDestination(
                     icon: _icon(destination, selected: false),
                     selectedIcon: _icon(destination, selected: true),
-                    label: Text(destination.label),
+                    label: Text(destination.localizedLabel(strings)),
                   ),
               ],
             ),
@@ -199,7 +222,7 @@ class _HermesShellState extends State<HermesShell> {
             NavigationDestination(
               icon: _icon(destination, selected: false),
               selectedIcon: _icon(destination, selected: true),
-              label: destination.label,
+              label: destination.localizedLabel(strings),
             ),
         ],
       ),

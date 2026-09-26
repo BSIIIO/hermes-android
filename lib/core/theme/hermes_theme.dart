@@ -298,6 +298,15 @@ ThemeData hermesTheme(Brightness brightness) {
 
   final base = ThemeData(
     colorScheme: scheme,
+    // The Radio must use the brand hex, not a Material 3 tonal derivation.
+    // `ColorScheme.fromSeed` shifts the seed towards a lighter tint, so the
+    // default selected Radio ends up off-brand; pin it explicitly.
+    radioTheme: RadioThemeData(
+      fillColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.selected)) return HermesTokens.hermesGold;
+        return null;
+      }),
+    ),
     brightness: brightness,
     useMaterial3: true,
   );

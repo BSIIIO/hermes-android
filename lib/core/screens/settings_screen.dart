@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../services/config_backup_io.dart';
 import '../services/config_backup_service.dart';
 import '../services/connection_manager.dart';
+import '../l10n/app_strings.dart';
+import '../widgets/app_language_card.dart';
 import '../widgets/config_backup_card.dart';
 import '../widgets/text_size_settings_card.dart';
 import '../../main.dart';
@@ -141,9 +143,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(s.settings),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -157,6 +160,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildBody() {
+    final s = AppStrings.of(context);
     if (_loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -181,7 +185,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              ElevatedButton(onPressed: _loadData, child: const Text('Retry')),
+              ElevatedButton(
+                onPressed: _loadData,
+                child: Text(s.commonRetry),
+              ),
             ],
           ),
         ),
@@ -319,8 +326,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
         const SizedBox(height: 16),
 
         // ---- Section: Theme ----
-        _buildSectionHeader('Appearance'),
+        _buildSectionHeader(s.appearance),
         _ThemeToggle(),
+        const SizedBox(height: 8),
+        AppLanguageCard(
+          preferences: context
+              .findAncestorStateOfType<HermesAppState>()!
+              .widget
+              .connManager
+              .prefs,
+          onChanged: (language) => context
+              .findAncestorStateOfType<HermesAppState>()!
+              .setAppLanguage(language),
+        ),
         const SizedBox(height: 8),
         TextSizeSettingsCard(
           preferences: context
@@ -594,24 +612,25 @@ class _ThemeToggleState extends State<_ThemeToggle> {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: SegmentedButton<String>(
-        segments: const [
+        segments: [
           ButtonSegment(
             value: 'system',
-            label: Text('System'),
-            icon: Icon(Icons.brightness_auto, size: 18),
+            label: Text(s.themeSystem),
+            icon: const Icon(Icons.brightness_auto, size: 18),
           ),
           ButtonSegment(
             value: 'dark',
-            label: Text('Dark'),
-            icon: Icon(Icons.dark_mode, size: 18),
+            label: Text(s.themeDark),
+            icon: const Icon(Icons.dark_mode, size: 18),
           ),
           ButtonSegment(
             value: 'light',
-            label: Text('Light'),
-            icon: Icon(Icons.light_mode, size: 18),
+            label: Text(s.themeLight),
+            icon: const Icon(Icons.light_mode, size: 18),
           ),
         ],
         selected: {_mode},
