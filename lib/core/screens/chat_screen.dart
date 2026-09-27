@@ -1364,9 +1364,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       final modelInfo = results[0];
       final choices = _parseModelChoices(results[1]);
       if (choices.isEmpty) {
-        throw StateError(
-          'The active profile did not return any selectable models.',
-        );
+        throw StateError(s.chatNoSelectableModels);
       }
 
       var currentEffort =
@@ -1976,7 +1974,10 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
             ..error = null;
           _gatewayTurnStatus = GatewayTurnStatus(
             kind: 'upload',
-            text: 'Uploading ${index + 1}/${attachments.length}: ${draft.name}',
+            text: AppStrings.of(context).chatUploadingAttachment
+                .replaceAll('{0}', '${index + 1}')
+                .replaceAll('{1}', '${attachments.length}')
+                .replaceAll('{2}', draft.name),
           );
         });
         final dataUrl = await _attachmentDraftService.readDataUrl(draft);

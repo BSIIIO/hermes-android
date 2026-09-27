@@ -1989,6 +1989,7 @@ abstract class AppStrings {
   String get codeWrapLines;
   String get codeCopy;
   String get aiSearchNoConfiguredModels;
+  String get chatNoSelectableModels;
 }
 
 /// English strings.
@@ -4065,6 +4066,10 @@ class AppStringsEn extends AppStrings {
   @override
   String get aiSearchNoConfiguredModels =>
       'Hermes returned no configured selectable models.';
+
+  @override
+  String get chatNoSelectableModels =>
+      'The active profile did not return any selectable models.';
 }
 
 /// Simplified Chinese strings.
@@ -6023,6 +6028,9 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get aiSearchNoConfiguredModels => 'Hermes 没有返回已配置的可选模型。';
+
+  @override
+  String get chatNoSelectableModels => '当前配置档案没有返回任何可选择的模型。';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
