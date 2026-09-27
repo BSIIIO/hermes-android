@@ -19,6 +19,7 @@ import '../models/attachment_draft.dart';
 import '../models/hermes_project.dart';
 import '../services/android_share_intent_service.dart';
 import '../services/attachment_draft_service.dart';
+import '../services/bots_gateway_client.dart';
 import '../services/chat_space_store.dart';
 import '../services/connection_manager.dart';
 import '../services/desktop_gateway_client.dart';
@@ -41,6 +42,7 @@ import '../widgets/more_pane.dart';
 import '../widgets/new_chat_sheet.dart';
 import '../widgets/project_detail_screen.dart';
 import '../widgets/projects_pane.dart';
+import 'bots_screen.dart';
 import 'chat_screen.dart';
 import 'files_screen.dart';
 import 'cron_screen.dart';
@@ -116,6 +118,28 @@ Widget buildWorkspaceChatScreen({
     initialComposerText: initialComposerText,
     initialAttachmentDrafts: initialAttachmentDrafts,
     turnApplicationController: turnApplicationController,
+  );
+}
+
+/// The session a bot's roster row opens.
+///
+/// The id is the bot's **stored** canonical `Bot Chat` id — exactly the
+/// convention [SessionListScreen] uses for an ordinary chat. Minting a fresh
+/// id here would take the gateway's `session.create` branch and open an empty
+/// session, so the bot's own history would never be reachable.
+///
+/// A bot that has never chatted has no stored id, so the caller gets a freshly
+/// minted one rather than a blank string the gateway would reject.
+Session botChatSession(HermesBot bot) {
+  return Session(
+    id: bot.botChatSessionId ?? GatewayChatClient.generateSessionId(),
+    title: bot.displayTitle,
+    model: bot.model ?? kDefaultChatModel,
+    source: 'mobile',
+    messageCount: bot.botChatMessageCount,
+    isActive: true,
+    preview: bot.botChatPreview,
+    startedAt: DateTime.now().millisecondsSinceEpoch / 1000.0,
   );
 }
 
@@ -1232,6 +1256,54 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     }
   }
 
+  /// Opens the Bot Mode roster and, on a tap, that bot's own chat.
+  ///
+  /// The roster rides the gateway's WebSocket transport, which the workspace
+  /// only keeps while a Projects repository owns it — so a caller without one
+  /// (an injected repository, or a connection with no gateway URL) gets its own
+  /// client, exactly like the Files screen builds its own REST client.
+  Future<void> _openBots() async {
+    if (!mounted) return;
+    final gateway = _ownedGateway ??
+        DesktopGatewayClient.fromConnection(widget.connection);
+
+    final client = BotsGatewayClient(
+      (method, params) => gateway.rpc(method, params),
+      capabilities: gateway.capabilities,
+    );
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => BotsScreen(
+          bots: const [],
+          load: client.list,
+          onOpenBot: (bot) => unawaited(_openBotChat(bot)),
+        ),
+      ),
+    );
+
+    if (_ownedGateway == null) gateway.close();
+  }
+
+  /// Opens one bot's own conversation.
+  ///
+  /// The session carries the bot's stored Bot Chat id, so the gateway resumes
+  /// that chat instead of minting an empty one.
+  Future<void> _openBotChat(HermesBot bot) async {
+    if (!mounted) return;
+    final session = botChatSession(bot);
+
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => buildWorkspaceChatScreen(
+          connection: widget.connection,
+          session: session,
+          turnApplicationController: widget.turnApplicationController,
+        ),
+      ),
+    );
+  }
+
   void _openMoreEntry(MoreEntry entry) {
     final connection = widget.connection;
     switch (entry.id) {
@@ -1241,6 +1313,8 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         _openWorkspaceSessionView(WorkspaceSessionView.archivedQuick);
       case 'files':
         unawaited(_openFiles());
+      case 'bots':
+        unawaited(_openBots());
       case 'cron':
         _push(CronScreen(connection: connection));
       case 'skills':
