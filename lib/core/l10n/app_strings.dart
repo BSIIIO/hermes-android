@@ -2009,6 +2009,22 @@ abstract class AppStrings {
   String get commonLoading;
   String get insightReasoningTitle;
   String get insightReasoningSubtitle;
+  String get botsTitle;
+  String get botsSubtitle;
+  String get botsOpenChat;
+  String get botsChatWithTitle;
+  String get botsModelLine;
+  String get botsSkillCount;
+  String get botsTurnCount;
+  String get botsEmptyTitle;
+  String get botsEmptyHint;
+  String get botsLoading;
+  String get botsErrorTitle;
+  String get botsUnsupportedHint;
+  String get botsDefaultBadge;
+  String get botsTapHint;
+  String get newChatBotSession;
+  String get newChatBotSessionDescription;
 }
 
 /// English strings.
@@ -4163,6 +4179,70 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get insightReasoningSubtitle => 'Hermes reasoning details';
+
+
+  @override
+  String get botsTitle => 'Bots';
+
+
+  @override
+  String get botsSubtitle => 'Chat with each profile''s bot';
+
+
+  @override
+  String get botsOpenChat => 'Open chat';
+
+
+  @override
+  String get botsChatWithTitle => 'Chat with {0}';
+
+
+  @override
+  String get botsModelLine => 'Model {0}';
+
+
+  @override
+  String get botsSkillCount => '{0} skills';
+
+
+  @override
+  String get botsTurnCount => '{0} turns';
+
+
+  @override
+  String get botsEmptyTitle => 'No bots yet';
+
+
+  @override
+  String get botsEmptyHint => 'Create a Hermes profile and it appears here as a bot.';
+
+
+  @override
+  String get botsLoading => 'Loading bots…';
+
+
+  @override
+  String get botsErrorTitle => 'Bots unavailable';
+
+
+  @override
+  String get botsUnsupportedHint => 'This gateway predates the Bot Mode roster. Update Hermes to use bots here.';
+
+
+  @override
+  String get botsDefaultBadge => 'Default';
+
+
+  @override
+  String get botsTapHint => 'Tap a bot to open its Bot Chat';
+
+
+  @override
+  String get newChatBotSession => 'Bot chat';
+
+
+  @override
+  String get newChatBotSessionDescription => 'Chat with the default profile''s bot';
 }
 
 /// Simplified Chinese strings.
@@ -6198,6 +6278,70 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get insightReasoningSubtitle => 'Hermes 推理详情';
+
+
+  @override
+  String get botsTitle => '机器人';
+
+
+  @override
+  String get botsSubtitle => '与各个配置文件的机器人对话';
+
+
+  @override
+  String get botsOpenChat => '打开会话';
+
+
+  @override
+  String get botsChatWithTitle => '与{0}对话';
+
+
+  @override
+  String get botsModelLine => '模型 {0}';
+
+
+  @override
+  String get botsSkillCount => '{0} 项技能';
+
+
+  @override
+  String get botsTurnCount => '{0} 轮对话';
+
+
+  @override
+  String get botsEmptyTitle => '还没有机器人';
+
+
+  @override
+  String get botsEmptyHint => '创建一个 Hermes 配置文件，它就会作为机器人出现在这里。';
+
+
+  @override
+  String get botsLoading => '正在加载机器人…';
+
+
+  @override
+  String get botsErrorTitle => '无法加载机器人';
+
+
+  @override
+  String get botsUnsupportedHint => '该网关版本早于 Bot Mode 名册接口。升级 Hermes 后即可使用。';
+
+
+  @override
+  String get botsDefaultBadge => '默认';
+
+
+  @override
+  String get botsTapHint => '点按机器人即可打开它的 Bot Chat';
+
+
+  @override
+  String get newChatBotSession => 'Bot 会话';
+
+
+  @override
+  String get newChatBotSessionDescription => '与默认 profile 的 bot 聊天';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.

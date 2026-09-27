@@ -117,6 +117,15 @@ List<MoreSection> buildMoreSections({
           availability: dashboardBacked(),
           unavailableReason: dashboardReason(),
         ),
+        // Bots rides the same WebSocket transport the workspace already owns
+        // for the gateway RPCs, so it stays available on a connection that has
+        // no reachable dashboard.
+        MoreEntry(
+          id: 'bots',
+          title: s.botsTitle,
+          subtitle: s.botsSubtitle,
+          icon: Icons.smart_toy_outlined,
+        ),
         MoreEntry(
           id: 'assets',
           title: s.moreAssetsTitle,

@@ -35,13 +35,20 @@ const Duration kQuickChatRetention = Duration(hours: 72);
 /// The model a drafted chat uses when the caller pins none.
 const String kDefaultChatModel = 'hermes-agent';
 
-/// The two validated creation modes of the global New button.
+/// The three creation modes of the global New button.
 enum NewChatMode {
   /// A durable chat inside a server-owned Project.
   projectChat,
 
   /// An unfiled, clearly marked chat that auto-archives after 72 hours.
-  quickChat;
+  quickChat,
+
+  /// A chat with a bot — one Hermes profile — in its canonical Bot Chat.
+  ///
+  /// The MVP opens the launch (default) profile directly, so there is no
+  /// profile picker and no scope parameter here; switching profiles is a
+  /// separate decision.
+  botChat;
 
   /// User-visible label in the active language.
   String label(AppStrings s) {
@@ -50,6 +57,8 @@ enum NewChatMode {
         return s.projectChat;
       case NewChatMode.quickChat:
         return s.quickChat;
+      case NewChatMode.botChat:
+        return s.newChatBotSession;
     }
   }
 
@@ -60,6 +69,8 @@ enum NewChatMode {
         return s.newChatModeProjectDescription;
       case NewChatMode.quickChat:
         return s.newChatModeQuickDescription;
+      case NewChatMode.botChat:
+        return s.newChatBotSessionDescription;
     }
   }
 }
@@ -119,6 +130,9 @@ List<NewChatOption> buildNewChatOptions({
     // Quick chat needs no project and no `projects.*` family, so a legacy
     // gateway must still be able to start work from Home.
     const NewChatOption(mode: NewChatMode.quickChat, enabled: true),
+    // Bot chat needs no project either, and the MVP opens the launch profile
+    // directly, so there is nothing to probe before offering it.
+    const NewChatOption(mode: NewChatMode.botChat, enabled: true),
   ];
 }
 
@@ -186,11 +200,17 @@ NewChatDraft buildNewChatDraft({
   }
 
   final isQuick = mode == NewChatMode.quickChat;
-  if (!isQuick && project == null) {
+  // A bot chat is as unfiled as a quick one — it talks to a profile, not to a
+  // project — so it too needs no project to exist before it can be drafted.
+  final needsProject = !isQuick && mode != NewChatMode.botChat;
+  if (needsProject && project == null) {
     throw ArgumentError.notNull('project');
   }
 
-  final projectName = project?.name.trim() ?? '';
+  // A bot chat is titled by its bot, so a project passed in must not leak into
+  // it; only projectChat may inherit the caller's project.
+  final inheritsProject = needsProject;
+  final projectName = inheritsProject ? project?.name.trim() ?? '' : '';
   final title = isQuick
       ? s.quickChat
       : (projectName.isEmpty
@@ -210,9 +230,13 @@ NewChatDraft buildNewChatDraft({
     ),
     mode: mode,
     // A Quick chat never inherits the active project, even when one is passed.
-    projectId: isQuick ? null : project!.id,
-    projectName: isQuick || projectName.isEmpty ? null : projectName,
-    projectWorkingDirectory: isQuick ? null : project!.workingDirectory,
+    projectId: inheritsProject ? project!.id : null,
+    projectName: inheritsProject && projectName.isNotEmpty
+        ? projectName
+        : null,
+    projectWorkingDirectory: inheritsProject
+        ? project!.workingDirectory
+        : null,
     expiresAt: isQuick ? now.add(kQuickChatRetention) : null,
   );
 }

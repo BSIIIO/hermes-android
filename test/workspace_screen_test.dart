@@ -6,10 +6,12 @@ import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/models/attachment_draft.dart';
 import 'package:hermes_android/core/models/connection.dart';
 import 'package:hermes_android/core/models/session.dart';
+import 'package:hermes_android/core/screens/bots_screen.dart';
 import 'package:hermes_android/core/screens/chat_screen.dart';
 import 'package:hermes_android/core/screens/workspace_screen.dart';
 import 'package:hermes_android/core/screens/workspace_sessions_screen.dart';
 import 'package:hermes_android/core/services/android_share_intent_service.dart';
+import 'package:hermes_android/core/services/bots_gateway_client.dart';
 import 'package:hermes_android/core/services/chat_space_store.dart';
 import 'package:hermes_android/core/services/gateway_turn_application_controller.dart';
 import 'package:hermes_android/core/services/gateway_turn_coordinator.dart';
@@ -1326,6 +1328,31 @@ void main() {
       expect(opened.single.session.id, isNotEmpty);
     });
 
+    testWidgets('choosing Bot chat opens the roster, not a drafted chat', (
+      tester,
+    ) async {
+      // A bot chat must never be minted as a new session: the gateway would
+      // file it as an unrelated chat and the bot's own history would be lost.
+      final opened = <NewChatDraft>[];
+      await _pump(
+        tester,
+        connection: _connection(desktopGatewayUrl: 'https://host:8642'),
+        sessions: const [],
+        onNewChat: opened.add,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(NewChatMode.botChat.label(const AppStringsEn())),
+      );
+      await tester.pumpAndSettle();
+
+      expect(opened, isEmpty);
+      expect(find.byType(BotsScreen), findsOneWidget);
+    });
+
     testWidgets('a launcher shortcut opens a Quick Chat without a picker', (
       tester,
     ) async {
@@ -1983,6 +2010,104 @@ void main() {
         assignments.where((a) => a['session_id'] != 'new-project-chat'),
         isEmpty,
       );
+    });
+  });
+
+  group('Bots', () {
+    HermesBot bot({
+      String name = 'default',
+      String title = '',
+      String? chatId = '20260923_000418_4e7570',
+      int messageCount = 71,
+      String preview = 'READY',
+      String? model,
+    }) {
+      return HermesBot.fromJson({
+        'name': name,
+        'description': '',
+        'model': model,
+        'skill_count': 417,
+        'has_avatar': false,
+        'canonical_session': {
+          'id': chatId,
+          'title': 'Bot Chat',
+          'preview': preview,
+          'message_count': messageCount,
+        },
+        'ui_meta': {
+          'hermes-bots': {
+            'title': title,
+            'shape': 'squircle',
+            'color': '#8b5cf6',
+            'imageKind': 'shape',
+          },
+        },
+      });
+    }
+
+    test('the bot session opens the canonical Bot Chat it already owns', () {
+      // The stored id must be carried through: a freshly minted id would open
+      // an empty session instead of the bot's own history.
+      final session = botChatSession(bot());
+
+      expect(session.id, '20260923_000418_4e7570');
+      expect(session.title, 'default');
+      expect(session.messageCount, 71);
+      expect(session.preview, 'READY');
+      expect(session.isActive, isTrue);
+    });
+
+    test('a bot with no Bot Chat yet falls back to a fresh id', () {
+      // No canonical session means nothing to resume, so the gateway is asked
+      // to create one rather than being handed a blank id.
+      final session = botChatSession(bot(chatId: null, messageCount: 0));
+
+      expect(session.id, isNotEmpty);
+      expect(session.id, isNot('null'));
+      expect(session.messageCount, 0);
+    });
+
+    test('the bot display title wins over its profile name', () {
+      final session = botChatSession(
+        bot(name: 'cto', title: '首席技术官（CTO）'),
+      );
+
+      expect(session.title, '首席技术官（CTO）');
+    });
+
+    test('a blank display title falls back to the profile name', () {
+      // The launch profile stores an empty Bot Mode title.
+      final session = botChatSession(bot(name: 'default', title: '  '));
+
+      expect(session.title, 'default');
+    });
+
+    test('the session carries the bot model when it pins one', () {
+      final session = botChatSession(bot(model: 'step-5-preview'));
+
+      expect(session.model, 'step-5-preview');
+    });
+
+    testWidgets('More opens the Bots roster', (tester) async {
+      await _pump(
+        tester,
+        connection: _connection(desktopGatewayUrl: 'https://host:8642'),
+        repository: await _repository([]),
+        sessions: const [],
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(HermesDestination.more.label).last);
+      await tester.pumpAndSettle();
+      await tester.scrollUntilVisible(
+        find.text('Bots'),
+        160,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.tap(find.text('Bots'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(BotsScreen), findsOneWidget);
     });
   });
 }

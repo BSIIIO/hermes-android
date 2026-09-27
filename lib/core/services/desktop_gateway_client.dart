@@ -277,6 +277,19 @@ class DesktopGatewayClient {
     }, capabilities: _capabilities);
   }
 
+  /// Raw JSON-RPC on the shared control socket, for call families this client
+  /// does not model itself — the Bot Mode `profiles.*` roster today.
+  ///
+  /// Kept beside [projects] so both families share one socket and one
+  /// capability registry rather than each opening their own.
+  Future<Map<String, dynamic>> rpc(
+    String method,
+    Map<String, dynamic> params,
+  ) async {
+    final client = await _connectControl();
+    return client.send(method, params);
+  }
+
   /// What this gateway advertises or has been proven to support.
   ///
   /// Populated from `gateway.ready` on every connect and refined by the
