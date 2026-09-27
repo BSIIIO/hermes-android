@@ -648,6 +648,7 @@ class DesktopGatewayClient {
     required String sessionId,
     required String text,
     required StreamCallback onEvent,
+    required void Function() onSent,
   }) async {
     await _callSessionScoped(
       sessionId,
@@ -655,6 +656,7 @@ class DesktopGatewayClient {
         text,
         sessionId: gateway.sessionId,
         onEvent: onEvent,
+        onSent: onSent,
       ),
     );
   }

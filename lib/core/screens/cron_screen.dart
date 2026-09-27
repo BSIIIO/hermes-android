@@ -290,7 +290,10 @@ class _CronScreenState extends State<CronScreen> {
                 style: const TextStyle(fontSize: 12, color: Colors.orange),
               ),
             ),
-            TextButton(onPressed: () => unawaited(_loadRuns(jobId)), child: const Text('Retry')),
+            TextButton(
+              onPressed: () => unawaited(_loadRuns(jobId)),
+              child: const Text('Retry'),
+            ),
           ],
         ),
       );
@@ -314,7 +317,9 @@ class _CronScreenState extends State<CronScreen> {
             dense: true,
             contentPadding: const EdgeInsets.only(left: 24, right: 8),
             leading: Icon(
-              run.isActive ? Icons.play_circle_outline : Icons.check_circle_outline,
+              run.isActive
+                  ? Icons.play_circle_outline
+                  : Icons.check_circle_outline,
               size: 18,
               color: run.isActive ? Colors.green : Colors.grey,
             ),
@@ -641,9 +646,7 @@ class _CronScreenState extends State<CronScreen> {
                           ),
                         ),
                         Icon(
-                          expanded
-                              ? Icons.expand_less
-                              : Icons.expand_more,
+                          expanded ? Icons.expand_less : Icons.expand_more,
                           size: 20,
                           color: Colors.grey,
                         ),

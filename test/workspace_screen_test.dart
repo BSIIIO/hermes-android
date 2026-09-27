@@ -148,7 +148,11 @@ Future<ProjectsRepository> _repository(
           throw Exception('gateway offline');
         }
         assignments?.add(Map<String, dynamic>.from(params));
-        return {'jsonrpc': '2.0', 'id': 1, 'result': const {'ok': true}};
+        return {
+          'jsonrpc': '2.0',
+          'id': 1,
+          'result': const {'ok': true},
+        };
       }
       return {'jsonrpc': '2.0', 'id': 1, 'result': const {}};
     }),
@@ -328,9 +332,9 @@ void main() {
     await tester.tap(find.widgetWithText(ChoiceChip, 'Unassigned'));
     await tester.pumpAndSettle();
     expect(
-      tester.widget<ChoiceChip>(
-        find.widgetWithText(ChoiceChip, 'Unassigned'),
-      ).selected,
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Unassigned'))
+          .selected,
       isTrue,
     );
 
@@ -340,9 +344,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      tester.widget<ChoiceChip>(
-        find.widgetWithText(ChoiceChip, 'Unassigned'),
-      ).selected,
+      tester
+          .widget<ChoiceChip>(find.widgetWithText(ChoiceChip, 'Unassigned'))
+          .selected,
       isTrue,
     );
     expect(find.text('Loose chat'), findsOneWidget);
@@ -1556,9 +1560,9 @@ void main() {
         await _pump(
           tester,
           connection: _connection(desktopGatewayUrl: 'https://host:8642'),
-          repository: await _repository(
-            [_projectJson(id: 'p1', name: 'Nameless')],
-          ),
+          repository: await _repository([
+            _projectJson(id: 'p1', name: 'Nameless'),
+          ]),
           sessions: const [],
           onNewChat: opened.add,
           newChatSessionIdFactory: () => 'folderless-chat',

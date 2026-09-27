@@ -1280,324 +1280,319 @@ class _SessionListScreenState extends State<SessionListScreen> {
               );
             }
             if (index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: ActionChip(
-                      key: const Key('active-space'),
-                      avatar: const Icon(Icons.folder_outlined, size: 18),
-                      label: Text(_spaceScopeLabel),
-                      onPressed: _spaceStore == null ? null : _openSpaces,
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: ActionChip(
+                        key: const Key('active-space'),
+                        avatar: const Icon(Icons.folder_outlined, size: 18),
+                        label: Text(_spaceScopeLabel),
+                        onPressed: _spaceStore == null ? null : _openSpaces,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  SearchBar(
-                    controller: _searchController,
-                    leading: _searching
-                        ? const Padding(
-                            padding: EdgeInsets.all(12),
-                            child: SizedBox.square(
-                              dimension: 18,
+                    const SizedBox(height: 8),
+                    SearchBar(
+                      controller: _searchController,
+                      leading: _searching
+                          ? const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: SizedBox.square(
+                                dimension: 18,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
                                 ),
-                            ),
-                          )
-                        : const Icon(Icons.search),
-                    hintText: aiMode
-                        ? s.chatsSearchHintAi
-                        : serverMode
-                        ? s.chatsSearchHintFullText
-                        : s.chatsSearchHintLoaded,
-                    trailing: [
-                      if (rawQuery.isNotEmpty)
-                        IconButton(
-                          tooltip: s.chatsClearSearch,
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            _searchDebounceTimer?.cancel();
-                            _searchController.clear();
-                            setState(() {
-                              _searchRequestGeneration++;
-                              _serverResults = null;
-                              _searchError = null;
-                              _serverQuery = '';
-                              _aiRewrittenQuery = null;
-                              _searching = false;
-                            });
-                          },
-                        ),
-                      if (aiMode)
-                        IconButton(
-                          tooltip: s.chatsChangeAiSearchModel,
-                          icon: _loadingAiModels
-                              ? const SizedBox.square(
-                                  dimension: 18,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                  ),
-                                )
-                              : const Icon(Icons.tune),
-                          onPressed: _loadingAiModels
-                              ? null
-                              : _showAiModelSelector,
-                        ),
-                      PopupMenuButton<SessionSearchMode>(
-                        tooltip: s.chatsSearchMode,
-                        icon: Icon(
-                          aiMode
-                              ? Icons.auto_awesome
-                              : serverMode
-                              ? Icons.manage_search
-                              : Icons.phone_android,
-                        ),
-                        onSelected: _setSearchMode,
-                        itemBuilder: (_) => [
-                          CheckedPopupMenuItem(
-                            value: SessionSearchMode.local,
-                            checked: !serverMode,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.phone_android),
-                              title: Text(s.chatsSearchOnDevice),
-                              subtitle: Text(s.chatsSearchOnDeviceDetail),
-                            ),
-                          ),
-                          CheckedPopupMenuItem(
-                            value: SessionSearchMode.server,
-                            enabled: _serverSearchAvailable,
-                            checked: _searchMode == SessionSearchMode.server,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.manage_search),
-                              title: Text(s.chatsSearchFullText),
-                              subtitle: Text(s.chatsSearchFullTextDetail),
-                            ),
-                          ),
-                          CheckedPopupMenuItem(
-                            value: SessionSearchMode.ai,
-                            enabled: _serverSearchAvailable,
-                            checked: aiMode,
-                            child: ListTile(
-                              contentPadding: EdgeInsets.zero,
-                              leading: const Icon(Icons.auto_awesome),
-                              title: Text(s.chatsSearchAiFullTextTitle),
-                              subtitle: Text(
-                                _aiSearchModel == null
-                                    ? s.chatsSearchAiChooseModel
-                                    : '${_aiSearchModel!.provider} • ${_aiSearchModel!.model}',
+
                               ),
+                            )
+                          : const Icon(Icons.search),
+                      hintText: aiMode
+                          ? 'Ask AI to find a conversation'
+                          : serverMode
+                          ? 'Search all message content'
+                          : 'Search loaded chats',
+                      trailing: [
+                        if (rawQuery.isNotEmpty)
+                          IconButton(
+                            tooltip: 'Clear search',
+                            icon: const Icon(Icons.close),
+                            onPressed: () {
+                              _searchDebounceTimer?.cancel();
+                              _searchController.clear();
+                              setState(() {
+                                _searchRequestGeneration++;
+                                _serverResults = null;
+                                _searchError = null;
+                                _serverQuery = '';
+                                _aiRewrittenQuery = null;
+                                _searching = false;
+                              });
+                            },
+                          ),
+                        if (aiMode)
+                          IconButton(
+                            tooltip: 'Change AI search model',
+                            icon: _loadingAiModels
+                                ? const SizedBox.square(
+                                    dimension: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(Icons.tune),
+                            onPressed: _loadingAiModels
+                                ? null
+                                : _showAiModelSelector,
+                          ),
+                        PopupMenuButton<SessionSearchMode>(
+                          tooltip: 'Search mode',
+                          icon: Icon(
+                            aiMode
+                                ? Icons.auto_awesome
+                                : serverMode
+                                ? Icons.manage_search
+                                : Icons.phone_android,
+                          ),
+                          onSelected: _setSearchMode,
+                          itemBuilder: (_) => [
+                            CheckedPopupMenuItem(
+                              value: SessionSearchMode.local,
+                              checked: !serverMode,
+                              child: const ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: Icon(Icons.phone_android),
+                                title: Text('On-device'),
+                                subtitle: Text('Titles, previews, and models'),
+                              ),
+                            ),
+                            CheckedPopupMenuItem(
+                              value: SessionSearchMode.server,
+                              enabled: _serverSearchAvailable,
+                              checked: _searchMode == SessionSearchMode.server,
+                              child: const ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: Icon(Icons.manage_search),
+                                title: Text('Full-text'),
+                                subtitle: Text('All stored message content'),
+                              ),
+                            ),
+                            CheckedPopupMenuItem(
+                              value: SessionSearchMode.ai,
+                              enabled: _serverSearchAvailable,
+                              checked: aiMode,
+                              child: ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: const Icon(Icons.auto_awesome),
+                                title: const Text('AI + full-text'),
+                                subtitle: Text(
+                                  _aiSearchModel == null
+                                      ? 'Choose a small model to rewrite queries'
+                                      : '${_aiSearchModel!.provider} • ${_aiSearchModel!.model}',
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                      onChanged: _onSearchChanged,
+                      onSubmitted: (value) {
+                        _searchDebounceTimer?.cancel();
+                        if (serverMode && value.trim().isNotEmpty) {
+                          _runServerSearch(value.trim());
+                        }
+                      },
+                    ),
+                    if (aiMode && _aiRewrittenQuery != null) ...[
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          const Icon(Icons.auto_awesome, size: 16),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              'AI searched for: $_aiRewrittenQuery',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.bodySmall,
                             ),
                           ),
                         ],
                       ),
                     ],
-                    onChanged: _onSearchChanged,
-                    onSubmitted: (value) {
-                      _searchDebounceTimer?.cancel();
-                      if (serverMode && value.trim().isNotEmpty) {
-                        _runServerSearch(value.trim());
-                      }
-                    },
-                  ),
-                  if (aiMode && _aiRewrittenQuery != null) ...[
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        const Icon(Icons.auto_awesome, size: 16),
-                        const SizedBox(width: 6),
-                        Expanded(
-                          child: Text(
-                            s.chatsSearchAiSearchedFor.replaceAll(
-                              '{0}',
-                              '$_aiRewrittenQuery',
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                  if (_searchError != null) ...[
-                    const SizedBox(height: 8),
-                    Material(
-                      color: Theme.of(context).colorScheme.errorContainer,
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onErrorContainer,
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Text(
-                                _searchError!,
-                                style: TextStyle(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onErrorContainer,
+                    if (_searchError != null) ...[
+                      const SizedBox(height: 8),
+                      Material(
+                        color: Theme.of(context).colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Padding(
+                          padding: const EdgeInsets.all(12),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Icon(
+                                Icons.error_outline,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onErrorContainer,
+                              ),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _searchError!,
+                                  style: TextStyle(
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onErrorContainer,
+                                  ),
                                 ),
                               ),
-                            ),
-                            TextButton(
-                              onPressed: () =>
-                                  _setSearchMode(SessionSearchMode.local),
-                              child: Text(s.chatsSearchUseOnDevice),
-                            ),
-                          ],
+                              TextButton(
+                                onPressed: () =>
+                                    _setSearchMode(SessionSearchMode.local),
+                                child: Text(s.chatsSearchUseOnDevice),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                  if (rawQuery.isEmpty && scopedSessions.isEmpty) ...[
-                    const SizedBox(height: 32),
-                    Center(
-                      child: Text(
-                        _spaceScope.kind == ChatSpaceScopeKind.space
-                            ? s.chatsNoChatsInSpaceYet
-                            : s.chatsNoUnassignedChats,
-                        textAlign: TextAlign.center,
+                    ],
+                    if (rawQuery.isEmpty && scopedSessions.isEmpty) ...[
+                      const SizedBox(height: 32),
+                      Center(
+                        child: Text(
+                          _spaceScope.kind == ChatSpaceScopeKind.space
+                              ? s.chatsNoChatsInSpaceYet
+                              : s.chatsNoUnassignedChats,
+                          textAlign: TextAlign.center,
+                        ),
                       ),
-                    ),
+                    ],
+                    if (serverMode &&
+                        rawQuery.isNotEmpty &&
+                        !_searching &&
+                        _searchError == null &&
+                        serverHitsCurrent != null &&
+                        serverHitsCurrent.isEmpty) ...[
+                      const SizedBox(height: 16),
+                      const Center(child: Text('No message-content matches')),
+                    ],
                   ],
-                  if (serverMode &&
-                      rawQuery.isNotEmpty &&
-                      !_searching &&
-                      _searchError == null &&
-                      serverHitsCurrent != null &&
-                      serverHitsCurrent.isEmpty) ...[
-                    const SizedBox(height: 16),
-                    Center(child: Text(s.chatsSearchNoMatches)),
-                  ],
-                ],
-              ),
-            );
-          }
-          final session = visibleSessions[index - 1];
-          final searchHit = snippetsBySession[session.id];
-          final isDeleting = _deletingSessionIds.contains(session.id);
-          final isBranching = _branchingSessionIds.contains(session.id);
-          return Card(
-            margin: const EdgeInsets.only(bottom: 8),
-            child: ListTile(
-              enabled: !isDeleting && !isBranching,
-              leading: Icon(
-                session.isActive ? Icons.chat : Icons.chat_bubble_outline,
+                ),
+              );
+            }
+            final session = visibleSessions[index - 1];
+            final searchHit = snippetsBySession[session.id];
+            final isDeleting = _deletingSessionIds.contains(session.id);
+            final isBranching = _branchingSessionIds.contains(session.id);
+            return Card(
+              margin: const EdgeInsets.only(bottom: 8),
+              child: ListTile(
+                enabled: !isDeleting && !isBranching,
+                leading: Icon(
+                  session.isActive ? Icons.chat : Icons.chat_bubble_outline,
                   color: session.isActive
                       ? const Color(0xFFD4AF37)
                       : Colors.grey,
-              ),
-              trailing: isDeleting || isBranching
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : PopupMenuButton<String>(
-                      tooltip: s.chatsActions,
-                      onSelected: (action) =>
-                          _handleSessionAction(action, session),
-                      itemBuilder: (_) => [
-                        PopupMenuItem(
-                          value: 'move',
-                          child: ListTile(
-                            leading: const Icon(Icons.drive_file_move_outline),
-                            title: Text(s.chatsMoveToSpace),
-                          ),
-                        ),
-                        if (_desktopGateway != null)
+                ),
+                trailing: isDeleting || isBranching
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : PopupMenuButton<String>(
+                        tooltip: s.chatsActions,
+                        onSelected: (action) =>
+                            _handleSessionAction(action, session),
+                        itemBuilder: (_) => [
                           PopupMenuItem(
-                            value: 'rename',
+                            value: 'move',
                             child: ListTile(
-                              leading: const Icon(Icons.edit_outlined),
-                              title: Text(s.chatsRenameChat),
+                              leading: Icon(Icons.drive_file_move_outline),
+                              title: Text(s.chatsMoveToSpace),
                             ),
                           ),
-                        if (_desktopGateway != null)
+                          if (_desktopGateway != null)
+                            PopupMenuItem(
+                              value: 'rename',
+                              child: ListTile(
+                                leading: Icon(Icons.edit_outlined),
+                                title: Text(s.chatsRenameChat),
+                              ),
+                            ),
+                          if (_desktopGateway != null)
+                            PopupMenuItem(
+                              value: 'branch',
+                              child: ListTile(
+                                leading: Icon(Icons.call_split_outlined),
+                                title: Text(s.chatsBranchChat),
+                              ),
+                            ),
                           PopupMenuItem(
-                            value: 'branch',
+                            value: 'delete',
                             child: ListTile(
-                              leading: const Icon(Icons.call_split_outlined),
-                              title: Text(s.chatsBranchChat),
+                              leading: Icon(Icons.delete_outline),
+                              title: Text(s.chatsDelete),
                             ),
                           ),
-                        PopupMenuItem(
-                          value: 'delete',
-                          child: ListTile(
-                            leading: const Icon(Icons.delete_outline),
-                            title: Text(s.chatsDelete),
-                          ),
-                        ),
-                      ],
-                    ),
-              title: Text(
-                session.title,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    s.chatsRowMeta
-                        .replaceAll('{0}', '${session.messageCount}')
-                        .replaceAll('{1}', session.model)
-                        .replaceAll('{2}', _formatTime(session.startedAt)),
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                  if (searchHit?.snippet.isNotEmpty == true)
-                    Text(
-                      searchHit!.snippet,
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.primary,
+                        ],
                       ),
-                    )
-                  else if (session.preview.isNotEmpty)
+                title: Text(
+                  session.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                     Text(
-                      session.preview,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      '${session.messageCount} msgs \u2022 ${session.model} \u2022 ${_formatTime(session.startedAt)}',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    if (searchHit?.snippet.isNotEmpty == true)
+                      Text(
+                        searchHit!.snippet,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      )
+                    else if (session.preview.isNotEmpty)
+                      Text(
+                        session.preview,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.grey[500],
                         ),
-                    ),
-                ],
-              ),
-              isThreeLine:
-                  searchHit?.snippet.isNotEmpty == true ||
-                  session.preview.isNotEmpty,
-              onLongPress: isDeleting ? null : () => _renameSession(session),
-              onTap: isDeleting
-                  ? null
-                  : () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => ChatScreen(
-                            connection: widget.connection,
-                            session: session,
-                            turnApplicationController:
-                                widget.turnApplicationController,
+                      ),
+                  ],
+                ),
+                isThreeLine:
+                    searchHit?.snippet.isNotEmpty == true ||
+                    session.preview.isNotEmpty,
+                onLongPress: isDeleting ? null : () => _renameSession(session),
+                onTap: isDeleting
+                    ? null
+                    : () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ChatScreen(
+                              connection: widget.connection,
+                              session: session,
+                              turnApplicationController:
+                                  widget.turnApplicationController,
+                            ),
                           ),
-                        ),
-                      );
-                    },
-            ),
-          );
+                        );
+                      },
+              ),
+            );
           },
         ),
       ),
