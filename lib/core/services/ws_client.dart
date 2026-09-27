@@ -159,6 +159,37 @@ class CreatedGatewaySession {
   });
 }
 
+/// Runtime binding and recovery state returned by `session.resume`.
+///
+/// Stock Hermes includes retained in-flight failure details here so a client
+/// that missed the terminal event while disconnected can stop recovery and
+/// surface the failure instead of polling history forever.
+class ResumedGatewaySession {
+  final String runtimeSessionId;
+  final bool? running;
+  final String? status;
+  final Map<String, dynamic>? inflight;
+
+  /// The inline transcript the gateway returned with the resume, if any.
+  ///
+  /// Shaped `{row_id, role, text}`, NOT the `content` shape the chat bubbles
+  /// read — only a normalizing consumer may use it. Upstream's class has no
+  /// such field; the fork needs one because
+  /// `WsClient.resumeSessionWithHistory` wraps this type.
+  final List<Map<String, dynamic>> messages;
+
+  ResumedGatewaySession({
+    required this.runtimeSessionId,
+    this.running,
+    this.status,
+    this.inflight,
+    List<dynamic>? messages,
+  }) : messages = messages
+            ?.whereType<Map<String, dynamic>>()
+            .toList(growable: false) ??
+        const <Map<String, dynamic>>[];
+}
+
 typedef StreamCallback = void Function(StreamEvent event);
 typedef ConnectionCallback = void Function(bool connected);
 typedef GatewayReadyCallback = void Function(Map<String, dynamic> frame);
@@ -378,8 +409,7 @@ class WsClient {
     _lastLivenessMs = DateTime.now().millisecondsSinceEpoch;
     _heartbeatTimer = Timer.periodic(heartbeatInterval, (_) {
       if (generation != _connectionGeneration || !_connected) return;
-      final silenceMs =
-          DateTime.now().millisecondsSinceEpoch - _lastLivenessMs;
+      final silenceMs = DateTime.now().millisecondsSinceEpoch - _lastLivenessMs;
       if (silenceMs >= heartbeatDeadline.inMilliseconds) {
         // Half-open socket (phone slept, NAT dropped the mapping, proxy
         // died): close it so the close path rejects pending calls and the
@@ -922,53 +952,18 @@ class WsClient {
     }
   }
 
-  /// Resume an existing session.
+  /// Resume an existing session while preserving retained turn state.
   ///
   /// [profile] must be set for any session that lives in a non-launch
   /// profile's own session DB — a Bot Mode bot's canonical `Bot Chat`, for
   /// instance. Without it the gateway resolves the id against the launch
   /// profile's DB and answers `4007 session not found` for a chat that
   /// plainly exists, which is indistinguishable from a genuinely missing one.
-  Future<String> resumeSession(String sessionId, {String? profile}) async {
-    final result = await send('session.resume', {
-      'session_id': sessionId,
-      if (profile != null && profile.trim().isNotEmpty) 'profile': profile.trim(),
-    });
-    if (result['error'] != null) {
-      throw _gatewayResponseError(
-        'session.resume',
-        result['error'],
-        fallbackMessage: 'Unknown error',
-      );
-    }
-    return result['result']?['session_id'] as String? ??
-        (throw StateError(
-          'session.resume succeeded without a session_id — refusing to bind '
-          'the caller-supplied id, which may not be the runtime session the '
-          'gateway resumed.',
-        ));
-  }
-
-  /// Resumes [sessionId] and keeps the transcript the gateway returns with it.
   ///
-  /// The REST `/api/sessions/{id}/messages` route is served by the
-  /// OpenAI-compatible listener, which scopes its single session DB by
-  /// `HERMES_HOME` and **never reads `?profile=`** — so a bot's stored history
-  /// 404s there no matter what the caller asks for. `session.resume`, by
-  /// contrast, resolves the profile from its own params and returns the
-  /// transcript inline (`messages`, in display order).
-  ///
-  /// Do NOT hand that transcript to the chat bubbles: it is shaped
-  /// `{row_id, role, text}` — the body is `text`, and a `role: tool` row has
-  /// no `content` at all — while every consumer reads `content`. Fed raw it
-  /// renders as tool-activity cards with no conversation between them. The
-  /// profile-scoped transcript a screen should use is the dashboard route's,
-  /// which returns the `content` shape (`DashboardClient.getSessionMessages`).
-  ///
-  /// Returns `(runtime session id, messages)`; [messages] is empty when the
-  /// gateway answered with none rather than erroring, so a caller can still
-  /// fall back to REST.
-  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
+  /// Stock Hermes includes retained in-flight failure details in the result
+  /// so a client that missed the terminal event while disconnected can stop
+  /// recovery and surface the failure instead of polling history forever.
+  Future<ResumedGatewaySession> resumeSessionDetails(
     String sessionId, {
     String? profile,
   }) async {
@@ -983,14 +978,61 @@ class WsClient {
         fallbackMessage: 'Unknown error',
       );
     }
-    final payload = result['result'] as Map<String, dynamic>? ?? const {};
-    final resolved = payload['session_id'] as String? ?? sessionId;
-    final raw = payload['messages'] as List<dynamic>? ?? const [];
-    return (
-      resolved,
-      raw.whereType<Map<String, dynamic>>().toList(growable: false),
+    final rawPayload = result['result'];
+    if (rawPayload is! Map) {
+      throw StateError('session.resume succeeded without a result payload.');
+    }
+    final payload = Map<String, dynamic>.from(rawPayload);
+    final runtimeSessionId = payload['session_id'] as String?;
+    if (runtimeSessionId == null || runtimeSessionId.isEmpty) {
+      throw StateError(
+          'session.resume succeeded without a session_id — refusing to bind '
+          'the caller-supplied id, which may not be the runtime session the '
+          'gateway resumed.',
+      );
+    }
+    final rawInflight = payload['inflight'];
+    return ResumedGatewaySession(
+      runtimeSessionId: runtimeSessionId,
+      running: payload['running'] as bool?,
+      status: payload['status']?.toString(),
+      inflight: rawInflight is Map
+          ? Map<String, dynamic>.from(rawInflight)
+          : null,
+      messages: payload['messages'] as List<dynamic>?,
     );
   }
+
+  /// Runtime-id-only resume, kept for callers that do not need turn state.
+  ///
+  /// [profile] scopes the resume exactly like [resumeSessionDetails].
+  Future<String> resumeSession(String sessionId, {String? profile}) async {
+    final scope = profile?.trim();
+    return (await resumeSessionDetails(
+      sessionId,
+      profile: scope == null || scope.isEmpty ? null : scope,
+    )).runtimeSessionId;
+  }
+
+  /// Resumes [sessionId] and keeps the transcript the gateway returns with it.
+  ///
+  /// Returns `(runtime session id, messages)`; [messages] is empty when the
+  /// gateway answered with none rather than erroring, so a caller can still
+  /// fall back to REST.
+  ///
+  /// ⚠️ Upstream deleted this helper when `resumeSessionDetails` landed; the
+  /// fork keeps it because `DesktopGatewayClient.resumeSessionWithHistory`
+  /// and two `connection_manager_test.dart` cases depend on it. The inline
+  /// transcript is `{row_id, role, text}`-shaped, so only a normalizing
+  /// consumer may read it — see `chat_screen.dart:_normalizeTranscript`.
+  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
+    String sessionId, {
+    String? profile,
+  }) async {
+    final resumed = await resumeSessionDetails(sessionId, profile: profile);
+    return (resumed.runtimeSessionId, resumed.messages);
+  }
+
 
   Future<void> setSessionTitle(String sessionId, String title) async {
     final response = await send('session.title', {

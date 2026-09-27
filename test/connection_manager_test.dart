@@ -40,6 +40,38 @@ class _BlockingStreamingClient extends http.BaseClient {
 
 /// Returns a FRESH stream controller per request so a test can keep the
 /// first response's stream alive while a second send starts.
+class _PreHeaderHangingClient extends http.BaseClient {
+  final Completer<void> requestStarted = Completer<void>();
+  final Completer<void> releaseRequest = Completer<void>();
+  http.BaseRequest? request;
+  bool abortObserved = false;
+  bool closed = false;
+
+  @override
+  Future<http.StreamedResponse> send(http.BaseRequest request) async {
+    this.request = request;
+    if (!requestStarted.isCompleted) requestStarted.complete();
+    if (request is http.AbortableRequest && request.abortTrigger != null) {
+      await Future.any<void>([
+        request.abortTrigger!.then((_) {
+          abortObserved = true;
+          throw http.RequestAbortedException(request.url);
+        }),
+        releaseRequest.future,
+      ]);
+    } else {
+      await releaseRequest.future;
+    }
+    return http.StreamedResponse(const Stream<List<int>>.empty(), 200);
+  }
+
+  @override
+  void close() {
+    closed = true;
+    if (!releaseRequest.isCompleted) releaseRequest.complete();
+  }
+}
+
 class _MultiStreamingClient extends http.BaseClient {
   final List<StreamController<List<int>>> controllers = [];
 
@@ -734,9 +766,59 @@ void main() {
     );
 
     test(
-      'cancel-then-resend never reports the cancelled turn as done and '
-      'never leaks its tokens into the new stream',
+      'cancels promptly while SSE response headers are still pending',
       () async {
+        final transport = _PreHeaderHangingClient();
+        final api = ApiClient(
+          baseUrl: 'http://hermes.local:8642',
+          apiKey: _raceKey,
+          httpClient: transport,
+        );
+        final gateway = GatewayChatClient(api);
+        var done = false;
+        String? error;
+
+        final sending = gateway.sendMessageStreaming(
+          message: 'waiting for headers',
+          sessionId: 'mob-pre-header-cancel',
+          onToken: (_) {},
+          onDone: () => done = true,
+          onError: (value) => error = value,
+        );
+        await transport.requestStarted.future;
+
+        expect(await gateway.cancelActiveMessage(), isTrue);
+        Object? settleFailure;
+        try {
+          await sending.timeout(const Duration(milliseconds: 250));
+        } catch (failure) {
+          settleFailure = failure;
+        }
+        if (!transport.releaseRequest.isCompleted) {
+          transport.releaseRequest.complete();
+        }
+        await sending;
+
+        expect(transport.request, isA<http.AbortableRequest>());
+        expect(transport.abortObserved, isTrue);
+        expect(
+          settleFailure,
+          isNull,
+          reason: 'cancellation must not wait for response headers',
+        );
+        expect(
+          transport.closed,
+          isFalse,
+          reason: 'cancelling one send must keep the shared client usable',
+        );
+        expect(done, isFalse);
+        expect(error, isNull);
+        api.close();
+      },
+    );
+
+    test('cancel-then-resend never reports the cancelled turn as done and '
+        'never leaks its tokens into the new stream', () async {
         final transport = _MultiStreamingClient();
         final api = ApiClient(
           baseUrl: 'http://hermes.local:8642',
@@ -779,8 +861,11 @@ void main() {
         );
         // Let the first call unwind fully with the second already active.
         await firstSending;
-        expect(firstDone, isFalse,
-            reason: 'a cancelled turn must never report completion');
+      expect(
+        firstDone,
+        isFalse,
+        reason: 'a cancelled turn must never report completion',
+      );
 
         // The orphaned first stream pushing late tokens must not reach
         // any callback: the first stream's controller is still open but
@@ -790,16 +875,16 @@ void main() {
         );
         await pumpEventQueue();
         expect(secondTokens, ['two']);
-        expect(firstTokens, ['one'],
-            reason: 'first stream delivered nothing after cancellation');
+      expect(firstTokens, [
+        'one',
+      ], reason: 'first stream delivered nothing after cancellation');
 
         // Second stream completes normally.
         await transport.latest.close();
         await secondSending;
         expect(secondDone, isTrue);
         api.close();
-      },
-    );
+    });
   });
 
   group('Desktop gateway URL derivation', () {
@@ -939,10 +1024,8 @@ void main() {
       client.close();
     });
 
-    test(
-      'getArchivedSessions dedupes repeated pins and pages until the '
-      'filtered total is covered',
-      () async {
+    test('getArchivedSessions dedupes repeated pins and pages until the '
+        'filtered total is covered', () async {
       // 150 archived window rows + 1 pin repeated on every page, total
       // 151. Termination is TOTAL-driven (the dashboard router counts the
       // filtered rows, pins included, and the LIMIT/OFFSET windows cover
@@ -1008,10 +1091,8 @@ void main() {
       client.close();
     });
 
-    test(
-      'getArchivedSessions keeps paging past a pin-only window when '
-      'total says rows remain',
-      () async {
+    test('getArchivedSessions keeps paging past a pin-only window when '
+        'total says rows remain', () async {
       // The reviewer's blocker #1 shape on the archived path: a base
       // window made entirely of already-seen pins contributes zero new
       // ids while unseen rows still sit at a further offset. A
@@ -1073,10 +1154,8 @@ void main() {
       client.close();
     });
 
-    test(
-      'getArchivedSessions without a total falls back to the pin-bound '
-      'proof and walks past a pin-only window',
-      () async {
+    test('getArchivedSessions without a total falls back to the pin-bound '
+        'proof and walks past a pin-only window', () async {
         // The fallback branch (non-standard router that omits `total`):
         // termination is the k-consecutive-zero-new-pages rule bounded by
         // the max pins seen on any page. Reviewer shape at pageSize 2:
@@ -1142,13 +1221,10 @@ void main() {
         expect(ids, containsAll(<String>['a0', 'a1', 'a2', 'a3', 'a4', 'a5']));
         expect(ids.length, 6, reason: 'pins deduped');
         client.close();
-      },
-    );
+    });
 
-    test(
-      'getArchivedSessions stops exactly when the offset covers total '
-      '(no extra probe request at the boundary)',
-      () async {
+    test('getArchivedSessions stops exactly when the offset covers total '
+        '(no extra probe request at the boundary)', () async {
         // total = 200, pageSize = 100: after the page at offset 100 the
         // next offset (200) covers the total, so `offset >= total` must
         // break WITHOUT issuing a third request. A `>` mutant issues one
@@ -1195,12 +1271,13 @@ void main() {
 
         final sessions = await client.getArchivedSessions(pageSize: 100);
 
-        expect(requestedOffsets, ['0', '100'],
-            reason: 'offset 200 covers total=200; no third request');
+      expect(requestedOffsets, [
+        '0',
+        '100',
+      ], reason: 'offset 200 covers total=200; no third request');
         expect(sessions, hasLength(200));
         client.close();
-      },
-    );
+    });
 
     test('getArchivedSessions throws rather than present a cap-truncated '
         'archive as complete', () async {
@@ -1980,16 +2057,20 @@ void main() {
       );
 
       test(
-        'resumeSessionWithHistory falls back to the requested id when the '
-        'gateway omits it and tolerates a missing transcript',
+        'resumeSessionWithHistory refuses a resume that omits session_id',
         () async {
+          // A resume that succeeds without naming the runtime session is a
+          // protocol violation, not a socket that forgot: binding the
+          // caller-supplied id would address a session the gateway may not
+          // have actually resumed. Both the details reader and its
+          // history-keeping wrapper share that contract, so a thin wrapper
+          // cannot be more forgiving than what it wraps.
           final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
           final socketSubscription = server.listen((request) async {
             final socket = await WebSocketTransformer.upgrade(request);
             socket.listen((message) {
               final frame =
                   jsonDecode(message as String) as Map<String, dynamic>;
-              // A minimal payload: no session_id, no messages key.
               socket.add(
                 jsonEncode({'jsonrpc': '2.0', 'id': frame['id'], 'result': {}}),
               );
@@ -2001,10 +2082,10 @@ void main() {
           );
           try {
             await client.connect();
-            final (runtimeId, messages) =
-                await client.resumeSessionWithHistory('stored-1');
-            expect(runtimeId, 'stored-1');
-            expect(messages, isEmpty);
+            await expectLater(
+              client.resumeSessionWithHistory('stored-1'),
+              throwsA(isA<StateError>()),
+            );
           } finally {
             client.close();
             await socketSubscription.cancel();
@@ -2806,7 +2887,16 @@ void main() {
                 jsonEncode({
                   'jsonrpc': '2.0',
                   'id': request['id'],
-                  'result': {'session_id': 'runtime-123'},
+                  'result': {
+                    'session_id': 'runtime-123',
+                    'running': false,
+                    'status': 'idle',
+                    'inflight': {
+                      'status': 'error',
+                      'error': 'Provider unavailable',
+                      'recoverable': true,
+                    },
+                  },
                 }),
               );
             });
@@ -2815,7 +2905,15 @@ void main() {
 
       try {
         await client.connect();
-        expect(await client.resumeSession('stored-123'), 'runtime-123');
+        final resumed = await client.resumeSessionDetails('stored-123');
+        expect(resumed.runtimeSessionId, 'runtime-123');
+        expect(resumed.running, isFalse);
+        expect(resumed.status, 'idle');
+        expect(resumed.inflight, {
+          'status': 'error',
+          'error': 'Provider unavailable',
+          'recoverable': true,
+        });
         final request = await requestSeen.future;
         expect(request['method'], 'session.resume');
         expect(request['params'], {'session_id': 'stored-123'});
@@ -3068,6 +3166,58 @@ void main() {
           expect(resumeCalls, hasLength(2));
           expect(resumeCalls.first['params'], {'session_id': 'mobile-project'});
           expect(resumeCalls.last['params'], {'session_id': 'stored-project'});
+        },
+      );
+
+      test(
+        'a retained resume failure emits one terminal async event',
+        () async {
+          final client = buildClient();
+          addTearDown(client.close);
+
+          await client.ensureSession(
+            'mobile-project',
+            workingDirectory: '/srv/projects/hermes-android',
+          );
+          await expectSoon(
+            () => fixture.knownStoredIds.contains('stored-project'),
+            reason: 'session.create minting the stored identity',
+          );
+          fixture
+            ..resumeKnownIds.add('stored-project')
+            ..resumeInflight = {
+              'status': 'error',
+              'error': 'Provider unavailable',
+              'recoverable': true,
+            };
+
+          final events = <StreamEvent>[];
+          final states = <DesktopConnectionState>[];
+          client
+            ..setAsyncEventListener((mobileSessionId, event) {
+              expect(mobileSessionId, 'mobile-project');
+              events.add(event);
+            })
+            ..setConnectionListener(states.add);
+
+          await fixture.openSockets.single.close();
+          await expectSoon(
+            () => states.contains(DesktopConnectionState.disconnected),
+            reason: 'client observing the dropped socket',
+          );
+          await client.ensureSession('mobile-project');
+          await expectSoon(
+            () => events.any((event) => event.type == 'turn.error'),
+            reason: 'retained terminal failure delivery',
+          );
+
+          final failures = events
+              .where((event) => event.type == 'turn.error')
+              .toList();
+          expect(failures, hasLength(1));
+          expect(failures.single.isComplete, isTrue);
+          expect(failures.single.data['message'], 'Provider unavailable');
+          expect(failures.single.data['status'], 'error');
         },
       );
     });
@@ -3561,6 +3711,7 @@ class _ProjectGatewayFixture {
   final perSocketRequests = <List<Map<String, dynamic>>>[];
   final knownStoredIds = <String>{};
   final resumeKnownIds = <String>{};
+  Map<String, dynamic>? resumeInflight;
   var ticketCount = 0;
 
   void safeAdd(WebSocket socket, Map<String, dynamic> frame) {
@@ -3589,7 +3740,12 @@ class _ProjectGatewayFixture {
             safeAdd(socket, {
               'jsonrpc': '2.0',
               'id': request['id'],
-              'result': {'session_id': 'runtime-resumed'},
+              'result': {
+                'session_id': 'runtime-resumed',
+                'running': false,
+                'status': resumeInflight == null ? 'idle' : 'working',
+                'inflight': ?resumeInflight,
+              },
             });
           } else {
             safeAdd(socket, {
