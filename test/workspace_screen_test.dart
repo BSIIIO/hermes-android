@@ -1328,6 +1328,31 @@ void main() {
       expect(opened.single.session.id, isNotEmpty);
     });
 
+    testWidgets('choosing Bot chat opens the roster, not a drafted chat', (
+      tester,
+    ) async {
+      // A bot chat must never be minted as a new session: the gateway would
+      // file it as an unrelated chat and the bot's own history would be lost.
+      final opened = <NewChatDraft>[];
+      await _pump(
+        tester,
+        connection: _connection(desktopGatewayUrl: 'https://host:8642'),
+        sessions: const [],
+        onNewChat: opened.add,
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(kWorkspaceNewChatButtonKey));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.text(NewChatMode.botChat.label(const AppStringsEn())),
+      );
+      await tester.pumpAndSettle();
+
+      expect(opened, isEmpty);
+      expect(find.byType(BotsScreen), findsOneWidget);
+    });
+
     testWidgets('a launcher shortcut opens a Quick Chat without a picker', (
       tester,
     ) async {

@@ -989,6 +989,14 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
       if (project == null || !mounted) return;
     }
 
+    // A bot chat is not drafted: its session already exists server-side, so it
+    // opens the launch profile's own Bot Chat rather than minting a fresh id
+    // the gateway would file as an unrelated new session.
+    if (mode == NewChatMode.botChat) {
+      await _openBots();
+      return;
+    }
+
     final draft = buildNewChatDraft(
       mode: mode,
       sessionId:
