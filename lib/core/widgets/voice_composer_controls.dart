@@ -65,7 +65,7 @@ class VoiceComposerIndicator extends StatelessWidget {
                     key: stopKey,
                     onPressed: onStop,
                     icon: const Icon(Icons.stop_rounded),
-                    label: const Text('Stop'),
+                    label: Text(s.commonStop),
                   ),
                 ),
                 Semantics(
@@ -76,7 +76,7 @@ class VoiceComposerIndicator extends StatelessWidget {
                     key: cancelKey,
                     onPressed: onCancel,
                     icon: const Icon(Icons.close),
-                    label: const Text('Cancel'),
+                    label: Text(s.commonCancel),
                   ),
                 ),
               ],

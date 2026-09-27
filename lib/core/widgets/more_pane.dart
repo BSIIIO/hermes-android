@@ -237,6 +237,7 @@ class _MoreEntryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
     final dimmed = !entry.isSelectable;
     final titleColor = dimmed ? tokens.muted : tokens.onSurface;
@@ -285,9 +286,9 @@ class _MoreEntryCard extends StatelessWidget {
                       ),
                       if (entry.availability ==
                           MoreEntryAvailability.comingSoon)
-                        const StatusChip(
+                        StatusChip(
                           status: HermesStatus.idle,
-                          label: 'Coming next',
+                          label: s.commonComingNext,
                         ),
                     ],
                   ),

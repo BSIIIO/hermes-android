@@ -185,7 +185,7 @@ class _GatewayClarifyDialogState extends State<GatewayClarifyDialog> {
         TextButton(
           key: const Key('clarify-skip'),
           onPressed: _submitting ? null : () => _respond(''),
-          child: const Text('Skip'),
+          child: Text(s.commonSkip),
         ),
         FilledButton(
           key: const Key('clarify-continue'),
@@ -197,7 +197,7 @@ class _GatewayClarifyDialogState extends State<GatewayClarifyDialog> {
                   dimension: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Continue'),
+              : Text(s.commonContinue),
         ),
       ],
     );

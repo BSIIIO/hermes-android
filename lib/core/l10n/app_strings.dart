@@ -1997,6 +1997,18 @@ abstract class AppStrings {
   String get settingsTextSizePreview;
   String get sensitivePromptRejected;
   String get sensitivePromptPrivacyNote;
+  String get statusRunning;
+  String get statusBlocked;
+  String get statusFailed;
+  String get statusCompleted;
+  String get statusIdle;
+  String get commonComingNext;
+  String get commonStop;
+  String get commonContinue;
+  String get commonSkip;
+  String get commonLoading;
+  String get insightReasoningTitle;
+  String get insightReasoningSubtitle;
 }
 
 /// English strings.
@@ -4105,6 +4117,52 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get sensitivePromptPrivacyNote => 'The value is sent directly to the active Hermes gateway and is not saved by this Android app.';
+  @override
+  String get statusRunning => 'Running';
+
+
+  @override
+  String get statusBlocked => 'Needs you';
+
+
+  @override
+  String get statusFailed => 'Failed';
+
+
+  @override
+  String get statusCompleted => 'Done';
+
+
+  @override
+  String get statusIdle => 'Idle';
+
+
+  @override
+  String get commonComingNext => 'Coming next';
+
+
+  @override
+  String get commonStop => 'Stop';
+
+
+  @override
+  String get commonContinue => 'Continue';
+
+
+  @override
+  String get commonSkip => 'Skip';
+
+
+  @override
+  String get commonLoading => 'Loading';
+
+
+  @override
+  String get insightReasoningTitle => 'Reasoning';
+
+
+  @override
+  String get insightReasoningSubtitle => 'Hermes reasoning details';
 }
 
 /// Simplified Chinese strings.
@@ -6094,6 +6152,52 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get sensitivePromptPrivacyNote => '输入的内容会直接发送到当前使用的 Hermes 网关，本 Android 应用不会保存它。';
+  @override
+  String get statusRunning => '运行中';
+
+
+  @override
+  String get statusBlocked => '需要你处理';
+
+
+  @override
+  String get statusFailed => '失败';
+
+
+  @override
+  String get statusCompleted => '已完成';
+
+
+  @override
+  String get statusIdle => '空闲';
+
+
+  @override
+  String get commonComingNext => '即将推出';
+
+
+  @override
+  String get commonStop => '停止';
+
+
+  @override
+  String get commonContinue => '继续';
+
+
+  @override
+  String get commonSkip => '跳过';
+
+
+  @override
+  String get commonLoading => '加载中';
+
+
+  @override
+  String get insightReasoningTitle => '推理';
+
+
+  @override
+  String get insightReasoningSubtitle => 'Hermes 推理详情';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.
