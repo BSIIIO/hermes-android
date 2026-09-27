@@ -130,10 +130,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
     });
 
     try {
+      final s = AppStrings.of(context);
       await _client.setModel('main', _selectedProvider, _selectedModel);
       setState(() {
-        _successMsg =
-            'Profile default set to $_selectedModel. Chats with their own model keep that override.';
+        _successMsg = s.settingsProfileDefaultSetTo.replaceAll(
+          '{0}',
+          _selectedModel,
+        );
       });
     } catch (e) {
       setState(() {

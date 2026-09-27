@@ -1706,7 +1706,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ActivityPane), findsOneWidget);
-      expect(find.text(ActivityGroupKind.running.title), findsOneWidget);
+      expect(
+        find.text(ActivityGroupKind.running.title(const AppStringsEn())),
+        findsOneWidget,
+      );
       expect(find.text('Deploy ScriptHive'), findsOneWidget);
       expect(find.textContaining('Coming next'), findsNothing);
     });

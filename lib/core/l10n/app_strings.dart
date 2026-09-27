@@ -1990,6 +1990,13 @@ abstract class AppStrings {
   String get codeCopy;
   String get aiSearchNoConfiguredModels;
   String get chatNoSelectableModels;
+  String get activityTurnStopped;
+  String get settingsProfileDefaultSetTo;
+  String get newChatStartSomethingNew;
+  String get newChatWhichProject;
+  String get settingsTextSizePreview;
+  String get sensitivePromptRejected;
+  String get sensitivePromptPrivacyNote;
 }
 
 /// English strings.
@@ -4070,6 +4077,34 @@ class AppStringsEn extends AppStrings {
   @override
   String get chatNoSelectableModels =>
       'The active profile did not return any selectable models.';
+
+
+  @override
+  String get activityTurnStopped => 'Stopped';
+
+
+  @override
+  String get settingsProfileDefaultSetTo => 'Profile default set to {0}. Chats with their own model keep that override.';
+
+
+  @override
+  String get newChatStartSomethingNew => 'Start something new';
+
+
+  @override
+  String get newChatWhichProject => 'Which project?';
+
+
+  @override
+  String get settingsTextSizePreview => 'Text size preview';
+
+
+  @override
+  String get sensitivePromptRejected => 'Hermes did not accept the response. Please try again.';
+
+
+  @override
+  String get sensitivePromptPrivacyNote => 'The value is sent directly to the active Hermes gateway and is not saved by this Android app.';
 }
 
 /// Simplified Chinese strings.
@@ -6031,6 +6066,34 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get chatNoSelectableModels => '当前配置档案没有返回任何可选择的模型。';
+
+
+  @override
+  String get activityTurnStopped => '已停止';
+
+
+  @override
+  String get settingsProfileDefaultSetTo => '已将 {0} 设为默认模型。已单独指定模型的会话仍使用各自的选择。';
+
+
+  @override
+  String get newChatStartSomethingNew => '开始新内容';
+
+
+  @override
+  String get newChatWhichProject => '选择哪个项目？';
+
+
+  @override
+  String get settingsTextSizePreview => '文字大小预览';
+
+
+  @override
+  String get sensitivePromptRejected => 'Hermes 未能接受这次提交，请重试。';
+
+
+  @override
+  String get sensitivePromptPrivacyNote => '输入的内容会直接发送到当前使用的 Hermes 网关，本 Android 应用不会保存它。';
 }
 
 /// Publishes the resolved [AppStrings] to a subtree.

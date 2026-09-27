@@ -62,16 +62,22 @@ enum ActivityGroupKind {
   /// Work that finished or was stopped by the user.
   completed;
 
-  String get title {
+  /// User-facing group header, resolved in the active locale.
+  ///
+  /// Takes [AppStrings] rather than holding a constant: the enum is data, and
+  /// a hardcoded English title here renders untranslated on the Activity
+  /// timeline. Mirrors `HomeSectionKind.title(AppStrings)` so the two screens
+  /// resolve the same concept the same way.
+  String title(AppStrings s) {
     switch (this) {
       case ActivityGroupKind.needsYou:
-        return 'Needs you';
+        return s.activityGroupNeedsYou;
       case ActivityGroupKind.running:
-        return 'Running now';
+        return s.activityGroupRunningNow;
       case ActivityGroupKind.failed:
-        return 'Failed';
+        return s.activityGroupFailed;
       case ActivityGroupKind.completed:
-        return 'Completed';
+        return s.activityGroupCompleted;
     }
   }
 }
@@ -127,7 +133,7 @@ class ActivityGroup {
     required this.totalCount,
   });
 
-  String get title => kind.title;
+  String title(AppStrings s) => kind.title(s);
 
   /// How many rows the cap hid.
   int get overflow => totalCount - items.length;
@@ -278,36 +284,36 @@ _Classification _classify(
   // completed server-side, but the client could not reconcile it and the
   // composer stays blocked, which is what the timeline must state.
   if (entry.failure != null) {
-    return const _Classification(
+    return _Classification(
       ActivityGroupKind.failed,
-      'Turn recovery failed',
+      s.activityTurnRecoveryFailed,
       HermesStatus.failed,
     );
   }
 
   switch (entry.status) {
     case GatewayRecoveryTurnStatus.waitingInput:
-      return const _Classification(
+      return _Classification(
         ActivityGroupKind.needsYou,
-        'Waiting for your input',
+        s.activityWaitingForYourInput,
         HermesStatus.blocked,
       );
     case GatewayRecoveryTurnStatus.failed:
-      return const _Classification(
+      return _Classification(
         ActivityGroupKind.failed,
-        'The turn failed',
+        s.activityTurnFailed,
         HermesStatus.failed,
       );
     case GatewayRecoveryTurnStatus.completed:
-      return const _Classification(
+      return _Classification(
         ActivityGroupKind.completed,
-        'Completed',
+        s.activityGroupCompleted,
         HermesStatus.completed,
       );
     case GatewayRecoveryTurnStatus.interrupted:
-      return const _Classification(
+      return _Classification(
         ActivityGroupKind.completed,
-        'Stopped',
+        s.activityTurnStopped,
         HermesStatus.idle,
       );
     case null:
@@ -316,9 +322,9 @@ _Classification _classify(
       // A negative age means the device clock is behind the journal; trust the
       // journal rather than converting live work into a fabricated failure.
       if (ageMs > staleMs) {
-        return const _Classification(
+        return _Classification(
           ActivityGroupKind.failed,
-          'Stalled — no update from Hermes',
+          s.activityStalledNoUpdate,
           HermesStatus.failed,
         );
       }
@@ -326,7 +332,7 @@ _Classification _classify(
       // but the gateway has not answered yet, so the work is outstanding.
       return _Classification(
         ActivityGroupKind.running,
-        entry.status == null ? 'Submitted, waiting for Hermes' : 'Running',
+        entry.status == null ? s.activitySubmittedWaiting : s.activityRunningNow,
         HermesStatus.running,
       );
   }

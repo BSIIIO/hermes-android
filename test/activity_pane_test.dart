@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hermes_android/core/l10n/app_strings.dart';
 import 'package:hermes_android/core/theme/hermes_theme.dart';
 import 'package:hermes_android/core/utils/activity_feed.dart';
 import 'package:hermes_android/core/widgets/activity_pane.dart';
@@ -131,12 +132,12 @@ void main() {
     double topOf(String text) => tester.getTopLeft(find.text(text).first).dy;
 
     expect(
-      topOf(ActivityGroupKind.needsYou.title),
-      lessThan(topOf(ActivityGroupKind.running.title)),
+      topOf(ActivityGroupKind.needsYou.title(const AppStringsEn())),
+      lessThan(topOf(ActivityGroupKind.running.title(const AppStringsEn()))),
     );
     expect(
-      topOf(ActivityGroupKind.running.title),
-      lessThan(topOf(ActivityGroupKind.failed.title)),
+      topOf(ActivityGroupKind.running.title(const AppStringsEn())),
+      lessThan(topOf(ActivityGroupKind.failed.title(const AppStringsEn()))),
     );
   });
 

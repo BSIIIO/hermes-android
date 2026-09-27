@@ -214,7 +214,7 @@ class _OverflowNote extends StatelessWidget {
         HermesSpacing.lg,
       ),
       child: Text(
-        'and $count more',
+        AppStrings.of(context).activityAndCountMore.replaceAll('{0}', '$count'),
         style: tokens.typography.label.copyWith(color: tokens.muted),
       ),
     );
