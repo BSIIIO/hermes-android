@@ -457,7 +457,9 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
                       status: session.isActive
                           ? HermesStatus.running
                           : HermesStatus.completed,
-                      label: session.isActive ? 'Running' : 'Done',
+                      label: session.isActive
+                          ? s.statusRunning
+                          : s.statusCompleted,
                     ),
                     if (projectLabel != null)
                       _MetaChip(

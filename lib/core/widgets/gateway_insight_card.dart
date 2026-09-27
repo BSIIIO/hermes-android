@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/gateway_insight.dart';
 
 class GatewayReasoningCard extends StatelessWidget {
@@ -14,6 +15,7 @@ class GatewayReasoningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       clipBehavior: Clip.antiAlias,
@@ -21,8 +23,8 @@ class GatewayReasoningCard extends StatelessWidget {
         key: PageStorageKey<String>('gateway-reasoning-${text.hashCode}'),
         initiallyExpanded: initiallyExpanded,
         leading: const Icon(Icons.psychology_outlined),
-        title: const Text('Reasoning'),
-        subtitle: const Text('Hermes reasoning details'),
+        title: Text(s.insightReasoningTitle),
+        subtitle: Text(s.insightReasoningSubtitle),
         children: [
           const Divider(height: 1),
           SelectionArea(

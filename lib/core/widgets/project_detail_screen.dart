@@ -850,7 +850,9 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                         status: session.isActive
                             ? HermesStatus.running
                             : HermesStatus.completed,
-                        label: session.isActive ? 'Running' : 'Done',
+                        label: session.isActive
+                            ? s.statusRunning
+                            : s.statusCompleted,
                       ),
                     ],
                   ),

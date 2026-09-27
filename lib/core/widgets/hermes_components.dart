@@ -7,22 +7,28 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../theme/hermes_theme.dart';
 
 /// Default wording for each semantic status, phrased for a person, not a state
 /// machine: a blocked turn is something that "needs you".
-String defaultStatusLabel(HermesStatus status) {
+///
+/// Resolved through [AppStrings] because the fallback path is what ships when
+/// a caller passes no explicit label: `StatusChip(status: ...)` on its own.
+/// Those call sites are several, and each one would otherwise print English
+/// under a Chinese locale.
+String defaultStatusLabel(HermesStatus status, AppStrings s) {
   switch (status) {
     case HermesStatus.running:
-      return 'Running';
+      return s.statusRunning;
     case HermesStatus.blocked:
-      return 'Needs you';
+      return s.statusBlocked;
     case HermesStatus.failed:
-      return 'Failed';
+      return s.statusFailed;
     case HermesStatus.completed:
-      return 'Done';
+      return s.statusCompleted;
     case HermesStatus.idle:
-      return 'Idle';
+      return s.statusIdle;
   }
 }
 
@@ -36,8 +42,9 @@ class StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tokens = HermesTokens.of(context);
+    final s = AppStrings.of(context);
     final color = tokens.colorForStatus(status);
-    final text = label ?? defaultStatusLabel(status);
+    final text = label ?? defaultStatusLabel(status, s);
 
     return Semantics(
       label: text,
@@ -261,6 +268,7 @@ class ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
     final color = _informational ? tokens.muted : tokens.danger;
 
@@ -288,7 +296,7 @@ class ErrorState extends StatelessWidget {
           ),
           if (onRetry != null) ...[
             const SizedBox(height: HermesSpacing.xl),
-            FilledButton.tonal(onPressed: onRetry, child: const Text('Retry')),
+            FilledButton.tonal(onPressed: onRetry, child: Text(s.commonRetry)),
           ],
         ],
       ),
@@ -330,10 +338,11 @@ class _LoadingSkeletonState extends State<LoadingSkeleton>
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
 
     return Semantics(
-      label: 'Loading',
+      label: s.commonLoading,
       container: true,
       child: Column(
         children: List.generate(widget.rows, (index) {
