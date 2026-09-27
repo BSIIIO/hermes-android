@@ -27,12 +27,13 @@ NewChatOption _option(List<NewChatOption> options, NewChatMode mode) {
 
 void main() {
   group('NewChatMode', () {
-    test('offers exactly the two validated creation modes', () {
-      // The roadmap's global New button offers Project chat and Quick chat.
-      // A third mode would be a product decision, not an implementation one.
+    test('offers exactly the three creation modes', () {
+      // Project chat and Quick chat are the roadmap's pair; Bot chat joins
+      // them as the third entry of the New sheet (Bots MVP).
       expect(NewChatMode.values, [
         NewChatMode.projectChat,
         NewChatMode.quickChat,
+        NewChatMode.botChat,
       ]);
     });
 
@@ -65,6 +66,23 @@ void main() {
           NewChatMode.values,
           reason: 'support $support dropped a mode',
         );
+      }
+    });
+
+    test('bot chat is offered as a third, always-enabled option', () {
+      // A bot chat needs neither a project nor the `projects.*` family, so a
+      // legacy gateway must still be able to start one — and the MVP opens the
+      // default profile directly, so there is nothing to gate it on.
+      for (final support in ProjectsSupport.values) {
+        final options = buildNewChatOptions(
+          support: support,
+          projects: const [],
+          s: const AppStringsEn(),
+        );
+
+        final botChat = _option(options, NewChatMode.botChat);
+        expect(botChat.enabled, isTrue, reason: 'support $support');
+        expect(botChat.disabledReason, isNull, reason: 'support $support');
       }
     });
 
@@ -180,6 +198,27 @@ void main() {
   });
 
   group('buildNewChatDraft', () {
+    test('a bot chat starts without a project and never expires', () {
+      // Bot Chat has no project and no retention clock: it is a direct line to
+      // the default profile's bot, not a filing decision.
+      final draft = buildNewChatDraft(
+        mode: NewChatMode.botChat,
+        sessionId: 'mob-2',
+        now: _now,
+        project: _project(),
+        s: const AppStringsEn(),
+      );
+
+      expect(draft.mode, NewChatMode.botChat);
+      expect(draft.isQuick, isFalse);
+      expect(draft.projectId, isNull);
+      expect(draft.projectName, isNull);
+      expect(draft.projectWorkingDirectory, isNull);
+      expect(draft.expiresAt, isNull);
+      expect(draft.session.id, 'mob-2');
+      expect(draft.session.messageCount, 0);
+    });
+
     test('a quick chat starts without a project', () {
       final draft = buildNewChatDraft(
         mode: NewChatMode.quickChat,
