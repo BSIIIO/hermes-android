@@ -197,9 +197,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            s.projectDetailMovedTo.replaceAll('{0}', target.label),
-          ),
+          content: Text(s.projectDetailMovedTo.replaceAll('{0}', target.label)),
         ),
       );
     } catch (_) {
@@ -833,7 +831,7 @@ class _ProjectDetailScreenState extends State<ProjectDetailScreen>
                           children: [
                             Text(
                               session.title.trim().isEmpty
-                                  ? 'Untitled chat'
+                                  ? s.chatUntitled
                                   : session.title,
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,

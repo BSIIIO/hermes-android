@@ -259,6 +259,7 @@ class _ActivityItemCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
     final title = item.title?.trim();
 
@@ -279,7 +280,7 @@ class _ActivityItemCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  title == null || title.isEmpty ? 'Untitled chat' : title,
+                  title == null || title.isEmpty ? s.chatUntitled : title,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                   style: tokens.typography.section.copyWith(
