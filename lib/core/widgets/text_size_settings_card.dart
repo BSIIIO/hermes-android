@@ -115,7 +115,7 @@ class _TextSizeSettingsCardState extends State<TextSizeSettingsCard> {
           Padding(
             padding: EdgeInsets.fromLTRB(16, 12, 16, 4),
             child: Semantics(
-              label: 'Text size preview',
+              label: strings.settingsTextSizePreview,
               child: ExcludeSemantics(
                 child: Text(
                   strings.settingsPreview,

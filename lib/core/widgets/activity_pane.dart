@@ -168,8 +168,9 @@ class ActivityPaneState extends State<ActivityPane> {
   }
 
   List<Widget> _group(ActivityGroup group) {
+    final s = AppStrings.of(context);
     return [
-      SectionHeader(title: group.title, count: group.totalCount),
+      SectionHeader(title: group.title(s), count: group.totalCount),
       for (final item in group.items)
         Padding(
           padding: const EdgeInsets.fromLTRB(

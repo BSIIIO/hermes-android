@@ -130,7 +130,7 @@ void main() {
       ActivityGroupKind.failed,
       ActivityGroupKind.completed,
     ]);
-    expect(feed.groups.map((group) => group.title), [
+    expect(feed.groups.map((group) => group.title(const AppStringsEn())), [
       'Needs you',
       'Running now',
       'Failed',

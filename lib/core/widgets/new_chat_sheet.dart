@@ -43,7 +43,7 @@ class NewChatSheet extends StatelessWidget {
               HermesSpacing.sm,
             ),
             child: Text(
-              'Start something new',
+              s.newChatStartSomethingNew,
               style: tokens.typography.title.copyWith(color: tokens.onSurface),
             ),
           ),
@@ -81,6 +81,7 @@ class ProjectPickerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
 
     return SafeArea(
@@ -96,7 +97,7 @@ class ProjectPickerSheet extends StatelessWidget {
               HermesSpacing.sm,
             ),
             child: Text(
-              'Which project?',
+              s.newChatWhichProject,
               style: tokens.typography.title.copyWith(color: tokens.onSurface),
             ),
           ),

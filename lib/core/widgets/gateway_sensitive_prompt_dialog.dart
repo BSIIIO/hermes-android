@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_strings.dart';
 import '../models/gateway_sensitive_prompt.dart';
 
 typedef SensitivePromptResponder = Future<void> Function(String value);
@@ -36,6 +37,7 @@ class _GatewaySensitivePromptDialogState
 
   Future<void> _respond(String value) async {
     if (_submitting) return;
+    final s = AppStrings.of(context);
     setState(() {
       _submitting = true;
       _error = null;
@@ -50,13 +52,14 @@ class _GatewaySensitivePromptDialogState
       if (!mounted) return;
       setState(() {
         _submitting = false;
-        _error = 'Hermes did not accept the response. Please try again.';
+        _error = s.sensitivePromptRejected;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final s = AppStrings.of(context);
     final theme = Theme.of(context);
     final isSudo = widget.request.kind == GatewaySensitivePromptKind.sudo;
 
@@ -102,8 +105,7 @@ class _GatewaySensitivePromptDialogState
             ],
             const SizedBox(height: 10),
             Text(
-              'The value is sent directly to the active Hermes gateway and '
-              'is not saved by this Android app.',
+              s.sensitivePromptPrivacyNote,
               style: theme.textTheme.bodySmall,
             ),
           ],
@@ -113,7 +115,7 @@ class _GatewaySensitivePromptDialogState
         TextButton(
           key: const Key('sensitive-prompt-cancel'),
           onPressed: _submitting ? null : () => _respond(''),
-          child: const Text('Cancel'),
+          child: Text(s.commonCancel),
         ),
         FilledButton(
           key: const Key('sensitive-prompt-send'),
@@ -125,7 +127,7 @@ class _GatewaySensitivePromptDialogState
                   dimension: 18,
                   child: CircularProgressIndicator(strokeWidth: 2),
                 )
-              : const Text('Send'),
+              : Text(s.chatSend),
         ),
       ],
     );
