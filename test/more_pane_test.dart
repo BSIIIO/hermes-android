@@ -51,6 +51,7 @@ void main() {
         containsAll(<String>[
           'files',
           'assets',
+          'bots',
           'unassigned',
           'archived-quick',
           'cron',
@@ -60,6 +61,23 @@ void main() {
           'dashboard',
         ]),
       );
+    });
+
+    test('Bots is available without a dashboard, like the gateway RPCs it '
+        'needs', () {
+      final sections = buildMoreSections(
+        dashboardReachable: false,
+        s: const AppStringsEn(),
+      );
+
+      final bots = sections
+          .expand((section) => section.entries)
+          .singleWhere((entry) => entry.id == 'bots');
+
+      expect(bots.availability, MoreEntryAvailability.available);
+      expect(bots.isSelectable, isTrue);
+      expect(bots.title, 'Bots');
+      expect(bots.subtitle, isNotEmpty);
     });
 
     test('Unassigned chats is not mislabeled as the action Inbox', () {
