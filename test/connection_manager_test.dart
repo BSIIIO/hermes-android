@@ -3064,47 +3064,6 @@ void main() {
 
 /// Minimal secured Desktop gateway fixture: mints WebSocket tickets over HTTP
 /// and speaks the JSON-RPC session contract on each upgraded socket.
-/// Drives the desktop-gateway transport a widget test injects into
-/// [ChatScreen], without a live socket. Only the history path is modelled;
-/// every other member forwards to `noSuchMethod`, which throws — an
-/// unexpected use of the transport then fails loudly instead of silently
-/// succeeding. `implements` keeps this in step with the real interface for
-/// free, so adding a method upstream does not break every test.
-class _FakeDesktopGateway implements DesktopGatewayClient {
-  _FakeDesktopGateway(this._result);
-
-  /// The `(runtime id, transcript)` to answer with; null makes the history
-  /// call throw, modelling a socket that never came up.
-  final (String, List<Map<String, dynamic>>)? _result;
-  final List<Map<String, dynamic>> resumeCalls = [];
-
-  @override
-  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
-    String sessionId, {
-    String? profile,
-  }) async {
-    resumeCalls.add({'session_id': sessionId, 'profile': profile});
-    return _result ?? (throw StateError('gateway offline'));
-  }
-
-  @override
-  void setAsyncEventListener(DesktopAsyncEventCallback? listener) {}
-
-  @override
-  void setConnectionListener(DesktopConnectionCallback? listener) {}
-
-  @override
-  Future<void> ensureSession(
-    String sessionId, {
-    String? workingDirectory,
-    String? profile,
-  }) async {}
-
-  @override
-  void noSuchMethod(Invocation invocation) =>
-      throw UnimplementedError('${invocation.memberName}');
-}
-
 class _ProjectGatewayFixture {
   late final HttpServer server;
   final requests = <Map<String, dynamic>>[];
