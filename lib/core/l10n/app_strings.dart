@@ -3527,7 +3527,7 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get chatLegacyTransportNotice =>
-      'This gateway does not support turn recovery — chatting still works, but a reply may be interrupted';
+      'Background recovery unavailable — legacy transport';
 
   @override
   String get chatVoiceSetupFailed => 'Voice setup failed: {0}';
