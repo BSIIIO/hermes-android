@@ -327,6 +327,21 @@ class DesktopGatewayClient {
     return client.send(method, params);
   }
 
+  /// Resumes a session and returns `(runtime session id, stored transcript)`.
+  ///
+  /// This is the only history source that works for a bot's stored chat on a
+  /// gateway whose REST `/api/sessions/{id}/messages` ignores `?profile=`
+  /// (the OpenAI-compatible listener scopes its one session DB by `HERMES_HOME`).
+  /// Prefer it over [ApiClient.getMessages] for any chat whose `profile` is set;
+  /// fall back to REST only when this throws or returns no messages.
+  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
+    String sessionId, {
+    String? profile,
+  }) async {
+    final client = await _connectControl();
+    return client.resumeSessionWithHistory(sessionId, profile: profile);
+  }
+
   /// What this gateway advertises or has been proven to support.
   ///
   /// Populated from `gateway.ready` on every connect and refined by the

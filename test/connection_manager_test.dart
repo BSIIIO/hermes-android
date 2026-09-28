@@ -1431,6 +1431,98 @@ void main() {
       },
     );
 
+      test(
+        'resumeSessionWithHistory keeps the transcript the gateway returns',
+        () async {
+          // A bot's stored chat only resolves inside its own profile, and the
+          // REST route on this gateway never reads ?profile=, so the resume
+          // response is the sole place the transcript arrives.
+          final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+          final frames = <Map<String, dynamic>>[];
+          final transcript = <Map<String, dynamic>>[
+            {'role': 'user', 'content': 'hello'},
+            {'role': 'assistant', 'content': 'hi'},
+          ];
+          final socketSubscription = server.listen((request) async {
+            final socket = await WebSocketTransformer.upgrade(request);
+            socket.listen((message) {
+              final frame =
+                  jsonDecode(message as String) as Map<String, dynamic>;
+              frames.add(frame);
+              socket.add(
+                jsonEncode({
+                  'jsonrpc': '2.0',
+                  'id': frame['id'],
+                  'result': {
+                    'session_id': 'runtime-1',
+                    'message_count': transcript.length,
+                    'messages': transcript,
+                  },
+                }),
+              );
+            });
+          });
+          final client = WsClient(
+            'http://127.0.0.1:${server.port}',
+            token: 'spa',
+          );
+          try {
+            await client.connect();
+            final (runtimeId, messages) = await client.resumeSessionWithHistory(
+              'stored-bot-chat',
+              profile: 'cto',
+            );
+
+            expect(frames.single['method'], 'session.resume');
+            // The profile is what makes the stored id resolve at all.
+            expect(frames.single['params'], {
+              'session_id': 'stored-bot-chat',
+              'profile': 'cto',
+            });
+            expect(runtimeId, 'runtime-1');
+            expect(messages, transcript);
+          } finally {
+            client.close();
+            await socketSubscription.cancel();
+            await server.close(force: true);
+          }
+        },
+      );
+
+      test(
+        'resumeSessionWithHistory falls back to the requested id when the '
+        'gateway omits it and tolerates a missing transcript',
+        () async {
+          final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+          final socketSubscription = server.listen((request) async {
+            final socket = await WebSocketTransformer.upgrade(request);
+            socket.listen((message) {
+              final frame =
+                  jsonDecode(message as String) as Map<String, dynamic>;
+              // A minimal payload: no session_id, no messages key.
+              socket.add(
+                jsonEncode({'jsonrpc': '2.0', 'id': frame['id'], 'result': {}}),
+              );
+            });
+          });
+          final client = WsClient(
+            'http://127.0.0.1:${server.port}',
+            token: 'spa',
+          );
+          try {
+            await client.connect();
+            final (runtimeId, messages) =
+                await client.resumeSessionWithHistory('stored-1');
+            expect(runtimeId, 'stored-1');
+            expect(messages, isEmpty);
+          } finally {
+            client.close();
+            await socketSubscription.cancel();
+            await server.close(force: true);
+          }
+        },
+      );
+
       test('pins an immutable gateway.ready received before its waiter',
           () async {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
@@ -2972,6 +3064,47 @@ void main() {
 
 /// Minimal secured Desktop gateway fixture: mints WebSocket tickets over HTTP
 /// and speaks the JSON-RPC session contract on each upgraded socket.
+/// Drives the desktop-gateway transport a widget test injects into
+/// [ChatScreen], without a live socket. Only the history path is modelled;
+/// every other member forwards to `noSuchMethod`, which throws — an
+/// unexpected use of the transport then fails loudly instead of silently
+/// succeeding. `implements` keeps this in step with the real interface for
+/// free, so adding a method upstream does not break every test.
+class _FakeDesktopGateway implements DesktopGatewayClient {
+  _FakeDesktopGateway(this._result);
+
+  /// The `(runtime id, transcript)` to answer with; null makes the history
+  /// call throw, modelling a socket that never came up.
+  final (String, List<Map<String, dynamic>>)? _result;
+  final List<Map<String, dynamic>> resumeCalls = [];
+
+  @override
+  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
+    String sessionId, {
+    String? profile,
+  }) async {
+    resumeCalls.add({'session_id': sessionId, 'profile': profile});
+    return _result ?? (throw StateError('gateway offline'));
+  }
+
+  @override
+  void setAsyncEventListener(DesktopAsyncEventCallback? listener) {}
+
+  @override
+  void setConnectionListener(DesktopConnectionCallback? listener) {}
+
+  @override
+  Future<void> ensureSession(
+    String sessionId, {
+    String? workingDirectory,
+    String? profile,
+  }) async {}
+
+  @override
+  void noSuchMethod(Invocation invocation) =>
+      throw UnimplementedError('${invocation.memberName}');
+}
+
 class _ProjectGatewayFixture {
   late final HttpServer server;
   final requests = <Map<String, dynamic>>[];

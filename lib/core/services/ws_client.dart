@@ -861,6 +861,43 @@ class WsClient {
     return result['result']?['session_id'] as String? ?? sessionId;
   }
 
+  /// Resumes [sessionId] and keeps the transcript the gateway returns with it.
+  ///
+  /// The REST `/api/sessions/{id}/messages` route is served by the
+  /// OpenAI-compatible listener, which scopes its single session DB by
+  /// `HERMES_HOME` and **never reads `?profile=`** — so a bot's stored history
+  /// 404s there no matter what the caller asks for. `session.resume`, by
+  /// contrast, resolves the profile from its own params and returns the
+  /// transcript inline (`messages`, in display order). That makes the resume
+  /// the only place a bot's history can be read on such a gateway.
+  ///
+  /// Returns `(runtime session id, messages)`; [messages] is empty when the
+  /// gateway answered with none rather than erroring, so a caller can still
+  /// fall back to REST.
+  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
+    String sessionId, {
+    String? profile,
+  }) async {
+    final result = await send('session.resume', {
+      'session_id': sessionId,
+      if (profile != null && profile.trim().isNotEmpty) 'profile': profile.trim(),
+    });
+    if (result['error'] != null) {
+      throw _gatewayResponseError(
+        'session.resume',
+        result['error'],
+        fallbackMessage: 'Unknown error',
+      );
+    }
+    final payload = result['result'] as Map<String, dynamic>? ?? const {};
+    final resolved = payload['session_id'] as String? ?? sessionId;
+    final raw = payload['messages'] as List<dynamic>? ?? const [];
+    return (
+      resolved,
+      raw.whereType<Map<String, dynamic>>().toList(growable: false),
+    );
+  }
+
   Future<void> setSessionTitle(String sessionId, String title) async {
     final response = await send('session.title', {
       'session_id': sessionId,
