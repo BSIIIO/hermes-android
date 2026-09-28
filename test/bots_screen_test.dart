@@ -51,6 +51,7 @@ Future<void> _pump(
   required void Function(HermesBot bot) onOpenBot,
   Size size = const Size(360, 1600),
   double textScale = 1.0,
+  Brightness brightness = Brightness.dark,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1.0;
@@ -60,7 +61,7 @@ Future<void> _pump(
     MediaQuery(
       data: MediaQueryData(textScaler: TextScaler.linear(textScale)),
       child: MaterialApp(
-        theme: hermesTheme(Brightness.dark),
+        theme: hermesTheme(brightness),
         home: Scaffold(
           body: BotsScreen(bots: bots, load: load, onOpenBot: onOpenBot),
         ),
@@ -132,6 +133,58 @@ void main() {
 
       expect(find.text(s.botsEmptyTitle), findsOneWidget);
       expect(find.text(s.botsEmptyHint), findsOneWidget);
+    });
+
+    testWidgets('paints the themed surface, not the route canvas',
+        (tester) async {
+      // Regression: this screen once returned a bare RefreshIndicator, so a
+      // pushed route inherited the nearest Material's `canvasColor`. The
+      // theme never overrides `canvasColor`, so that default is near-black
+      // under BOTH brightnesses — the report was a black menu in light mode
+      // while the chat it opened was white.
+      await _pump(
+        tester,
+        bots: _bots,
+        load: () async => _bots,
+        onOpenBot: (_) {},
+      );
+
+      // The BotsScreen's own Scaffold, not the harness's `home:` wrapper.
+      final scope = find.ancestor(
+        of: find.byType(RefreshIndicator),
+        matching: find.byType(Scaffold),
+      );
+      final scaffold = tester.widget<Scaffold>(scope.first);
+      expect(scaffold.backgroundColor, isNotNull);
+      expect(
+        scaffold.backgroundColor,
+        HermesTokens.forBrightness(Brightness.dark).surface,
+      );
+      expect(find.byType(AppBar), findsOneWidget);
+    });
+
+    testWidgets('paints the light surface when the app follows a light theme',
+        (tester) async {
+      // The same scaffold must follow the theme, not a hardcoded colour, or
+      // the menu is black on a white app.
+      await _pump(
+        tester,
+        bots: _bots,
+        load: () async => _bots,
+        onOpenBot: (_) {},
+        brightness: Brightness.light,
+      );
+
+      // The BotsScreen's own Scaffold, not the harness's `home:` wrapper.
+      final scope = find.ancestor(
+        of: find.byType(RefreshIndicator),
+        matching: find.byType(Scaffold),
+      );
+      final scaffold = tester.widget<Scaffold>(scope.first);
+      expect(
+        scaffold.backgroundColor,
+        HermesTokens.forBrightness(Brightness.light).surface,
+      );
     });
 
     testWidgets('surfaces a load failure with a retry', (tester) async {

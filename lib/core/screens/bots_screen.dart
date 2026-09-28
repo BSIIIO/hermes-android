@@ -74,67 +74,76 @@ class _BotsScreenState extends State<BotsScreen> {
     final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
 
-    return RefreshIndicator(
-      onRefresh: _refresh,
-      child: ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(
-              HermesSpacing.lg,
-              HermesSpacing.lg,
-              HermesSpacing.lg,
-              HermesSpacing.sm,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  s.botsTitle,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
-                const SizedBox(height: HermesSpacing.xs),
-                Text(
-                  s.botsSubtitle,
-                  style: tokens.typography.body.copyWith(color: tokens.muted),
-                ),
-              ],
-            ),
-          ),
-          if (_loading)
-            const Padding(
-              padding: EdgeInsets.all(HermesSpacing.lg),
-              child: LoadingSkeleton(rows: 5),
-            )
-          else if (_isUnsupported)
-            // An older gateway is not a failure the user caused, so it gets
-            // the informational treatment rather than a retry button.
+    return Scaffold(
+      // A pushed route paints no background of its own: without this Scaffold
+      // the page inherits the nearest Material's `canvasColor`, and this theme
+      // never overrides `canvasColor` — so it stays the M3 seed default, which
+      // is near-black under either brightness. Every sibling screen declares
+      // its own Scaffold for exactly this reason.
+      backgroundColor: tokens.surface,
+      appBar: AppBar(title: Text(s.botsTitle)),
+      body: RefreshIndicator(
+        onRefresh: _refresh,
+        child: ListView(
+          children: [
             Padding(
-              padding: const EdgeInsets.all(HermesSpacing.xl),
-              child: ErrorState.unsupported(
-                title: s.botsErrorTitle,
-                message: s.botsUnsupportedHint,
+              padding: const EdgeInsets.fromLTRB(
+                HermesSpacing.lg,
+                HermesSpacing.lg,
+                HermesSpacing.lg,
+                HermesSpacing.sm,
               ),
-            )
-          else if (_error != null)
-            Padding(
-              padding: const EdgeInsets.all(HermesSpacing.lg),
-              child: ErrorState(
-                title: s.botsErrorTitle,
-                message: _error.toString(),
-                onRetry: _refresh,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    s.botsTitle,
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const SizedBox(height: HermesSpacing.xs),
+                  Text(
+                    s.botsSubtitle,
+                    style: tokens.typography.body.copyWith(color: tokens.muted),
+                  ),
+                ],
               ),
-            )
-          else if (_bots.isEmpty)
-            EmptyState(
-              icon: Icons.smart_toy_outlined,
-              title: s.botsEmptyTitle,
-              message: s.botsEmptyHint,
-            )
-          else
-            for (final bot in _bots)
-              _BotRow(bot: bot, onTap: () => widget.onOpenBot(bot)),
-          const SizedBox(height: HermesSpacing.xxl),
-        ],
+            ),
+            if (_loading)
+              const Padding(
+                padding: EdgeInsets.all(HermesSpacing.lg),
+                child: LoadingSkeleton(rows: 5),
+              )
+            else if (_isUnsupported)
+              // An older gateway is not a failure the user caused, so it gets
+              // the informational treatment rather than a retry button.
+              Padding(
+                padding: const EdgeInsets.all(HermesSpacing.xl),
+                child: ErrorState.unsupported(
+                  title: s.botsErrorTitle,
+                  message: s.botsUnsupportedHint,
+                ),
+              )
+            else if (_error != null)
+              Padding(
+                padding: const EdgeInsets.all(HermesSpacing.lg),
+                child: ErrorState(
+                  title: s.botsErrorTitle,
+                  message: _error.toString(),
+                  onRetry: _refresh,
+                ),
+              )
+            else if (_bots.isEmpty)
+              EmptyState(
+                icon: Icons.smart_toy_outlined,
+                title: s.botsEmptyTitle,
+                message: s.botsEmptyHint,
+              )
+            else
+              for (final bot in _bots)
+                _BotRow(bot: bot, onTap: () => widget.onOpenBot(bot)),
+            const SizedBox(height: HermesSpacing.xxl),
+          ],
+        ),
       ),
     );
   }
