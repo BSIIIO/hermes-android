@@ -115,6 +115,12 @@ void main() {
 
       expect(find.text('who am i'), findsOneWidget);
       expect(find.text('The Boss'), findsOneWidget);
+      // The tool row still becomes an activity chip — rendered as a summary
+      // ("Tool activity" + a count), not with its own name on screen. That is
+      // the one part this shape renders natively, so it must survive the
+      // normalization rather than being dropped as an unrecognized row.
+      expect(find.text('Tool activity'), findsOneWidget);
+      expect(find.text('1 completed'), findsOneWidget);
     },
   );
 

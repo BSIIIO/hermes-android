@@ -868,8 +868,14 @@ class WsClient {
   /// `HERMES_HOME` and **never reads `?profile=`** — so a bot's stored history
   /// 404s there no matter what the caller asks for. `session.resume`, by
   /// contrast, resolves the profile from its own params and returns the
-  /// transcript inline (`messages`, in display order). That makes the resume
-  /// the only place a bot's history can be read on such a gateway.
+  /// transcript inline (`messages`, in display order).
+  ///
+  /// Do NOT hand that transcript to the chat bubbles: it is shaped
+  /// `{row_id, role, text}` — the body is `text`, and a `role: tool` row has
+  /// no `content` at all — while every consumer reads `content`. Fed raw it
+  /// renders as tool-activity cards with no conversation between them. The
+  /// profile-scoped transcript a screen should use is the dashboard route's,
+  /// which returns the `content` shape (`DashboardClient.getSessionMessages`).
   ///
   /// Returns `(runtime session id, messages)`; [messages] is empty when the
   /// gateway answered with none rather than erroring, so a caller can still

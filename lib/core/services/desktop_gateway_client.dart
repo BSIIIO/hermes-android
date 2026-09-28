@@ -329,11 +329,12 @@ class DesktopGatewayClient {
 
   /// Resumes a session and returns `(runtime session id, stored transcript)`.
   ///
-  /// This is the only history source that works for a bot's stored chat on a
-  /// gateway whose REST `/api/sessions/{id}/messages` ignores `?profile=`
-  /// (the OpenAI-compatible listener scopes its one session DB by `HERMES_HOME`).
-  /// Prefer it over [ApiClient.getMessages] for any chat whose `profile` is set;
-  /// fall back to REST only when this throws or returns no messages.
+  /// The transcript comes back shaped `{row_id, role, text}` — the body is
+  /// `text`, and a `role: tool` row has no `content` at all — which is NOT the
+  /// shape the chat bubbles read (`content`). Reading a bot's history for
+  /// display therefore belongs on the dashboard route
+  /// (`DashboardClient.getSessionMessages`), which both honours `?profile=`
+  /// and returns the `content` shape; this call is for the runtime bind.
   Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
     String sessionId, {
     String? profile,
