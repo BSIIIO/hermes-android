@@ -40,6 +40,15 @@ class DesktopGatewayClient {
   final Map<String, String> _gatewaySessionIds = {};
   final Map<String, String> _storedSessionIds = {};
   final Map<String, String> _workingDirectories = {};
+
+  /// Profile each mobile session was opened under.
+  ///
+  /// One socket may host a chat from the launch profile and a bot's chat
+  /// side by side, and the gateway resolves profile scope per request — from
+  /// the `profile` param, or from the live session it finds for the given id.
+  /// Remembering it here keeps a bot's chat reachable across reconnects even
+  /// when the caller does not repeat it.
+  final Map<String, String> _sessionProfiles = {};
   DesktopAsyncEventCallback? _asyncEventListener;
   DesktopConnectionCallback? _connectionListener;
   GatewayTurnCoordinatorRegistry? _turnCoordinatorRegistry;
@@ -160,13 +169,23 @@ class DesktopGatewayClient {
   Future<_DesktopGatewaySession> _connect(
     String mobileSessionId, {
     String? workingDirectory,
+    String? profile,
   }) async {
     final requestedWorkingDirectory = workingDirectory?.trim();
     if (requestedWorkingDirectory != null &&
         requestedWorkingDirectory.isNotEmpty) {
       _workingDirectories[mobileSessionId] = requestedWorkingDirectory;
     }
+    // Remember the scope per mobile session, so a later reconnect (or a
+    // submit on an already-open socket) keeps sending it even when the caller
+    // does not repeat it.
+    final requestedProfile = profile?.trim();
+    if (requestedProfile != null && requestedProfile.isNotEmpty) {
+      _sessionProfiles[mobileSessionId] = requestedProfile;
+    }
     final effectiveWorkingDirectory = _workingDirectories[mobileSessionId];
+    final effectiveProfile =
+        _sessionProfiles[mobileSessionId] ?? _gatewayProfile;
     final existing = _ws;
     if (existing != null && existing.isConnected) {
       final mappedSessionId = _gatewaySessionIds[mobileSessionId];
@@ -177,6 +196,7 @@ class DesktopGatewayClient {
         existing,
         mobileSessionId,
         workingDirectory: effectiveWorkingDirectory,
+        profile: effectiveProfile,
       );
       _rememberBinding(mobileSessionId, binding);
       return _DesktopGatewaySession(existing, binding.runtimeSessionId);
@@ -207,6 +227,7 @@ class DesktopGatewayClient {
         client,
         mobileSessionId,
         workingDirectory: effectiveWorkingDirectory,
+        profile: effectiveProfile,
       );
       _rememberBinding(mobileSessionId, binding);
       return _DesktopGatewaySession(client, binding.runtimeSessionId);
@@ -222,11 +243,18 @@ class DesktopGatewayClient {
     WsClient client,
     String mobileSessionId, {
     String? workingDirectory,
+    String? profile,
   }) async {
     final storedSessionId =
         _storedSessionIds[mobileSessionId] ?? mobileSessionId;
+    final scope = profile?.trim();
     try {
-      final runtimeSessionId = await client.resumeSession(storedSessionId);
+      // A session that lives in another profile's own session DB is invisible
+      // without the scope, so a bot's stored chat would always look missing.
+      final runtimeSessionId = await client.resumeSession(
+        storedSessionId,
+        profile: scope,
+      );
       return _DesktopGatewayBinding(
         runtimeSessionId: runtimeSessionId,
         storedSessionId: storedSessionId,
@@ -239,8 +267,12 @@ class DesktopGatewayClient {
       // New mobile chats do not exist in Hermes yet. Stock Hermes rejects a
       // client-supplied `session_id` on session.create, so retain both gateway-
       // minted identities: runtime for this socket and stored for reconnect.
+      // The profile is threaded through so a bot's first chat is filed in the
+      // bot's own store instead of the launch profile's, where nothing would
+      // ever resume it again.
       final created = await client.createSession(
         workingDirectory: workingDirectory,
+        profile: scope,
       );
       return _DesktopGatewayBinding(
         runtimeSessionId: created.runtimeSessionId,
@@ -260,8 +292,13 @@ class DesktopGatewayClient {
   Future<void> ensureSession(
     String sessionId, {
     String? workingDirectory,
+    String? profile,
   }) async {
-    await _connect(sessionId, workingDirectory: workingDirectory);
+    await _connect(
+      sessionId,
+      workingDirectory: workingDirectory,
+      profile: profile,
+    );
   }
 
   /// Server-owned Hermes Projects for this gateway.
@@ -534,6 +571,7 @@ class DesktopGatewayClient {
     _gatewaySessionIds.clear();
     _storedSessionIds.clear();
     _workingDirectories.clear();
+    _sessionProfiles.clear();
     final turnCoordinatorRegistry = _turnCoordinatorRegistry;
     _turnCoordinatorRegistry = null;
     if (turnCoordinatorRegistry != null) {

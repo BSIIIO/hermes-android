@@ -840,8 +840,17 @@ class WsClient {
   }
 
   /// Resume an existing session.
-  Future<String> resumeSession(String sessionId) async {
-    final result = await send('session.resume', {'session_id': sessionId});
+  ///
+  /// [profile] must be set for any session that lives in a non-launch
+  /// profile's own session DB — a Bot Mode bot's canonical `Bot Chat`, for
+  /// instance. Without it the gateway resolves the id against the launch
+  /// profile's DB and answers `4007 session not found` for a chat that
+  /// plainly exists, which is indistinguishable from a genuinely missing one.
+  Future<String> resumeSession(String sessionId, {String? profile}) async {
+    final result = await send('session.resume', {
+      'session_id': sessionId,
+      if (profile != null && profile.trim().isNotEmpty) 'profile': profile.trim(),
+    });
     if (result['error'] != null) {
       throw _gatewayResponseError(
         'session.resume',
@@ -972,14 +981,21 @@ class WsClient {
   ///
   /// The gateway owns the new runtime session id. [workingDirectory] is sent
   /// as `cwd` so Hermes can associate the session with the matching Project.
+  /// [profile] files the new chat in that profile's own session DB, which is
+  /// the only way a first-ever bot chat becomes that bot's permanent one —
+  /// without it the chat is created in the launch profile and the bot never
+  /// sees it again.
   Future<CreatedGatewaySession> createSession({
     String? model,
     String? workingDirectory,
+    String? profile,
   }) async {
     final params = <String, dynamic>{};
     if (model != null) params['model'] = model;
     final cwd = workingDirectory?.trim();
     if (cwd != null && cwd.isNotEmpty) params['cwd'] = cwd;
+    final scope = profile?.trim();
+    if (scope != null && scope.isNotEmpty) params['profile'] = scope;
     final result = await send('session.create', params);
     if (result['error'] != null) {
       throw _gatewayResponseError(

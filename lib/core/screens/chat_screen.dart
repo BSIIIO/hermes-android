@@ -431,6 +431,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       await gateway.ensureSession(
         widget.session.id,
         workingDirectory: widget.projectWorkingDirectory,
+        // A bot's chat lives in the bot's own profile store. Scoping the
+        // resume here is what stops the desktop client from answering
+        // `session not found` by creating a brand-new chat in the launch
+        // profile — i.e. what makes the bot's history actually load.
+        profile: widget.session.profile,
       );
     } catch (_) {
       // The composer remains available. The next send retries with a fresh
@@ -722,7 +727,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     });
 
     try {
-      final messages = await _client.getMessages(widget.session.id);
+      final messages = await _client.getMessages(
+        widget.session.id,
+        // A bot's history sits in the bot's own store; without the
+        // scope this 404s and the screen shows an empty chat.
+        profile: widget.session.profile,
+      );
       if (!mounted) return;
       _extractToolMessages(messages);
       setState(() {
@@ -762,7 +772,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     _legacyHistoryResyncing = true;
     try {
-      final messages = await _client.getMessages(widget.session.id);
+      final messages = await _client.getMessages(
+        widget.session.id,
+        // A bot's history sits in the bot's own store; without the
+        // scope this 404s and the screen shows an empty chat.
+        profile: widget.session.profile,
+      );
       if (!mounted || _appInBackground) return;
       _extractToolMessages(messages);
       setState(() {
@@ -1708,7 +1723,12 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         if (!mounted || responseGeneration != _responseGeneration) return;
         // Refresh messages to get the final server-side state
         try {
-          final messages = await _client.getMessages(widget.session.id);
+          final messages = await _client.getMessages(
+        widget.session.id,
+        // A bot's history sits in the bot's own store; without the
+        // scope this 404s and the screen shows an empty chat.
+        profile: widget.session.profile,
+      );
           if (!mounted || responseGeneration != _responseGeneration) return;
           _extractToolMessages(messages);
           if (pendingImage != null) {
