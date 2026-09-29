@@ -840,8 +840,17 @@ class WsClient {
   }
 
   /// Resume an existing session.
-  Future<String> resumeSession(String sessionId) async {
-    final result = await send('session.resume', {'session_id': sessionId});
+  ///
+  /// [profile] must be set for any session that lives in a non-launch
+  /// profile's own session DB — a Bot Mode bot's canonical `Bot Chat`, for
+  /// instance. Without it the gateway resolves the id against the launch
+  /// profile's DB and answers `4007 session not found` for a chat that
+  /// plainly exists, which is indistinguishable from a genuinely missing one.
+  Future<String> resumeSession(String sessionId, {String? profile}) async {
+    final result = await send('session.resume', {
+      'session_id': sessionId,
+      if (profile != null && profile.trim().isNotEmpty) 'profile': profile.trim(),
+    });
     if (result['error'] != null) {
       throw _gatewayResponseError(
         'session.resume',
@@ -850,6 +859,49 @@ class WsClient {
       );
     }
     return result['result']?['session_id'] as String? ?? sessionId;
+  }
+
+  /// Resumes [sessionId] and keeps the transcript the gateway returns with it.
+  ///
+  /// The REST `/api/sessions/{id}/messages` route is served by the
+  /// OpenAI-compatible listener, which scopes its single session DB by
+  /// `HERMES_HOME` and **never reads `?profile=`** — so a bot's stored history
+  /// 404s there no matter what the caller asks for. `session.resume`, by
+  /// contrast, resolves the profile from its own params and returns the
+  /// transcript inline (`messages`, in display order).
+  ///
+  /// Do NOT hand that transcript to the chat bubbles: it is shaped
+  /// `{row_id, role, text}` — the body is `text`, and a `role: tool` row has
+  /// no `content` at all — while every consumer reads `content`. Fed raw it
+  /// renders as tool-activity cards with no conversation between them. The
+  /// profile-scoped transcript a screen should use is the dashboard route's,
+  /// which returns the `content` shape (`DashboardClient.getSessionMessages`).
+  ///
+  /// Returns `(runtime session id, messages)`; [messages] is empty when the
+  /// gateway answered with none rather than erroring, so a caller can still
+  /// fall back to REST.
+  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
+    String sessionId, {
+    String? profile,
+  }) async {
+    final result = await send('session.resume', {
+      'session_id': sessionId,
+      if (profile != null && profile.trim().isNotEmpty) 'profile': profile.trim(),
+    });
+    if (result['error'] != null) {
+      throw _gatewayResponseError(
+        'session.resume',
+        result['error'],
+        fallbackMessage: 'Unknown error',
+      );
+    }
+    final payload = result['result'] as Map<String, dynamic>? ?? const {};
+    final resolved = payload['session_id'] as String? ?? sessionId;
+    final raw = payload['messages'] as List<dynamic>? ?? const [];
+    return (
+      resolved,
+      raw.whereType<Map<String, dynamic>>().toList(growable: false),
+    );
   }
 
   Future<void> setSessionTitle(String sessionId, String title) async {
@@ -972,14 +1024,21 @@ class WsClient {
   ///
   /// The gateway owns the new runtime session id. [workingDirectory] is sent
   /// as `cwd` so Hermes can associate the session with the matching Project.
+  /// [profile] files the new chat in that profile's own session DB, which is
+  /// the only way a first-ever bot chat becomes that bot's permanent one —
+  /// without it the chat is created in the launch profile and the bot never
+  /// sees it again.
   Future<CreatedGatewaySession> createSession({
     String? model,
     String? workingDirectory,
+    String? profile,
   }) async {
     final params = <String, dynamic>{};
     if (model != null) params['model'] = model;
     final cwd = workingDirectory?.trim();
     if (cwd != null && cwd.isNotEmpty) params['cwd'] = cwd;
+    final scope = profile?.trim();
+    if (scope != null && scope.isNotEmpty) params['profile'] = scope;
     final result = await send('session.create', params);
     if (result['error'] != null) {
       throw _gatewayResponseError(

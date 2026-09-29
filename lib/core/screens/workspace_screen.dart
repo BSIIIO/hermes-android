@@ -130,6 +130,12 @@ Widget buildWorkspaceChatScreen({
 ///
 /// A bot that has never chatted has no stored id, so the caller gets a freshly
 /// minted one rather than a blank string the gateway would reject.
+///
+/// The bot's profile name rides along: Hermes keeps one session store per
+/// profile, so a stored id is only resolvable together with the profile that
+/// owns it. Without it every non-launch bot looks brand new on each open —
+/// which is exactly what the MVP shipped, because its only evidence was the
+/// launch profile, whose own chat happens to sit in the launch store.
 Session botChatSession(HermesBot bot) {
   return Session(
     id: bot.botChatSessionId ?? GatewayChatClient.generateSessionId(),
@@ -140,6 +146,7 @@ Session botChatSession(HermesBot bot) {
     isActive: true,
     preview: bot.botChatPreview,
     startedAt: DateTime.now().millisecondsSinceEpoch / 1000.0,
+    profile: bot.name,
   );
 }
 

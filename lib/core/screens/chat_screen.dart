@@ -148,6 +148,17 @@ class ChatScreen extends StatefulWidget {
   @visibleForTesting
   final ApiClient? testApiClient;
 
+  /// Injects the dashboard (HTTP API) client so a test can drive the
+  /// profile-scoped history route — the one source that honours `?profile=`
+  /// for a Bot Mode bot — without a live dashboard connection.
+  @visibleForTesting
+  final DashboardClient? testDashboardClient;
+
+  /// Injects the desktop-gateway transport so a test can drive the WS
+  /// history path (or make it fail) without a live socket.
+  @visibleForTesting
+  final DesktopGatewayClient? testDesktopGateway;
+
   @visibleForTesting
   final AttachmentDraftService? testAttachmentDraftService;
 
@@ -181,6 +192,8 @@ class ChatScreen extends StatefulWidget {
     this.turnApplicationController,
     this.testTurnApplicationSession,
     this.testApiClient,
+    this.testDashboardClient,
+    this.testDesktopGateway,
     this.testAttachmentDraftService,
     this.testRemotePromptSubmit,
     this.testServerFilePicker,
@@ -313,16 +326,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         (widget.connection.dashboardUsername?.trim().isNotEmpty == true &&
             widget.connection.dashboardPassword?.trim().isNotEmpty == true);
     if (widget.connection.desktopGatewayUrl?.trim().isNotEmpty == true ||
-        hasDashboardAuth) {
+        hasDashboardAuth ||
+        widget.testDesktopGateway != null) {
       try {
-        _desktopGateway = DesktopGatewayClient.fromConnection(
-          widget.connection,
-        );
+        _desktopGateway = widget.testDesktopGateway ??
+            DesktopGatewayClient.fromConnection(
+              widget.connection,
+            );
         _desktopGateway!.setAsyncEventListener(_handleDesktopAsyncEvent);
         _desktopGateway!.setConnectionListener((state) {
           if (mounted) setState(() => _desktopConnectionState = state);
         });
-        unawaited(_ensureDesktopSession());
+        // The bind is NOT started here: `_initializeChat` awaits it before it
+        // reads history, so starting it twice would race a bot's history
+        // against the socket it needs.
       } on ArgumentError {
         // The regular mobile chat remains usable; selection surfaces the
         // actionable configuration error when Desktop attachments are needed.
@@ -419,6 +436,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   Future<void> _initializeChat() async {
+    // The desktop session bind is what makes the WS history path available,
+    // and `_fetchMessages` prefers that path for a scoped chat. Both start
+    // from `initState`, so await the bind first — otherwise a bot's history is
+    // read before the socket can answer and always falls back to the REST
+    // route that cannot see another profile's store.
+    await _ensureDesktopSession();
+    if (!mounted) return;
     await _fetchMessages();
     if (!mounted) return;
     await _recoverPendingTurn(allowLegacyFallback: true);
@@ -431,10 +455,17 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
       await gateway.ensureSession(
         widget.session.id,
         workingDirectory: widget.projectWorkingDirectory,
-      );
+        // A bot's chat lives in the bot's own profile store. Scoping the
+        // resume here is what stops the desktop client from answering
+        // `session not found` by creating a brand-new chat in the launch
+        // profile — i.e. what makes the bot's history actually load.
+        profile: widget.session.profile,
+    );
     } catch (_) {
       // The composer remains available. The next send retries with a fresh
       // single-use ticket and surfaces an actionable error if it still fails.
+      // History is not blocked by a failed bind: `_fetchMessages` falls back
+      // to REST, which is what an unscoped chat would have used anyway.
     }
   }
 
@@ -722,7 +753,14 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     });
 
     try {
-      final messages = await _client.getMessages(widget.session.id);
+      // A profile-scoped chat (a bot's `Bot Chat`) keeps its transcript in
+      // that profile's own store. The REST route is served by the
+      // OpenAI-compatible listener, which never reads `?profile=`, so it 404s
+      // for such an id no matter what we ask. `session.resume` scopes from
+      // its own params and hands the transcript back, so use it first and
+      // only fall back to REST for unscoped chats — or when the resume comes
+      // back empty, so an ordinary gateway keeps its existing behaviour.
+      final messages = await _fetchMessagesForScopedSession();
       if (!mounted) return;
       _extractToolMessages(messages);
       setState(() {
@@ -748,6 +786,61 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }
   }
 
+  /// Reads the transcript for [widget.session].
+  ///
+  /// A profile-scoped chat (any Bot Mode bot) is read through the dashboard
+  /// client, the one route that actually honours `?profile=`. Everything else
+  /// keeps going straight to REST, as before.
+  ///
+  /// The transcript is normalized on the way in: every source returns a
+  /// different shape, and only REST's is what the rest of this screen speaks.
+  /// A tool result arrives as `role: tool` + `text` from the WS transport and
+  /// as `role: tool` + `content` from REST, and the chat bubble reads
+  /// `content` — so an unconverted tool row renders as a bare "tool activity"
+  /// card while every assistant and user turn vanishes.
+  Future<List<Map<String, dynamic>>> _fetchMessagesForScopedSession() async {
+    final profile = widget.session.profile?.trim() ?? '';
+    final raw = await (profile.isNotEmpty
+        ? _fetchScopedMessages(profile)
+        : _fetchUnscopedMessages());
+    return _normalizeTranscript(raw);
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchScopedMessages(String profile) async {
+    try {
+      return await _dashboardClient().getSessionMessages(
+        widget.session.id,
+        profile: profile,
+      );
+    } catch (_) {
+      // A gateway without the dashboard route leaves only the mobile
+      // listener's unscoped view of this chat — wrong scope, but a transcript.
+      return _fetchUnscopedMessages();
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchUnscopedMessages() =>
+      _client.getMessages(widget.session.id);
+
+  /// Rewrites a transport's transcript into the shape the bubbles render.
+  ///
+  /// Only two fields matter: the body, which some transports call `text`, and
+  /// the id, which some omit. Passing a payload through untouched is what made
+  /// a bot's transcript render as an empty wall of tool cards.
+  List<Map<String, dynamic>> _normalizeTranscript(
+    List<Map<String, dynamic>> messages,
+  ) {
+    return messages.map((message) {
+      final normalized = Map<String, dynamic>.from(message);
+      final text = normalized['text'];
+      if (normalized['content'] == null && text != null) {
+        normalized['content'] = text;
+      }
+      normalized.putIfAbsent('id', () => '');
+      return normalized;
+    }).toList();
+  }
+
   Future<void> _resyncLegacyHistoryAfterResume() async {
     if (!mounted ||
         !_legacyTransportFallback ||
@@ -762,7 +855,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
 
     _legacyHistoryResyncing = true;
     try {
-      final messages = await _client.getMessages(widget.session.id);
+      final messages = await _fetchMessagesForScopedSession();
       if (!mounted || _appInBackground) return;
       _extractToolMessages(messages);
       setState(() {
@@ -1318,20 +1411,28 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
     }
   }
 
-  /// Dashboard client used to list models when no Desktop Gateway is
-  /// configured. Listing needs only `api/model/info` + `api/model/options`
-  /// over REST — the gateway WebSocket is required solely to push a
-  /// per-session override, which [_setSessionModel] skips when no gateway is
-  /// present (the chosen model rides on the chat request instead).
-  DashboardClient _modelListingClient() => DashboardClient(
-    host: widget.connection.host,
-    port: widget.connection.dashboardPort,
-    pathPrefix: widget.connection.dashboardPrefix ?? '',
-    proxied: widget.connection.dashboardProxied,
-    useHttps: widget.connection.useHttps,
-    username: widget.connection.dashboardUsername,
-    password: widget.connection.dashboardPassword,
-  );
+  /// The dashboard (HTTP API) client for this connection.
+  ///
+  /// Lists models when no Desktop Gateway is configured: that needs only
+  /// `api/model/info` + `api/model/options` over REST — the gateway WebSocket
+  /// is required solely to push a per-session override, which
+  /// [_setSessionModel] skips when no gateway is present (the chosen model
+  /// rides on the chat request instead).
+  ///
+  /// It is also the only route that can read a profile-scoped transcript: the
+  /// mobile listener drops `?profile=`, and a bot's history lives in that
+  /// profile's own store.
+  DashboardClient _dashboardClient() =>
+      widget.testDashboardClient ??
+      DashboardClient(
+        host: widget.connection.host,
+        port: widget.connection.dashboardPort,
+        pathPrefix: widget.connection.dashboardPrefix ?? '',
+        proxied: widget.connection.dashboardProxied,
+        useHttps: widget.connection.useHttps,
+        username: widget.connection.dashboardUsername,
+        password: widget.connection.dashboardPassword,
+      );
 
   /// The "Profile default" line of the model sheet.
   ///
@@ -1352,7 +1453,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   Future<void> _showModelSelector() async {
     final s = AppStrings.of(context);
     final desktopGateway = _desktopGateway;
-    final restClient = desktopGateway == null ? _modelListingClient() : null;
+    final restClient = desktopGateway == null ? _dashboardClient() : null;
 
     setState(() => _loadingModelOptions = true);
     try {
@@ -1708,7 +1809,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         if (!mounted || responseGeneration != _responseGeneration) return;
         // Refresh messages to get the final server-side state
         try {
-          final messages = await _client.getMessages(widget.session.id);
+          final messages = await _fetchMessagesForScopedSession();
           if (!mounted || responseGeneration != _responseGeneration) return;
           _extractToolMessages(messages);
           if (pendingImage != null) {

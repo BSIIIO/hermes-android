@@ -5666,7 +5666,7 @@ class AppStringsZh extends AppStrings {
   String get chatReasoningEffortExtraHigh => '超高';
 
   @override
-  String get chatLegacyTransportNotice => '旧版传输通道不支持后台恢复';
+  String get chatLegacyTransportNotice => '此网关不支持回合恢复协议，对话本身不受影响';
 
   @override
   String get chatVoiceSetupFailed => '语音设置失败：{0}';
