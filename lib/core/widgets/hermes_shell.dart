@@ -1,7 +1,7 @@
 /// The Hermes Android navigation shell.
 ///
 /// Replaces drawer-hidden navigation with the validated top-level structure
-/// Home / Projects / Activity / More, so every capability is one tap away.
+/// Home / Projects / Bots / More, so every capability is one tap away.
 /// Adapts to a bottom bar on phones and a side rail on tablets/foldables.
 /// See `docs/ANDROID_DAILY_DRIVER_ROADMAP.md`.
 library;
@@ -12,6 +12,9 @@ import '../l10n/app_strings.dart';
 import '../theme/hermes_theme.dart';
 
 /// A top-level destination of the Hermes app.
+///
+/// The order is the display order in the bottom bar and the side rail, so
+/// inserting a destination moves a button — it does not add a menu level.
 enum HermesDestination {
   /// Attention-first dashboard: what needs you, what is running.
   home,
@@ -22,8 +25,10 @@ enum HermesDestination {
   /// Server-owned Projects and their chats, files, assets, and activity.
   projects,
 
-  /// Global operational timeline: running, blocked, completed, failed.
-  activity,
+  /// The Bot Mode roster: one row per Hermes profile, opening that bot's own
+  /// canonical chat. Lives in the primary bar because a bot is a peer of a
+  /// chat, not a setting.
+  bots,
 
   /// Everything else: files, assets, search, cron, skills, settings.
   more;
@@ -36,8 +41,8 @@ enum HermesDestination {
         return 'Chats';
       case HermesDestination.projects:
         return 'Projects';
-      case HermesDestination.activity:
-        return 'Activity';
+      case HermesDestination.bots:
+        return 'Bots';
       case HermesDestination.more:
         return 'More';
     }
@@ -57,8 +62,8 @@ enum HermesDestination {
         return strings.navChats;
       case HermesDestination.projects:
         return strings.navProjects;
-      case HermesDestination.activity:
-        return strings.navActivity;
+      case HermesDestination.bots:
+        return strings.navBots;
       case HermesDestination.more:
         return strings.navMore;
     }
@@ -72,8 +77,8 @@ enum HermesDestination {
         return Icons.chat_bubble_outline;
       case HermesDestination.projects:
         return Icons.folder_outlined;
-      case HermesDestination.activity:
-        return Icons.bolt_outlined;
+      case HermesDestination.bots:
+        return Icons.smart_toy_outlined;
       case HermesDestination.more:
         return Icons.more_horiz;
     }
@@ -87,8 +92,8 @@ enum HermesDestination {
         return Icons.chat_bubble_rounded;
       case HermesDestination.projects:
         return Icons.folder_rounded;
-      case HermesDestination.activity:
-        return Icons.bolt_rounded;
+      case HermesDestination.bots:
+        return Icons.smart_toy_rounded;
       case HermesDestination.more:
         return Icons.more_horiz_rounded;
     }

@@ -161,6 +161,24 @@ Future<ProjectsRepository> _repository(
   );
 }
 
+/// Opens one More-menu row by its visible title.
+///
+/// The rows are found by title rather than by id because [MoreEntry] is data,
+/// not a widget: the only way in from a test is the same tap a user makes.
+/// Scrolling is required because the pane is a [ListView] and the row may
+/// start below the fold at the default test height.
+Future<void> _openMoreEntry(WidgetTester tester, String title) async {
+  await tester.tap(find.text(HermesDestination.more.label).last);
+  await tester.pumpAndSettle();
+  await tester.scrollUntilVisible(
+    find.text(title),
+    200,
+    scrollable: find.byType(Scrollable).first,
+  );
+  await tester.tap(find.text(title));
+  await tester.pumpAndSettle();
+}
+
 Future<void> _pump(
   WidgetTester tester, {
   required SavedConnection connection,
@@ -576,7 +594,9 @@ void main() {
     expect(find.byType(ProjectsPane), findsNothing);
   });
 
-  testWidgets('Activity no longer ships a placeholder', (tester) async {
+  testWidgets('Activity is reachable and is not a placeholder', (
+    tester,
+  ) async {
     await _pump(
       tester,
       connection: _connection(desktopGatewayUrl: 'https://host:8642'),
@@ -587,7 +607,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text(HermesDestination.activity.label).last);
+    // Bots holds the primary-bar slot, so the timeline is one tap deeper now:
+    // More first, then the row that replaced Bots there.
+    await _openMoreEntry(tester, 'Activity');
     await tester.pumpAndSettle();
 
     expect(find.byType(ActivityPane), findsOneWidget);
@@ -1825,8 +1847,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(HermesDestination.activity.label).last);
-      await tester.pumpAndSettle();
+      await _openMoreEntry(tester, 'Activity');
 
       expect(find.byType(ActivityPane), findsOneWidget);
       expect(
@@ -1863,8 +1884,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(HermesDestination.activity.label).last);
-      await tester.pumpAndSettle();
+      await _openMoreEntry(tester, 'Activity');
 
       expect(seen, isNotEmpty);
       expect(seen.last, {'s1': 'Roadmap slice', 's2': 'Other chat'});
@@ -1901,8 +1921,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(HermesDestination.activity.label).last);
-      await tester.pumpAndSettle();
+      await _openMoreEntry(tester, 'Activity');
       await tester.tap(find.text('Roadmap slice'));
       await tester.pumpAndSettle();
 
@@ -1943,8 +1962,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(HermesDestination.activity.label).last);
-      await tester.pumpAndSettle();
+      await _openMoreEntry(tester, 'Activity');
       await tester.tap(find.text('Untitled chat'));
       await tester.pumpAndSettle();
 
@@ -1952,7 +1970,9 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('blocked work raises the Activity badge', (tester) async {
+    testWidgets('blocked work keeps raising the attention badge on Home', (
+      tester,
+    ) async {
       await _pump(
         tester,
         connection: _connection(desktopGatewayUrl: 'https://host:8642'),
@@ -1983,8 +2003,17 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final shell = tester.widget<HermesShell>(find.byType(HermesShell));
-      expect(shell.badges[HermesDestination.activity], 2);
+      // The blocked count no longer has a bottom-bar slot of its own — Bots
+      // holds Activity's — so it surfaces on Home's Inbox affordance, which is
+      // the blocked+failed count this same feed produces.
+      final badge = tester.widget<Badge>(
+        find.ancestor(
+          of: find.byIcon(Icons.inbox_outlined),
+          matching: find.byType(Badge),
+        ),
+      );
+      expect(badge.isLabelVisible, isTrue);
+      expect((badge.label as Text).data, '2');
     });
 
     testWidgets('a feed that cannot be read never breaks the shell', (
@@ -1999,15 +2028,19 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(HermesDestination.activity.label).last);
-      await tester.pumpAndSettle();
+      await _openMoreEntry(tester, 'Activity');
 
       expect(find.byType(ErrorState), findsOneWidget);
       expect(tester.takeException(), isNull);
 
       // The rest of the shell must keep working while Activity is broken.
-      await tester.tap(find.text(HermesDestination.more.label).last);
+      // Activity is a pushed route now, so leaving it means popping back to
+      // the shell rather than tapping another destination.
+      await tester.pageBack();
       await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+      // The shell keeps every visited pane mounted, so More is present from
+      // the moment the shell returns — the route it hides is gone.
       expect(find.byType(MorePane), findsOneWidget);
     });
 
@@ -2131,7 +2164,7 @@ void main() {
       expect(session.model, 'step-5-preview');
     });
 
-    testWidgets('More opens the Bots roster', (tester) async {
+    testWidgets('the Bots destination renders the roster', (tester) async {
       await _pump(
         tester,
         connection: _connection(desktopGatewayUrl: 'https://host:8642'),
@@ -2140,14 +2173,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text(HermesDestination.more.label).last);
-      await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(
-        find.text('Bots'),
-        160,
-        scrollable: find.byType(Scrollable).first,
-      );
-      await tester.tap(find.text('Bots'));
+      // Bots is a primary destination now, so it is one tap — not a route
+      // pushed from More. The roster itself is unchanged.
+      await tester.tap(find.text(HermesDestination.bots.label).last);
       await tester.pumpAndSettle();
 
       expect(find.byType(BotsScreen), findsOneWidget);

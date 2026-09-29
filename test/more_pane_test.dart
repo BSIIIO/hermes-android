@@ -51,7 +51,7 @@ void main() {
         containsAll(<String>[
           'files',
           'assets',
-          'bots',
+          'activity',
           'unassigned',
           'archived-quick',
           'cron',
@@ -63,21 +63,24 @@ void main() {
       );
     });
 
-    test('Bots is available without a dashboard, like the gateway RPCs it '
-        'needs', () {
+    test('Activity is reachable from More now that Bots holds the primary '
+        'bar slot', () {
       final sections = buildMoreSections(
         dashboardReachable: false,
         s: const AppStringsEn(),
       );
 
-      final bots = sections
+      final activity = sections
           .expand((section) => section.entries)
-          .singleWhere((entry) => entry.id == 'bots');
+          .singleWhere((entry) => entry.id == 'activity');
 
-      expect(bots.availability, MoreEntryAvailability.available);
-      expect(bots.isSelectable, isTrue);
-      expect(bots.title, 'Bots');
-      expect(bots.subtitle, isNotEmpty);
+      // The timeline rides the turn journal, not the dashboard, so it stays
+      // usable on a connection with no reachable dashboard — exactly like the
+      // slot it took over from Bots did.
+      expect(activity.availability, MoreEntryAvailability.available);
+      expect(activity.isSelectable, isTrue);
+      expect(activity.title, 'Activity');
+      expect(activity.subtitle, isNotEmpty);
     });
 
     test('Unassigned chats is not mislabeled as the action Inbox', () {

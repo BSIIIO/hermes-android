@@ -117,14 +117,14 @@ List<MoreSection> buildMoreSections({
           availability: dashboardBacked(),
           unavailableReason: dashboardReason(),
         ),
-        // Bots rides the same WebSocket transport the workspace already owns
-        // for the gateway RPCs, so it stays available on a connection that has
-        // no reachable dashboard.
+        // Activity used to sit in the primary bar; Bots took its place there
+        // (a bot is a peer of a chat, not a setting), so the timeline is
+        // reachable here — same entry, same availability, one tap deeper.
         MoreEntry(
-          id: 'bots',
-          title: s.botsTitle,
-          subtitle: s.botsSubtitle,
-          icon: Icons.smart_toy_outlined,
+          id: 'activity',
+          title: s.moreActivityTitle,
+          subtitle: s.moreActivitySubtitle,
+          icon: Icons.bolt_outlined,
         ),
         MoreEntry(
           id: 'assets',

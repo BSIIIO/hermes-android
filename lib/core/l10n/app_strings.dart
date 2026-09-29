@@ -50,7 +50,11 @@ abstract class AppStrings {
   /// `HermesDestination.projects`.
   String get navProjects;
 
-  /// `HermesDestination.activity`.
+  /// `HermesDestination.bots`.
+  String get navBots;
+
+  /// The Activity timeline, still reachable from the More menu after it left
+  /// the primary bar.
   String get navActivity;
 
   /// `HermesDestination.more`.
@@ -1287,6 +1291,12 @@ abstract class AppStrings {
   /// d
   String get moreGatewayAiFilingRequired;
 
+  /// The Activity timeline's row in the More menu.
+  String get moreActivityTitle;
+
+  /// Why Activity lives in More rather than the primary bar.
+  String get moreActivitySubtitle;
+
   ///
   String get activityAndCountMore;
 
@@ -2053,6 +2063,9 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get navProjects => 'Projects';
+
+  @override
+  String get navBots => 'Bots';
 
   @override
   String get navActivity => 'Activity';
@@ -3351,6 +3364,11 @@ class AppStringsEn extends AppStrings {
   String get moreGatewayAiFilingRequired =>
       'Needs a correction-aware filing contract in the Hermes Gateway.';
   @override
+  String get moreActivityTitle => 'Activity';
+  @override
+  String get moreActivitySubtitle =>
+      'The timeline of running, blocked, completed and failed work';
+  @override
   String get activityAndCountMore => 'and {0} more';
   @override
   String get activityOfflineBanner =>
@@ -4270,6 +4288,9 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get navProjects => '项目';
+
+  @override
+  String get navBots => '机器人';
 
   @override
   String get navActivity => '动态';
@@ -5498,6 +5519,10 @@ class AppStringsZh extends AppStrings {
       '需要 Hermes Gateway 提供持久的置顶排序、批量变更与撤销契约。';
   @override
   String get moreGatewayAiFilingRequired => '需要 Hermes Gateway 提供能感知修正的归档契约。';
+  @override
+  String get moreActivityTitle => '动态';
+  @override
+  String get moreActivitySubtitle => '运行中、被阻塞、已完成和已失败工作的完整时间线';
   @override
   String get activityAndCountMore => '还有 {0} 项';
   @override

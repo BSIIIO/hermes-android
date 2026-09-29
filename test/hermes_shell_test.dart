@@ -49,7 +49,7 @@ void main() {
         HermesDestination.home,
         HermesDestination.chats,
         HermesDestination.projects,
-        HermesDestination.activity,
+        HermesDestination.bots,
         HermesDestination.more,
       ]);
     });
@@ -101,9 +101,9 @@ void main() {
     });
 
     testWidgets('opens on any requested destination', (tester) async {
-      await _pumpShell(tester, initial: HermesDestination.activity);
+      await _pumpShell(tester, initial: HermesDestination.bots);
 
-      expect(find.text('pane:activity'), findsOneWidget);
+      expect(find.text('pane:bots'), findsOneWidget);
     });
 
     testWidgets('switches panes when a destination is tapped', (tester) async {
@@ -122,12 +122,12 @@ void main() {
       final changes = <HermesDestination>[];
       await _pumpShell(tester, onDestinationChanged: changes.add);
 
-      await tester.tap(find.text('Activity'));
+      await tester.tap(find.text('Bots'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('More'));
       await tester.pumpAndSettle();
 
-      expect(changes, [HermesDestination.activity, HermesDestination.more]);
+      expect(changes, [HermesDestination.bots, HermesDestination.more]);
     });
 
     testWidgets('re-tapping the current destination does not re-notify', (
@@ -149,7 +149,7 @@ void main() {
       await _pumpShell(
         tester,
         badges: const {
-          HermesDestination.activity: 3,
+          HermesDestination.bots: 3,
           HermesDestination.projects: 0,
         },
       );
@@ -161,7 +161,7 @@ void main() {
     testWidgets('caps an oversized badge instead of breaking the layout', (
       tester,
     ) async {
-      await _pumpShell(tester, badges: const {HermesDestination.activity: 250});
+      await _pumpShell(tester, badges: const {HermesDestination.bots: 250});
 
       expect(find.text('99+'), findsOneWidget);
       expect(tester.takeException(), isNull);
@@ -196,10 +196,10 @@ void main() {
     testWidgets('the rail keeps navigation working', (tester) async {
       await _pumpShell(tester, size: const Size(900, 700));
 
-      await tester.tap(find.text('Activity'));
+      await tester.tap(find.text('Bots'));
       await tester.pumpAndSettle();
 
-      expect(find.text('pane:activity'), findsOneWidget);
+      expect(find.text('pane:bots'), findsOneWidget);
     });
 
     testWidgets('survives a large text scale on a narrow phone', (

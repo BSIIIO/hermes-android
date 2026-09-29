@@ -67,6 +67,7 @@ void main() {
       expect(en.navHome, 'Home');
       expect(en.navChats, 'Chats');
       expect(en.navProjects, 'Projects');
+      expect(en.navBots, 'Bots');
       expect(en.navActivity, 'Activity');
       expect(en.navMore, 'More');
 
@@ -113,6 +114,7 @@ void main() {
       expect(zh.navHome, '首页');
       expect(zh.navChats, '会话');
       expect(zh.navProjects, '项目');
+      expect(zh.navBots, '机器人');
       expect(zh.navActivity, '动态');
       expect(zh.navMore, '更多');
       expect(zh.settings, '设置');
@@ -139,6 +141,7 @@ void main() {
         (en.navHome, zh.navHome),
         (en.navChats, zh.navChats),
         (en.navProjects, zh.navProjects),
+        (en.navBots, zh.navBots),
         (en.navActivity, zh.navActivity),
         (en.navMore, zh.navMore),
         (en.commonCancel, zh.commonCancel),
@@ -330,7 +333,7 @@ void main() {
       expect(HermesDestination.home.label, 'Home');
       expect(HermesDestination.chats.label, 'Chats');
       expect(HermesDestination.projects.label, 'Projects');
-      expect(HermesDestination.activity.label, 'Activity');
+      expect(HermesDestination.bots.label, 'Bots');
       expect(HermesDestination.more.label, 'More');
 
       final englishLabels = HermesDestination.values
@@ -340,8 +343,8 @@ void main() {
           .map((d) => d.localizedLabel(zh))
           .toList();
 
-      expect(englishLabels, ['Home', 'Chats', 'Projects', 'Activity', 'More']);
-      expect(chineseLabels, ['首页', '会话', '项目', '动态', '更多']);
+      expect(englishLabels, ['Home', 'Chats', 'Projects', 'Bots', 'More']);
+      expect(chineseLabels, ['首页', '会话', '项目', '机器人', '更多']);
       expect(englishLabels, isNot(equals(chineseLabels)));
     });
 
