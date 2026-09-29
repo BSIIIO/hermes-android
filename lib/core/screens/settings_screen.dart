@@ -68,6 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _client.getModelOptions(),
       ]);
 
+      if (!mounted) return;
       setState(() {
         _modelInfo = results[0];
         _modelOptions = results[1];
@@ -75,6 +76,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _parseModelOptions();
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _loading = false;
@@ -132,6 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       final s = AppStrings.of(context);
       await _client.setModel('main', _selectedProvider, _selectedModel);
+      if (!mounted) return;
       setState(() {
         _successMsg = s.settingsProfileDefaultSetTo.replaceAll(
           '{0}',
@@ -139,6 +142,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
       });
@@ -525,8 +529,10 @@ class _AboutCardState extends State<_AboutCard> {
   Future<void> _loadVersion() async {
     try {
       final info = await PackageInfo.fromPlatform();
+      if (!mounted) return;
       setState(() => _version = '${info.version}+${info.buildNumber}');
     } catch (_) {
+      if (!mounted) return;
       setState(() => _version = 'unknown');
     }
   }
@@ -665,12 +671,16 @@ class _VoicePickerState extends State<_VoicePicker> {
     if (voice == null) {
       await prefs.remove('voice_name');
       await prefs.remove('voice_locale');
+      // Check immediately before setState: the awaits above can outlive the
+      // widget, and a mounted check before them does not cover the gap.
+      if (!mounted) return;
       setState(() => _selectedVoiceName = null);
     } else {
       final name = voice['name'] ?? '';
       final locale = voice['locale'] ?? '';
       await prefs.setString('voice_name', name);
       await prefs.setString('voice_locale', locale);
+      if (!mounted) return;
       setState(() => _selectedVoiceName = name);
     }
   }

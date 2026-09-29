@@ -22,6 +22,7 @@ import '../models/project_sessions_tree.dart';
 import '../models/projects_tree_overview.dart';
 import '../models/session.dart';
 import 'chat_space_store.dart';
+import 'project_folder_provisioner.dart';
 import 'projects_gateway_client.dart';
 
 /// Whether this gateway offers the native `projects.*` family.
@@ -195,8 +196,25 @@ class ProjectsRepository {
   final SharedPreferences preferences;
   final String connectionId;
 
+  /// Optional folder auto-provisioner for name-only creates.
+  ///
+  /// When set, a Project created without any folder gets a provisioned
+  /// directory bound as its primary — the phone cannot pick folders the
+  /// way Desktop does, and a folderless Project cannot hold chats on
+  /// gateways without direct assignment. The provisioner chooses a fresh,
+  /// unguessable candidate and returns it only after verifying its independent
+  /// marker is uncontested. This provides practical collision resistance
+  /// without treating the host's non-atomic mkdir as proof of creation.
+  final ProjectFolderProvisioner? folderProvisioner;
+
   final _controller = StreamController<ProjectsView>.broadcast();
   ProjectsView _current = ProjectsView.empty;
+  int _pendingCreateSequence = 0;
+
+  /// Serializes cache writes without serializing the network mutations that
+  /// produce them. Concurrent creates remain concurrent, while the newest
+  /// reconciled snapshot is guaranteed to be persisted last.
+  Future<void> _cacheWriteTail = Future<void>.value();
 
   /// Last good drill-in per project, so re-entering one opens with content.
   final _sessionsCache = <String, ProjectSessionsView>{};
@@ -214,6 +232,7 @@ class ProjectsRepository {
     required this.client,
     required this.preferences,
     required this.connectionId,
+    this.folderProvisioner,
   });
 
   /// Emits after every state change, including optimistic ones.
@@ -287,33 +306,81 @@ class ProjectsRepository {
   Future<HermesProject> create(String name, {bool select = false}) async {
     _requireSupported();
     final trimmed = name.trim();
-    final previous = _current;
+    final pendingSequence = _pendingCreateSequence++;
     final placeholder = HermesProject(
-      id: 'pending:${DateTime.now().microsecondsSinceEpoch}',
+      id: 'pending:${DateTime.now().microsecondsSinceEpoch}:$pendingSequence',
       slug: trimmed.toLowerCase().replaceAll(RegExp(r'\s+'), '-'),
       name: trimmed,
     );
     _emit(
-      previous.copyWith(
-        projects: [...previous.projects, placeholder],
+      _current.copyWith(
+        projects: [..._current.projects, placeholder],
         clearError: true,
       ),
     );
 
+    late HermesProject created;
     try {
-      final created = await client.create(name: trimmed, use: select);
-      final view = previous.copyWith(
-        projects: [...previous.projects, created],
-        activeId: select ? created.id : null,
-        clearError: true,
-      );
-      await _writeCache(view);
-      _emit(view);
-      return created;
+      created = await client.create(name: trimmed, use: select);
+      if (created.folders.isEmpty && folderProvisioner != null) {
+        // Name-only create: bind the fresh, unguessable candidate only after
+        // the provisioner verifies its independent marker is uncontested.
+        // A provisioning or bind failure must not undo the create — the
+        // Project exists and stays folderless (honest, and the user can
+        // add a folder later); only the auto-home is lost.
+        final folder = await folderProvisioner!.provision(created.slug);
+        if (folder != null) {
+          try {
+            created = await client.addFolder(
+              id: created.id,
+              path: folder,
+              label: created.name,
+              isPrimary: true,
+            );
+          } catch (_) {}
+        }
+      }
     } catch (_) {
-      _emit(previous);
+      // Remove only this request's placeholder. Rolling back to the snapshot
+      // captured at request start would erase sibling creates that completed
+      // while this request was in flight.
+      _emit(
+        _current.copyWith(
+          projects: [
+            for (final project in _current.projects)
+              if (project.id != placeholder.id) project,
+          ],
+        ),
+      );
       rethrow;
     }
+
+    // Reconcile against the latest state, not the snapshot captured when the
+    // request started. Another create may have completed while this one was in
+    // flight; replacing only our own placeholder preserves that server record
+    // and any still-pending siblings. If a refresh already surfaced [created],
+    // replace it in place instead of duplicating it.
+    final projects = <HermesProject>[];
+    var createdAlreadyPresent = false;
+    for (final project in _current.projects) {
+      if (project.id == placeholder.id) continue;
+      if (project.id == created.id) {
+        projects.add(created);
+        createdAlreadyPresent = true;
+      } else {
+        projects.add(project);
+      }
+    }
+    if (!createdAlreadyPresent) projects.add(created);
+
+    final view = _current.copyWith(
+      projects: projects,
+      activeId: select ? created.id : null,
+      clearError: true,
+    );
+    _emit(view);
+    await _queueCacheWrite(view);
+    return created;
   }
 
   Future<HermesProject> rename(String id, String name) async {
@@ -402,14 +469,55 @@ class ProjectsRepository {
     }
   }
 
-  /// Persists the authoritative server-side Project for one conversation.
+  /// Moves one chat into [projectId] by re-homing its workspace.
   ///
-  /// Callers must complete this before opening a newly drafted Project chat;
-  /// otherwise the chat would initially exist under Unassigned and the user's
-  /// selection would be silently lost.
-  Future<void> assignSession(String sessionId, String? projectId) async {
+  /// Stock-gateway-only path: the chat's cwd is re-pointed at the target
+  /// project's folder via `session.workspace.move` — the one RPC stock
+  /// Hermes ships for this, and how the desktop files chats (membership
+  /// is derived from cwd). `projects.assign_session` is deliberately
+  /// NOT attempted: it never shipped upstream, so trying it first only
+  /// adds a doomed round-trip and a capability assumption.
+  ///
+  /// [storedSessionKey] is the gateway's stored key for the chat (falls
+  /// back to [sessionId] when the binding is unknown). Returns a reason
+  /// string when the move is impossible (un-file on a cwd-derived model,
+  /// or a target Project with no folder to re-home into); throws only on
+  /// a real gateway failure so the caller can offer a retry.
+  Future<String?> moveSessionToProject(
+    String sessionId,
+    String? projectId, {
+    String? storedSessionKey,
+  }) async {
     _requireSupported();
-    await client.assignSession(sessionId: sessionId, projectId: projectId);
+    if (projectId == null) {
+      // There is no stock RPC to un-file a chat: its project is wherever
+      // its cwd points. Say so instead of failing with a generic error.
+      return 'This gateway files chats by working folder and cannot move a '
+          'chat back to Unassigned.';
+    }
+    final target = _findProject(projectId);
+    final folder = target?.workingDirectory?.trim() ?? '';
+    if (target == null || folder.isEmpty) {
+      return 'That Project has no folder to move the chat into. Add a '
+          'folder to it first.';
+    }
+    await client.moveSessionWorkspace(
+      sessionKey: (storedSessionKey?.trim().isNotEmpty ?? false)
+          ? storedSessionKey!.trim()
+          : sessionId,
+      cwd: folder,
+    );
+    return null;
+  }
+
+  HermesProject? _findProject(String id) {
+    for (final project in _current.projects) {
+      if (project.id == id) return project;
+    }
+    for (final project in _current.archived) {
+      if (project.id == id) return project;
+    }
+    return null;
   }
 
   Future<void> setActive(String? id) async {
@@ -441,9 +549,12 @@ class ProjectsRepository {
     String normalize(String value) =>
         value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
 
+    // Active projects only: matching a Space to an ARCHIVED project would
+    // report 'already linked' while landing the chats in a bucket the
+    // user cannot see in the active list. An archived name is treated as
+    // free — the migration creates/uses the active project instead.
     final byName = <String, HermesProject>{
-      for (final project in [..._current.projects, ..._current.archived])
-        normalize(project.name): project,
+      for (final project in _current.projects) normalize(project.name): project,
     };
 
     final counts = <String, int>{};
@@ -487,7 +598,6 @@ class ProjectsRepository {
     var matched = 0;
     var linkedSessions = 0;
     var unlinkedSessions = 0;
-    var assignmentsSupported = true;
     final failures = <String, Object>{};
 
     for (final entry in plan.entries) {
@@ -513,23 +623,21 @@ class ProjectsRepository {
           .where((assignment) => assignment.value == entry.space.id)
           .map((assignment) => assignment.key);
       for (final sessionId in sessionIds) {
-        if (!assignmentsSupported) {
+        // Stock path: re-home the chat's cwd to the target Project's folder
+        // (`session.workspace.move`) — the gateway derives membership from
+        // cwd, so the move IS the assignment. No `projects.assign_session`
+        // round-trip: that RPC never shipped upstream.
+        final folder = target.workingDirectory?.trim() ?? '';
+        if (folder.isEmpty) {
           unlinkedSessions++;
+          failures['${entry.space.name}/$sessionId'] = StateError(
+            'Project ${entry.space.name} has no folder to re-home chats into.',
+          );
           continue;
         }
         try {
-          await client.assignSession(
-            sessionId: sessionId,
-            projectId: target.id,
-          );
+          await client.moveSessionWorkspace(sessionKey: sessionId, cwd: folder);
           linkedSessions++;
-        } on ProjectsUnsupportedException catch (error) {
-          // A gateway can support the Projects family but predate this sibling.
-          // Stop probing after the first definitive answer and leave all local
-          // Spaces intact so nothing is lost.
-          assignmentsSupported = false;
-          unlinkedSessions++;
-          failures['${entry.space.name}/$sessionId'] = error;
         } catch (error) {
           unlinkedSessions++;
           failures['${entry.space.name}/$sessionId'] = error;
@@ -727,11 +835,20 @@ class ProjectsRepository {
     final payload = jsonEncode({
       'projects': [
         for (final project in [...view.projects, ...view.archived])
-          _projectToJson(project),
+          if (!project.id.startsWith('pending:')) _projectToJson(project),
       ],
       'active_id': view.activeId,
     });
     await preferences.setString(_cacheKey, payload);
+  }
+
+  Future<void> _queueCacheWrite(ProjectsView view) {
+    final write = _cacheWriteTail.then((_) => _writeCache(view));
+    _cacheWriteTail = write.then<void>(
+      (_) {},
+      onError: (Object _, StackTrace _) {},
+    );
+    return write;
   }
 
   static Map<String, dynamic> _projectToJson(HermesProject project) => {

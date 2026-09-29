@@ -6,6 +6,7 @@
 // a JSON-RPC response with the same id.
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:web_socket_channel/io.dart';
 
 Object? _deepFreezeJson(Object? value) {
@@ -158,6 +159,37 @@ class CreatedGatewaySession {
   });
 }
 
+/// Runtime binding and recovery state returned by `session.resume`.
+///
+/// Stock Hermes includes retained in-flight failure details here so a client
+/// that missed the terminal event while disconnected can stop recovery and
+/// surface the failure instead of polling history forever.
+class ResumedGatewaySession {
+  final String runtimeSessionId;
+  final bool? running;
+  final String? status;
+  final Map<String, dynamic>? inflight;
+
+  /// The inline transcript the gateway returned with the resume, if any.
+  ///
+  /// Shaped `{row_id, role, text}`, NOT the `content` shape the chat bubbles
+  /// read — only a normalizing consumer may use it. Upstream's class has no
+  /// such field; the fork needs one because
+  /// `WsClient.resumeSessionWithHistory` wraps this type.
+  final List<Map<String, dynamic>> messages;
+
+  ResumedGatewaySession({
+    required this.runtimeSessionId,
+    this.running,
+    this.status,
+    this.inflight,
+    List<dynamic>? messages,
+  }) : messages = messages
+            ?.whereType<Map<String, dynamic>>()
+            .toList(growable: false) ??
+        const <Map<String, dynamic>>[];
+}
+
 typedef StreamCallback = void Function(StreamEvent event);
 typedef ConnectionCallback = void Function(bool connected);
 typedef GatewayReadyCallback = void Function(Map<String, dynamic> frame);
@@ -200,11 +232,39 @@ class WsClient {
     String? token,
     String? ticket,
     String? profile,
+    Duration heartbeatInterval = defaultHeartbeatInterval,
+    Duration heartbeatDeadline = defaultHeartbeatDeadline,
   }) {
-    return WsClient._(baseUrl, token, ticket, profile);
+    return WsClient._(
+      baseUrl,
+      token,
+      ticket,
+      profile,
+      heartbeatInterval,
+      heartbeatDeadline,
+    );
   }
 
-  WsClient._(this.baseUrl, this._token, this._ticket, this._profile);
+  WsClient._(
+    this.baseUrl,
+    this._token,
+    this._ticket,
+    this._profile,
+    this.heartbeatInterval,
+    this.heartbeatDeadline,
+  );
+
+  /// Keepalive cadence mirroring the desktop client
+  /// (`apps/shared/src/json-rpc-channel.ts` DEFAULT_HEARTBEAT_*): a
+  /// `gateway.ping` every 15s, dead-socket verdict after 45s of silence.
+  static const defaultHeartbeatInterval = Duration(seconds: 15);
+  static const defaultHeartbeatDeadline = Duration(seconds: 45);
+
+  final Duration heartbeatInterval;
+  final Duration heartbeatDeadline;
+  Timer? _heartbeatTimer;
+  int _heartbeatSeq = 0;
+  int _lastLivenessMs = 0;
 
   /// Connect to the WebSocket gateway.
   Future<void> connect() async {
@@ -241,6 +301,7 @@ class WsClient {
         );
       }
       _connected = true;
+      _startHeartbeat(generation);
       try {
         onConnectionChanged?.call(true);
       } catch (_) {
@@ -262,6 +323,7 @@ class WsClient {
     // Invalidate this socket before any completion or observer can enqueue
     // more work. Buffered callbacks from it now fail the generation guard.
     _connectionGeneration = generation + 1;
+    _stopHeartbeat();
     final wasConnected = _connected || _channel != null;
     _connected = false;
     _channel = null;
@@ -332,6 +394,53 @@ class WsClient {
     _connectionClosedListeners.remove(token);
   }
 
+  /// Keepalive loop mirroring the desktop `JsonRpcChannel.startHeartbeat`.
+  /// Every [heartbeatInterval] sends a `gateway.ping` (answered cheaply on
+  /// the gateway's WS reader thread, even while every agent is mid-turn);
+  /// if nothing has been received for [heartbeatDeadline] the socket is
+  /// declared half-open and torn down, which starts the owner's reconnect
+  /// instead of leaving later RPCs parked on a dead pipe.
+  void _startHeartbeat(int generation) {
+    _stopHeartbeat();
+    if (heartbeatInterval.inMilliseconds <= 0 ||
+        heartbeatDeadline.inMilliseconds <= 0) {
+      return;
+    }
+    _lastLivenessMs = DateTime.now().millisecondsSinceEpoch;
+    _heartbeatTimer = Timer.periodic(heartbeatInterval, (_) {
+      if (generation != _connectionGeneration || !_connected) return;
+      final silenceMs = DateTime.now().millisecondsSinceEpoch - _lastLivenessMs;
+      if (silenceMs >= heartbeatDeadline.inMilliseconds) {
+        // Half-open socket (phone slept, NAT dropped the mapping, proxy
+        // died): close it so the close path rejects pending calls and the
+        // owner can reconnect on a fresh ticket. 4000 = private close
+        // code (the channel rejects 1001).
+        _channel?.sink.close(4000, 'heartbeat timeout');
+        _handleClosedConnection(generation);
+        return;
+      }
+      _heartbeatSeq++;
+      try {
+        _channel?.sink.add(
+          jsonEncode({
+            'jsonrpc': '2.0',
+            'id': 'heartbeat-$_heartbeatSeq',
+            'method': 'gateway.ping',
+            'params': <String, dynamic>{},
+          }),
+        );
+      } catch (_) {
+        _channel?.sink.close(4000, 'heartbeat send failed');
+        _handleClosedConnection(generation);
+      }
+    });
+  }
+
+  void _stopHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+  }
+
   /// Produces the gateway `/api/ws` URL. Secured Desktop gateways use a
   /// single-use ticket; insecure legacy gateways still use a session token.
   static String buildWebSocketUrl(
@@ -373,6 +482,10 @@ class WsClient {
   /// Handle inbound messages.
   void _handleMessage(dynamic msg, int generation) {
     if (generation != _connectionGeneration) return;
+    // Any inbound frame proves the socket is alive ('any-inbound' liveness,
+    // matching the desktop channel): streaming events keep the heartbeat
+    // deadline reset even if the pong for one ping raced past it.
+    _lastLivenessMs = DateTime.now().millisecondsSinceEpoch;
     try {
       Map<String, dynamic> data;
       if (msg is String) {
@@ -576,6 +689,7 @@ class WsClient {
     String method,
     Map<String, dynamic> params, {
     Duration timeout = const Duration(seconds: 30),
+    void Function()? onSent,
   }) async {
     if (!_connected || _channel == null) {
       throw Exception('Not connected');
@@ -591,14 +705,26 @@ class WsClient {
     });
 
     _pending[id] = _Pending(method, completer, timer);
-    _channel!.sink.add(
-      jsonEncode({
-        'jsonrpc': '2.0',
-        'method': method,
-        'params': withProfile(params, _profile),
-        'id': id,
-      }),
-    );
+    try {
+      _channel!.sink.add(
+        jsonEncode({
+          'jsonrpc': '2.0',
+          'method': method,
+          'params': withProfile(params, _profile),
+          'id': id,
+        }),
+      );
+    } catch (_) {
+      timer.cancel();
+      _pending.remove(id);
+      rethrow;
+    }
+    try {
+      onSent?.call();
+    } catch (_) {
+      // A local observer must not turn a successfully emitted RPC into an
+      // apparent transport failure.
+    }
     return completer.future;
   }
 
@@ -646,6 +772,7 @@ class WsClient {
     String message, {
     required String sessionId,
     required StreamCallback onEvent,
+    void Function()? onSent,
     Duration timeout = const Duration(minutes: 10),
   }) async {
     final completion = Completer<void>();
@@ -700,7 +827,7 @@ class WsClient {
       final response = await send('prompt.submit', {
         'session_id': sessionId,
         'text': message,
-      });
+      }, onSent: onSent);
       final error = response['error'];
       if (error != null) {
         throw _gatewayResponseError(
@@ -839,48 +966,18 @@ class WsClient {
     }
   }
 
-  /// Resume an existing session.
+  /// Resume an existing session while preserving retained turn state.
   ///
   /// [profile] must be set for any session that lives in a non-launch
   /// profile's own session DB — a Bot Mode bot's canonical `Bot Chat`, for
   /// instance. Without it the gateway resolves the id against the launch
   /// profile's DB and answers `4007 session not found` for a chat that
   /// plainly exists, which is indistinguishable from a genuinely missing one.
-  Future<String> resumeSession(String sessionId, {String? profile}) async {
-    final result = await send('session.resume', {
-      'session_id': sessionId,
-      if (profile != null && profile.trim().isNotEmpty) 'profile': profile.trim(),
-    });
-    if (result['error'] != null) {
-      throw _gatewayResponseError(
-        'session.resume',
-        result['error'],
-        fallbackMessage: 'Unknown error',
-      );
-    }
-    return result['result']?['session_id'] as String? ?? sessionId;
-  }
-
-  /// Resumes [sessionId] and keeps the transcript the gateway returns with it.
   ///
-  /// The REST `/api/sessions/{id}/messages` route is served by the
-  /// OpenAI-compatible listener, which scopes its single session DB by
-  /// `HERMES_HOME` and **never reads `?profile=`** — so a bot's stored history
-  /// 404s there no matter what the caller asks for. `session.resume`, by
-  /// contrast, resolves the profile from its own params and returns the
-  /// transcript inline (`messages`, in display order).
-  ///
-  /// Do NOT hand that transcript to the chat bubbles: it is shaped
-  /// `{row_id, role, text}` — the body is `text`, and a `role: tool` row has
-  /// no `content` at all — while every consumer reads `content`. Fed raw it
-  /// renders as tool-activity cards with no conversation between them. The
-  /// profile-scoped transcript a screen should use is the dashboard route's,
-  /// which returns the `content` shape (`DashboardClient.getSessionMessages`).
-  ///
-  /// Returns `(runtime session id, messages)`; [messages] is empty when the
-  /// gateway answered with none rather than erroring, so a caller can still
-  /// fall back to REST.
-  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
+  /// Stock Hermes includes retained in-flight failure details in the result
+  /// so a client that missed the terminal event while disconnected can stop
+  /// recovery and surface the failure instead of polling history forever.
+  Future<ResumedGatewaySession> resumeSessionDetails(
     String sessionId, {
     String? profile,
   }) async {
@@ -895,14 +992,61 @@ class WsClient {
         fallbackMessage: 'Unknown error',
       );
     }
-    final payload = result['result'] as Map<String, dynamic>? ?? const {};
-    final resolved = payload['session_id'] as String? ?? sessionId;
-    final raw = payload['messages'] as List<dynamic>? ?? const [];
-    return (
-      resolved,
-      raw.whereType<Map<String, dynamic>>().toList(growable: false),
+    final rawPayload = result['result'];
+    if (rawPayload is! Map) {
+      throw StateError('session.resume succeeded without a result payload.');
+    }
+    final payload = Map<String, dynamic>.from(rawPayload);
+    final runtimeSessionId = payload['session_id'] as String?;
+    if (runtimeSessionId == null || runtimeSessionId.isEmpty) {
+      throw StateError(
+        'session.resume succeeded without a session_id — refusing to bind '
+        'the caller-supplied id, which may not be the runtime session the '
+        'gateway resumed.',
+      );
+    }
+    final rawInflight = payload['inflight'];
+    return ResumedGatewaySession(
+      runtimeSessionId: runtimeSessionId,
+      running: payload['running'] as bool?,
+      status: payload['status']?.toString(),
+      inflight: rawInflight is Map
+          ? Map<String, dynamic>.from(rawInflight)
+          : null,
+      messages: payload['messages'] as List<dynamic>?,
     );
   }
+
+  /// Runtime-id-only resume, kept for callers that do not need turn state.
+  ///
+  /// [profile] scopes the resume exactly like [resumeSessionDetails].
+  Future<String> resumeSession(String sessionId, {String? profile}) async {
+    final scope = profile?.trim();
+    return (await resumeSessionDetails(
+      sessionId,
+      profile: scope == null || scope.isEmpty ? null : scope,
+    )).runtimeSessionId;
+  }
+
+  /// Resumes [sessionId] and keeps the transcript the gateway returns with it.
+  ///
+  /// Returns `(runtime session id, messages)`; [messages] is empty when the
+  /// gateway answered with none rather than erroring, so a caller can still
+  /// fall back to REST.
+  ///
+  /// ⚠️ Upstream deleted this helper when `resumeSessionDetails` landed; the
+  /// fork keeps it because `DesktopGatewayClient.resumeSessionWithHistory`
+  /// and two `connection_manager_test.dart` cases depend on it. The inline
+  /// transcript is `{row_id, role, text}`-shaped, so only a normalizing
+  /// consumer may read it — see `chat_screen.dart:_normalizeTranscript`.
+  Future<(String, List<Map<String, dynamic>>)> resumeSessionWithHistory(
+    String sessionId, {
+    String? profile,
+  }) async {
+    final resumed = await resumeSessionDetails(sessionId, profile: profile);
+    return (resumed.runtimeSessionId, resumed.messages);
+  }
+
 
   Future<void> setSessionTitle(String sessionId, String title) async {
     final response = await send('session.title', {

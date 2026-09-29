@@ -48,6 +48,19 @@ enum ChatDateBucket {
 /// How long "Recent" means in the Chats browser.
 const Duration kRecentChatsWindow = Duration(days: 7);
 
+/// Machine-generated session sources. The server's `projects.tree`
+/// deliberately never claims these (`_PROJECT_TREE_EXCLUDED_SOURCES` in
+/// tui_gateway/methods_projects.py), and `filing.suggest` skips them too —
+/// automated runs carry no human filing intent. The Unassigned view must
+/// mirror that exclusion or every cron run shows up as "unfiled" noise the
+/// filing engine can never answer for. The Chats browser excludes them from
+/// every chip (desktop parity): cron runs are browsed per-job from the
+/// Cron screen's run list, not as chat-list entries.
+const Set<String> kMachineSessionSources = {'cron', 'kanban', 'oneshot'};
+
+bool isMachineSession(Session session) =>
+    kMachineSessionSources.contains(session.source);
+
 /// Assigns a conversation to its date bucket, by calendar day.
 ChatDateBucket chatDateBucket(DateTime now, double lastActiveSeconds) {
   final activity = DateTime.fromMillisecondsSinceEpoch(
@@ -74,6 +87,7 @@ List<Session> filterChats({
   Set<String> archivedQuickChatIds = const {},
   String query = '',
   DateTime? now,
+  bool projectsKnown = true,
 }) {
   final current = now ?? DateTime.now();
   final normalized = query.trim().toLowerCase();
@@ -83,13 +97,35 @@ List<Session> filterChats({
   final filtered = [
     for (final session in sessions)
       if (switch (filter) {
-            WorkspaceChatsFilter.all => true,
-            WorkspaceChatsFilter.recent => session.lastActive >= recentCutoff,
-            WorkspaceChatsFilter.unassigned => !claimedSessionIds.contains(
-              session.id,
-            ),
+            // Machine-generated runs (cron/kanban/oneshot) never enter the
+            // chat browser at all — the desktop's sidebar applies the same
+            // exclusion (SIDEBAR_EXCLUDED_SOURCES in
+            // use-session-list-actions.ts). Cron runs live in the Cron
+            // screen's per-job run list instead, so the scheduler's
+            // always-newest sessions can't crowd human chats out.
+            WorkspaceChatsFilter.all =>
+              !session.archived && !isMachineSession(session),
+            WorkspaceChatsFilter.recent =>
+              !session.archived &&
+                  !isMachineSession(session) &&
+                  session.lastActive >= recentCutoff,
+            WorkspaceChatsFilter.unassigned =>
+              // When the claim map is unknown (projects.tree timed out),
+              // every chat would pass as 'unassigned' — a lie that turns
+              // the whole archive into filing noise. Show none instead;
+              // the UI surfaces the read failure.
+              projectsKnown &&
+                  !session.archived &&
+                  !isMachineSession(session) &&
+                  !claimedSessionIds.contains(session.id),
             WorkspaceChatsFilter.archived =>
-              session.archived || archivedQuickChatIds.contains(session.id),
+              // Machine runs stay excluded even once archived — an archived
+              // cron run is still cron noise, and its home is the Cron
+              // screen's run drill-down. Quick-chat archives are human
+              // rows and stay.
+              !isMachineSession(session) &&
+                  (session.archived ||
+                      archivedQuickChatIds.contains(session.id)),
           } &&
           (normalized.isEmpty ||
               session.title.toLowerCase().contains(normalized) ||
@@ -124,22 +160,41 @@ class WorkspaceSessionsData {
   final Set<String> claimedSessionIds;
   final Set<String> archivedQuickChatIds;
 
+  /// Server-archived sessions, fetched from the dashboard's
+  /// `archived=only` router. The gateway chat transport never returns
+  /// archived rows, so without this the Archived chip only ever showed
+  /// quick-chat expiries. Empty when the dashboard is unreachable — the
+  /// chip then degrades to quick-chat-only rather than lying.
+  final List<Session> archivedSessions;
+
   /// Best-effort session id → project label mapping.
   ///
   /// Built from the server `projects.tree` preview rows; a conversation whose
   /// project is unknown stays honest as "Unassigned" in the UI.
   final Map<String, String> projectLabels;
 
+  /// Whether the claim map above actually reflects the server. False when
+  /// `projects.tree` timed out or failed: an empty `claimedSessionIds` then
+  /// means "unknown", not "nothing is filed", and the Unassigned chip must
+  /// say so instead of presenting the whole archive as unfiled noise.
+  final bool projectsKnown;
+
   const WorkspaceSessionsData({
     this.sessions = const [],
     this.claimedSessionIds = const {},
     this.archivedQuickChatIds = const {},
+    this.archivedSessions = const [],
     this.projectLabels = const {},
+    this.projectsKnown = true,
   });
 }
 
 typedef WorkspaceSessionsLoader = Future<WorkspaceSessionsData> Function();
-typedef WorkspaceSessionPromoter = Future<void> Function(Session session);
+
+/// Moves a session and returns the destination Project label. Returning the
+/// label lets the row update ownership and presentation in one state change,
+/// without waiting for a second projects.tree request.
+typedef WorkspaceSessionPromoter = Future<String> Function(Session session);
 
 class QuickChatPromotionCancelled implements Exception {
   const QuickChatPromotionCancelled();
@@ -151,18 +206,30 @@ List<Session> filterWorkspaceSessions({
   Set<String> claimedSessionIds = const {},
   Set<String> archivedQuickChatIds = const {},
   String query = '',
+  bool projectsKnown = true,
 }) {
   final normalized = query.trim().toLowerCase();
   return [
     for (final session in sessions)
       if (switch (view) {
-            WorkspaceSessionView.unassigned => !claimedSessionIds.contains(
-              session.id,
-            ),
+            // Same contract as filterChats' unassigned chip: an unknown
+            // claim map (projects.tree timed out) must not render every
+            // chat as unfiled, and machine-source runs (cron/kanban/
+            // oneshot) carry no human filing intent — they live in the
+            // Cron screen's run drill-down, never in the Unassigned
+            // bucket.
+            WorkspaceSessionView.unassigned =>
+              projectsKnown &&
+                  !isMachineSession(session) &&
+                  !claimedSessionIds.contains(session.id),
             WorkspaceSessionView.archivedQuick => archivedQuickChatIds.contains(
               session.id,
             ),
-            WorkspaceSessionView.all || WorkspaceSessionView.search => true,
+            // Machine sessions stay out of every human-facing list, the
+            // archived view included — an archived cron run is still
+            // cron noise. Quick-chat archives are human rows and stay.
+            WorkspaceSessionView.all ||
+            WorkspaceSessionView.search => !isMachineSession(session),
           } &&
           (normalized.isEmpty ||
               session.title.toLowerCase().contains(normalized) ||
@@ -213,6 +280,12 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
   /// Injectable clock for deterministic tests.
   DateTime get _now => widget.now ?? DateTime.now();
 
+  /// Whether the current surface is an Unassigned one (standalone view or
+  /// the embedded chip browser with the Unassigned chip active).
+  bool get _isUnassignedSurface =>
+      widget.view == WorkspaceSessionView.unassigned ||
+      (widget.embedded && _filter == WorkspaceChatsFilter.unassigned);
+
   @override
   void initState() {
     super.initState();
@@ -240,19 +313,27 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
     if (promote == null || _promoting.contains(session.id)) return;
     setState(() => _promoting.add(session.id));
     try {
-      await promote(session);
+      final projectLabel = await promote(session);
       if (!mounted) return;
       final data = _data;
       if (data != null) {
         setState(() {
           _data = WorkspaceSessionsData(
             sessions: data.sessions,
-            claimedSessionIds: data.claimedSessionIds,
+            // The move claims the chat: add it to the claim set so the
+            // Unassigned view drops the row immediately instead of
+            // waiting for the next reload.
+            claimedSessionIds: {...data.claimedSessionIds, session.id},
             archivedQuickChatIds: {
               for (final id in data.archivedQuickChatIds)
                 if (id != session.id) id,
             },
-            projectLabels: data.projectLabels,
+            // Ownership and its visible label are one piece of state. Updating
+            // only claimedSessionIds made the row disappear from Unassigned,
+            // then show "Unassigned" when All was selected immediately.
+            projectLabels: {...data.projectLabels, session.id: projectLabel},
+            archivedSessions: data.archivedSessions,
+            projectsKnown: data.projectsKnown,
           );
           _promoting.remove(session.id);
         });
@@ -303,14 +384,28 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
 
   Widget _buildLoaded(WorkspaceSessionsData data) {
     final s = AppStrings.of(context);
+    // The embedded browser filters over the union of the gateway's active
+    // list and the dashboard's archived list: the Archived chip needs the
+    // archived rows, and every other chip explicitly excludes
+    // `session.archived`, so the union cannot leak them into All/Recent/
+    // Unassigned. The two lists come from different backends at
+    // different instants, so dedupe by id — the archived copy wins for
+    // a session archived between the two fetches.
+    final archivedIds = data.archivedSessions.map((s) => s.id).toSet();
+    final unionSessions = <Session>[
+      for (final s in data.sessions)
+        if (!archivedIds.contains(s.id)) s,
+      ...data.archivedSessions,
+    ];
     final sessions = widget.embedded
         ? filterChats(
-            sessions: data.sessions,
+            sessions: unionSessions,
             filter: _filter,
             claimedSessionIds: data.claimedSessionIds,
             archivedQuickChatIds: data.archivedQuickChatIds,
             query: _query,
             now: _now,
+            projectsKnown: data.projectsKnown,
           )
         : filterWorkspaceSessions(
             sessions: data.sessions,
@@ -318,6 +413,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
             claimedSessionIds: data.claimedSessionIds,
             archivedQuickChatIds: data.archivedQuickChatIds,
             query: _query,
+            projectsKnown: data.projectsKnown,
           );
 
     final groups = widget.embedded
@@ -413,8 +509,13 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
     final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
     final projectLabel = data.projectLabels[session.id];
+    // The move-to-project affordance serves the Archived-Quick view
+    // (promote a lapsed quick chat) and any Unassigned surface — the
+    // standalone view or the embedded chip browser with the Unassigned
+    // chip active. Both call the same repository move.
     final showPromote =
-        widget.view == WorkspaceSessionView.archivedQuick &&
+        (widget.view == WorkspaceSessionView.archivedQuick ||
+            _isUnassignedSurface) &&
         widget.onPromote != null;
     return HermesCard(
       onTap: () => widget.onOpenSession(session),
@@ -466,7 +567,7 @@ class _WorkspaceSessionsScreenState extends State<WorkspaceSessionsScreen> {
                         label: projectLabel,
                         icon: Icons.folder_outlined,
                       )
-                    else
+                    else if (data.projectsKnown)
                       _MetaChip(
                         label: s.workspaceSessionsUnassigned,
                         icon: Icons.inbox_outlined,

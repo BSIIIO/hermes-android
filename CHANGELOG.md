@@ -4,6 +4,42 @@ All notable changes to this project are documented here. This project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html). Release notes for
 versions prior to 1.0.7 are in the **What's new** sections of the [README](README.md).
 
+# Changelog
+
+All notable changes to this project are documented here. This project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html). Release notes for
+versions prior to 1.0.7 are in the **What's new** sections of the [README](README.md).
+
+## [2.1.7] - 2026-09-29
+
+### Changed
+
+- Upstream `rusty4444/hermes-android` v2.1.4 → v2.1.7 merged in (42 commits):
+  durable desktop reattach and session paging, strict session binding on
+  resume, stock-gateway compatibility for project and folderless chats,
+  folder provisioning that refuses directories it cannot prove ownership of,
+  and hardened WebSocket creation / SSE cancellation / stale-runtime recovery.
+- Bot chats and other profile-scoped transports keep the fork's Hermes-profile
+  plumbing on every JSON-RPC payload; the upstream resume path now also returns
+  the transcript so the client can localise the restore.
+
+### Fixed
+
+- The legacy-transport banner now distinguishes a gateway that cannot do
+  background recovery from one that can, instead of always showing the legacy
+  notice.
+- Chat rows in the session list label projects from the per-node session ids the
+  gateway actually emits, so an unknown project map no longer marks chats as
+  unassigned.
+- Chat move/rename/branch actions and the search-mode hints stay translated and
+  profile-scoped after the upstream restructure.
+
+### Note
+
+The fork's own 2.1.4–2.1.6 line (Bots MVP, Chinese/English localisation,
+independent release signing) is described in PR #25 and PR #26; the version
+number here continues upstream's numbering so both trees stay comparable.
+
 ## [2.1.3] - 2026-09-17
 
 ### Fixed
