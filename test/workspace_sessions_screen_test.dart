@@ -520,7 +520,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Loose chat'), findsOneWidget);
-    await tester.tap(find.byTooltip('Move to project').first);
+    await tester.tap(find.byTooltip('Promote to project').first);
     await tester.pumpAndSettle();
 
     expect(moved, ['s1']);
@@ -557,7 +557,7 @@ void main() {
 
     await tester.tap(find.widgetWithText(ChoiceChip, 'Unassigned'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byTooltip('Move to project'));
+    await tester.tap(find.byTooltip('Promote to project'));
     await tester.pumpAndSettle();
     expect(find.text('Loose chat'), findsNothing);
 
