@@ -196,6 +196,20 @@ class ProjectsTreeOverview {
     );
   }
 
+  /// The label of the project that owns [sessionId], or null when no project
+  /// claims it (or the owning node is the Home bucket, which is not a filing).
+  String? ownerLabelOf(String sessionId) {
+    final ownerId = sessionProjects[sessionId];
+    if (ownerId == null || ownerId == noProjectId) return null;
+    for (final project in projects) {
+      if (project.id == ownerId) return project.label;
+    }
+    return null;
+  }
+
+  /// The Home bucket id the backend's tree uses for unfiled chats.
+  static const String noProjectId = '__no_project__';
+
   /// Projects the user created, so the ones that accept server-side edits.
   List<ProjectOverviewNode> get userProjects =>
       projects.where((project) => project.isUserOwned).toList(growable: false);
