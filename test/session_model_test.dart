@@ -65,5 +65,27 @@ void main() {
       expect(session.archived, isTrue);
       expect(session.lastActive, 1740000000.0);
     });
+
+    test('a profile-scoped session remembers which store owns it', () {
+      final session = Session.fromJson({
+        'id': 's5',
+        'title': 'Bot Chat',
+        'started_at': 1750000000.0,
+        'profile': 'cto',
+      });
+
+      expect(session.profile, 'cto');
+    });
+
+    test('a blank profile is normalised away', () {
+      final session = Session.fromJson({
+        'id': 's6',
+        'title': 'Bot Chat',
+        'started_at': 1750000000.0,
+        'profile': '   ',
+      });
+
+      expect(session.profile, isNull);
+    });
   });
 }

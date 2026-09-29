@@ -1211,6 +1211,59 @@ void main() {
   });
 
   group('Desktop gateway WebSocket URL', () {
+      // An earlier test in this file initialises TestWidgetsFlutterBinding,
+      // whose mock HttpClient answers every request with 400. These tests talk
+      // to a real loopback server, so clear the global override and restore it.
+      HttpOverrides? savedHttpOverrides;
+
+      setUp(() {
+        savedHttpOverrides = HttpOverrides.current;
+        HttpOverrides.global = null;
+      });
+
+      tearDown(() {
+        HttpOverrides.global = savedHttpOverrides;
+      });
+
+      test(
+        'reads a session\'s history from the profile that owns it',
+        () async {
+          // The REST route scopes by ?profile= exactly like session.resume.
+          // Without the parameter the gateway answers 404 for a chat that
+          // plainly exists, which is how a bot lost its whole history.
+          final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+          final requestUris = <Uri>[];
+          final socketSubscription = server.listen((request) async {
+            requestUris.add(request.uri);
+            request.response.statusCode = 200;
+            request.response.write(jsonEncode({'data': const []}));
+            await request.response.close();
+          });
+          final client = ApiClient(
+            baseUrl: 'http://127.0.0.1:${server.port}',
+            apiKey: 'key',
+          );
+          try {
+            await client.getMessages('chat-1');
+            await client.getMessages('chat-1', profile: 'cto');
+            await client.getMessages('chat-1', profile: '   ');
+
+            expect(
+              requestUris.map((u) => u.path).toList(),
+              List.filled(3, '/api/sessions/chat-1/messages'),
+            );
+            expect(
+              requestUris.map((u) => u.query).toList(),
+              ['', 'profile=cto', ''],
+              reason: 'A blank profile must not produce a stray "profile="',
+            );
+          } finally {
+            await socketSubscription.cancel();
+            await server.close(force: true);
+          }
+        },
+      );
+
     test('uses a ticket for a secured Desktop gateway', () {
       expect(
         WsClient.buildWebSocketUrl(
@@ -1305,8 +1358,173 @@ void main() {
     );
 
     test(
-      'pins an immutable gateway.ready received before its waiter',
+      'scopes session.resume and session.create per call, not per socket',
       () async {
+        // A bot's stored chat is only resolvable inside its own profile, and
+        // one socket serves the launch profile and the bots at the same time.
+        // The socket-level profile must therefore be a default that a
+        // per-call profile can override, never the only scope there is.
+        final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+        final frames = <Map<String, dynamic>>[];
+        final socketSubscription = server.listen((request) async {
+          final socket = await WebSocketTransformer.upgrade(request);
+          socket.listen((message) {
+            final frame =
+                jsonDecode(message as String) as Map<String, dynamic>;
+            frames.add(frame);
+            socket.add(
+              jsonEncode({
+                'jsonrpc': '2.0',
+                'id': frame['id'],
+                'result': {'session_id': 'abc', 'stored_session_id': 'abc'},
+              }),
+            );
+          });
+        });
+        final client = WsClient(
+          'http://127.0.0.1:${server.port}',
+          token: 'spa',
+        );
+        try {
+          await client.connect();
+          // No socket profile at all.
+          await client.resumeSession('bot-chat', profile: 'cto');
+          await client.createSession(profile: 'cto');
+          // A socket profile still loses to an explicit per-call one, because
+          // `withProfile` refuses to overwrite a key the caller already set.
+          final scoped = WsClient(
+            'http://127.0.0.1:${server.port}',
+            token: 'spa',
+            profile: 'default',
+          );
+          await scoped.connect();
+          await scoped.resumeSession('bot-chat', profile: 'cto');
+          // ... and an ordinary chat keeps sending nothing at all.
+          await client.resumeSession('mine');
+          await client.createSession();
+
+          expect(frames.map((f) => f['method']), [
+            'session.resume',
+            'session.create',
+            'session.resume',
+            'session.resume',
+            'session.create',
+          ]);
+          expect(frames[0]['params'], {
+            'session_id': 'bot-chat',
+            'profile': 'cto',
+          });
+          // `profile` is the only extra key: nothing else may leak in.
+          expect(frames[1]['params'], {'profile': 'cto'});
+          expect(frames[2]['params'], {
+            'session_id': 'bot-chat',
+            'profile': 'cto',
+          });
+          expect(frames[3]['params'], {'session_id': 'mine'});
+          expect(frames[4]['params'], <String, dynamic>{});
+          scoped.close();
+        } finally {
+          client.close();
+          await socketSubscription.cancel();
+          await server.close(force: true);
+        }
+      },
+    );
+
+      test(
+        'resumeSessionWithHistory keeps the transcript the gateway returns',
+        () async {
+          // A bot's stored chat only resolves inside its own profile, and the
+          // REST route on this gateway never reads ?profile=, so the resume
+          // response is the sole place the transcript arrives.
+          final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+          final frames = <Map<String, dynamic>>[];
+          final transcript = <Map<String, dynamic>>[
+            {'role': 'user', 'content': 'hello'},
+            {'role': 'assistant', 'content': 'hi'},
+          ];
+          final socketSubscription = server.listen((request) async {
+            final socket = await WebSocketTransformer.upgrade(request);
+            socket.listen((message) {
+              final frame =
+                  jsonDecode(message as String) as Map<String, dynamic>;
+              frames.add(frame);
+              socket.add(
+                jsonEncode({
+                  'jsonrpc': '2.0',
+                  'id': frame['id'],
+                  'result': {
+                    'session_id': 'runtime-1',
+                    'message_count': transcript.length,
+                    'messages': transcript,
+                  },
+                }),
+              );
+            });
+          });
+          final client = WsClient(
+            'http://127.0.0.1:${server.port}',
+            token: 'spa',
+          );
+          try {
+            await client.connect();
+            final (runtimeId, messages) = await client.resumeSessionWithHistory(
+              'stored-bot-chat',
+              profile: 'cto',
+            );
+
+            expect(frames.single['method'], 'session.resume');
+            // The profile is what makes the stored id resolve at all.
+            expect(frames.single['params'], {
+              'session_id': 'stored-bot-chat',
+              'profile': 'cto',
+            });
+            expect(runtimeId, 'runtime-1');
+            expect(messages, transcript);
+          } finally {
+            client.close();
+            await socketSubscription.cancel();
+            await server.close(force: true);
+          }
+        },
+      );
+
+      test(
+        'resumeSessionWithHistory falls back to the requested id when the '
+        'gateway omits it and tolerates a missing transcript',
+        () async {
+          final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+          final socketSubscription = server.listen((request) async {
+            final socket = await WebSocketTransformer.upgrade(request);
+            socket.listen((message) {
+              final frame =
+                  jsonDecode(message as String) as Map<String, dynamic>;
+              // A minimal payload: no session_id, no messages key.
+              socket.add(
+                jsonEncode({'jsonrpc': '2.0', 'id': frame['id'], 'result': {}}),
+              );
+            });
+          });
+          final client = WsClient(
+            'http://127.0.0.1:${server.port}',
+            token: 'spa',
+          );
+          try {
+            await client.connect();
+            final (runtimeId, messages) =
+                await client.resumeSessionWithHistory('stored-1');
+            expect(runtimeId, 'stored-1');
+            expect(messages, isEmpty);
+          } finally {
+            client.close();
+            await socketSubscription.cancel();
+            await server.close(force: true);
+          }
+        },
+      );
+
+      test('pins an immutable gateway.ready received before its waiter',
+          () async {
         final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
         final callbackFrames = <Map<String, dynamic>>[];
         final applicationEvents = <StreamEvent>[];

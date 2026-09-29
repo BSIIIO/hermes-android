@@ -672,9 +672,20 @@ class ApiClient {
 
   // ── Messages ─────────────────────────────────────────────────────────
 
-  Future<List<Map<String, dynamic>>> getMessages(String sessionId) async {
+  /// Reads one session's history.
+  ///
+  /// [profile] scopes the lookup to that profile's own session store, exactly
+  /// like the gateway's `session.resume`. A bot's canonical `Bot Chat` lives
+  /// in its own profile, so leaving this null returns 404 for a chat that
+  /// demonstrably exists — the same trap the resume path has.
+  Future<List<Map<String, dynamic>>> getMessages(
+    String sessionId, {
+    String? profile,
+  }) async {
+    final scope = profile?.trim();
+    final query = scope == null || scope.isEmpty ? '' : '?profile=$scope';
     final res = await _http.get(
-      Uri.parse('$baseUrl/api/sessions/$sessionId/messages'),
+      Uri.parse('$baseUrl/api/sessions/$sessionId/messages$query'),
       headers: _headers,
     );
     if (res.statusCode != 200) {
@@ -1358,6 +1369,29 @@ class DashboardClient {
 
   Future<Map<String, dynamic>> getModelInfo() => apiGet('model/info');
   Future<Map<String, dynamic>> getModelOptions() => apiGet('model/options');
+
+  /// Reads one session's transcript from the HTTP API.
+  ///
+  /// [profile] scopes the read to that profile's own session store and must be
+  /// set for any chat that is not the launch profile's — a Bot Mode bot's
+  /// canonical `Bot Chat` in particular. Unlike the mobile OpenAI-compatible
+  /// listener this route honours the parameter, so without it a bot's history
+  /// answers 404 for a chat that plainly exists.
+  Future<List<Map<String, dynamic>>> getSessionMessages(
+    String sessionId, {
+    String? profile,
+  }) async {
+    final data = await apiGet(
+      'sessions/$sessionId/messages',
+      queryParameters: {
+        if (profile != null && profile.trim().isNotEmpty)
+          'profile': profile.trim(),
+      },
+    );
+    return (data['messages'] as List<dynamic>? ?? const [])
+        .whereType<Map<String, dynamic>>()
+        .toList();
+  }
   Future<List<Map<String, dynamic>>> getSkills() async {
     final data = await apiGetList('skills');
     return data.whereType<Map<String, dynamic>>().toList();
