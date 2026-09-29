@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../l10n/app_strings.dart';
 import '../services/bots_gateway_client.dart';
 import '../theme/hermes_theme.dart';
+import '../widgets/bot_avatar_face.dart';
 import '../widgets/hermes_components.dart';
 
 /// The Bot Mode roster of one connection.
@@ -32,10 +33,13 @@ class BotsScreen extends StatefulWidget {
   });
 
   @override
-  State<BotsScreen> createState() => _BotsScreenState();
+  State<BotsScreen> createState() => BotsScreenState();
 }
 
-class _BotsScreenState extends State<BotsScreen> {
+/// The roster's state, public so a host that keeps this screen mounted — a
+/// navigation destination rather than a pushed route — can ask it to re-read
+/// after a bot's chat has been written to.
+class BotsScreenState extends State<BotsScreen> {
   late List<HermesBot> _bots = widget.bots;
   bool _loading = true;
   Object? _error;
@@ -47,6 +51,13 @@ class _BotsScreenState extends State<BotsScreen> {
     super.initState();
     _refresh();
   }
+
+  /// Re-reads the roster.
+  ///
+  /// Public because a destination pane is never disposed: the turn count and
+  /// preview on a row would otherwise stay at whatever they were when the
+  /// pane was first built, even after the bot just spoke.
+  Future<void> refresh() => _refresh();
 
   Future<void> _refresh() async {
     setState(() {
@@ -228,11 +239,15 @@ class _BotRow extends StatelessWidget {
   }
 }
 
-/// The bot's avatar, or its Bot Mode colour initial when it has none.
+/// The bot's avatar: the desktop's drawn face, or a stored portrait.
 ///
-/// MVP renders colour + initial only. Fetching `profiles.get_asset` avatars
-/// costs one RPC per visible row in a list that is already one round trip
-/// deep, so that is a follow-up.
+/// The rows no longer show a colour wash with an initial in it — the initial
+/// carried no identity that the name next to it does not already carry, and
+/// suppressing it is what makes room for the face. Resolution is exactly the
+/// desktop's `BotRow`: a real portrait wins, a 160x160 backfill raster of the
+/// vector face is dropped, and otherwise the face is drawn from the profile's
+/// Bot Mode shape and colour (falling back to the derived hue and shape when
+/// the profile does not pin either).
 class _BotAvatar extends StatelessWidget {
   final HermesBot bot;
 
@@ -240,31 +255,38 @@ class _BotAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tokens = HermesTokens.of(context);
-    final accent = _parseColor(bot.colorHex) ?? tokens.accent;
-    final initial = bot.displayTitle.characters.first;
+    final source = BotAvatarSource.resolve(
+      profileName: bot.name,
+      shape: bot.shape,
+      colorHex: bot.colorHex,
+      imageKind: bot.imageKind,
+      hasAvatar: bot.hasAvatar,
+    );
+
+    if (source.kind == BotAvatarKind.photo && source.image != null) {
+      return ExcludeSemantics(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(HermesRadius.sm),
+          child: Image.memory(
+            source.image!,
+            width: 40,
+            height: 40,
+            fit: BoxFit.cover,
+            filterQuality: FilterQuality.medium,
+          ),
+        ),
+      );
+    }
 
     return ExcludeSemantics(
-      child: Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: accent.withValues(alpha: 0.16),
-          borderRadius: BorderRadius.circular(HermesRadius.sm),
-        ),
-        alignment: Alignment.center,
-        child: Text(
-          initial,
-          style: TextStyle(color: accent, fontWeight: FontWeight.w700),
-        ),
+      child: BotFace(
+        source: source,
+        // Idle for now: the roster has no live run state per bot, so nothing
+        // selects the working pose. Wiring that is a follow-up with the same
+        // data that drives the blocked count.
+        mood: BotFaceMood.idle,
+        size: 40,
       ),
     );
-  }
-
-  static Color? _parseColor(String? hex) {
-    final raw = hex?.replaceFirst('#', '').trim() ?? '';
-    if (raw.length != 6) return null;
-    final value = int.tryParse(raw, radix: 16);
-    return value == null ? null : Color(0xFF000000 | value);
   }
 }

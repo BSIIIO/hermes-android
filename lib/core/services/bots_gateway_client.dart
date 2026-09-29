@@ -50,6 +50,22 @@ class HermesBot {
   /// Accent colour from the Bot Mode block (`#rrggbb`), or null.
   final String? colorHex;
 
+  /// The avatar silhouette from the Bot Mode block — `circle`, `squircle`,
+  /// `pill`, `triangle`, `hexagon`, `cloud`, `drop`, `blob`, or null.
+  ///
+  /// Null means the desktop derives one deterministically from [name], so the
+  /// app must do the same derivation rather than picking its own default, or
+  /// the same bot wears a different silhouette on each surface.
+  final String? shape;
+
+  /// Which avatar the profile actually uses, from the Bot Mode block.
+  ///
+  /// `shape` is the drawn face; `photo` is an uploaded/generated raster; a pet
+  /// rides its own companion. Matters because the server stores a 160x160 PNG
+  /// of the shape face for inter-agent notices, and showing that on the roster
+  /// replaces a live face with a still one.
+  final String? imageKind;
+
   /// Stored id of the canonical `Bot Chat`, or null when never used.
   ///
   /// The gateway hides the canonical chat from an ordinary listing, so this
@@ -75,6 +91,8 @@ class HermesBot {
     required this.skillCount,
     required this.hasAvatar,
     required this.colorHex,
+    required this.shape,
+    required this.imageKind,
     required this.botChatSessionId,
     required this.botChatPreview,
     required this.botChatMessageCount,
@@ -106,6 +124,8 @@ class HermesBot {
       skillCount: (json['skill_count'] as num?)?.toInt() ?? 0,
       hasAvatar: json['has_avatar'] == true,
       colorHex: _nonEmpty(botsBlock?['color']),
+      shape: _nonEmpty(botsBlock?['shape']),
+      imageKind: _nonEmpty(botsBlock?['imageKind']),
       botChatSessionId: _nonEmpty(canonical?['id']),
       botChatPreview: canonical?['preview']?.toString() ?? '',
       botChatMessageCount:

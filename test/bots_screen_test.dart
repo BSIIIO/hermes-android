@@ -68,7 +68,11 @@ Future<void> _pump(
       ),
     ),
   );
-  await tester.pumpAndSettle();
+  // Not `pumpAndSettle`: the bot faces run a ticker for as long as they are
+  // mounted, exactly like the desktop's `requestAnimationFrame` loop, so there
+  // is no rest frame to settle on and it would always time out. One pump is
+  // enough for the roster's own async load to resolve.
+  await tester.pump();
 }
 
 void main() {
@@ -117,7 +121,9 @@ void main() {
       );
 
       await tester.tap(find.text('首席技术官（CTO）'));
-      await tester.pumpAndSettle();
+      // A finite pump, not `pumpAndSettle`: the faces animate forever, so
+      // there is no frame the app comes to rest on. One pump flushes the tap.
+      await tester.pump();
 
       expect(opened, ['cto']);
     });

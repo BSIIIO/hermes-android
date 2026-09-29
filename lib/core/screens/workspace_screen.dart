@@ -152,6 +152,68 @@ Session botChatSession(HermesBot bot) {
   );
 }
 
+/// The Bot Mode roster as a navigation destination.
+///
+/// The shell keeps every visited destination mounted, so this widget is built
+/// once per destination and must therefore own the roster's transport itself
+/// rather than expect a host to hand one over: it reuses the gateway the
+/// workspace already holds when there is one, and opens its own otherwise.
+/// The one it opens is closed with the pane, so a connection that never
+/// visits Bots never pays for a socket.
+class _BotsPane extends StatefulWidget {
+  final DesktopGatewayClient? gateway;
+  final SavedConnection connection;
+  final ValueChanged<HermesBot> onOpenBot;
+
+  const _BotsPane({
+    super.key,
+    required this.gateway,
+    required this.connection,
+    required this.onOpenBot,
+  });
+
+  @override
+  State<_BotsPane> createState() => _BotsPaneState();
+}
+
+class _BotsPaneState extends State<_BotsPane> {
+  /// A gateway this pane opened itself, closed with the pane.
+  ///
+  /// Null on a connection the workspace already has a gateway for — that one
+  /// is owned by the workspace and outlives every destination switch.
+  DesktopGatewayClient? _ownGateway;
+  late final BotsGatewayClient _client = BotsGatewayClient(_rpc);
+
+  @override
+  void dispose() {
+    _ownGateway?.close();
+    super.dispose();
+  }
+
+  /// The gateway the roster talks over, opened once per call that finds none
+  /// already held. [BotsScreen.refresh] re-enters here, so this is not
+  /// initState-only work.
+  DesktopGatewayClient _gateway() {
+    final held = widget.gateway;
+    if (held != null) return held;
+    return _ownGateway ??= DesktopGatewayClient.fromConnection(
+      widget.connection,
+    );
+  }
+
+  Future<Map<String, dynamic>> _rpc(String method, Map<String, dynamic> params) =>
+      _gateway().rpc(method, params);
+
+  @override
+  Widget build(BuildContext context) {
+    return BotsScreen(
+      bots: const [],
+      load: _client.list,
+      onOpenBot: widget.onOpenBot,
+    );
+  }
+}
+
 class WorkspaceScreen extends StatefulWidget {
   final SavedConnection connection;
 
@@ -261,7 +323,10 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
   /// Reaches the live Home pane so it can be refreshed after a chat closes.
   final _homeKey = GlobalKey<HomePaneState>();
 
-  /// Reaches the live Activity pane for the same reason.
+  /// Reaches the live Bots pane, so it can be refreshed on demand.
+  final _botsKey = GlobalKey<BotsScreenState>();
+
+  /// Reaches the live Activity pane opened from the More menu.
   final _activityKey = GlobalKey<ActivityPaneState>();
 
   /// Reaches the action-only Activity view opened from Home.
@@ -793,6 +858,17 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           onProjectSelected: (projectId) => _openProject(repository, projectId),
           spaceStore: _spaceStore,
         );
+      case HermesDestination.bots:
+        // Built eagerly rather than through More's `_openBots()`: this is a
+        // primary destination now, so the shell keeps it mounted across
+        // switches exactly like Home and Projects, and the roster keeps its
+        // scroll position and loaded rows.
+        return _BotsPane(
+          key: _botsKey,
+          gateway: _ownedGateway,
+          connection: widget.connection,
+          onOpenBot: (bot) => unawaited(_openBotChat(bot)),
+        );
       case HermesDestination.home:
         return HomePane(
           key: _homeKey,
@@ -801,12 +877,6 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           running: _turnSignals.running,
           archived: _archivedQuickChats,
           onOpenSession: _openSession,
-        );
-      case HermesDestination.activity:
-        return ActivityPane(
-          key: _activityKey,
-          loadFeed: _loadActivity,
-          onOpenItem: _openActivityItem,
         );
       case HermesDestination.more:
         return MorePane(
@@ -962,6 +1032,27 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
           loadFeed: _loadActivity,
           onOpenItem: _openActivityItem,
           actionableOnly: true,
+        ),
+      ),
+    );
+  }
+
+  /// Opens the full Activity timeline — every group, not just the actionable
+  /// ones.
+  ///
+  /// Activity left the primary bar when Bots took its slot, so the only route
+  /// to it is this one, opened from the More menu. The feed, the row handler
+  /// and the badge refreshes are exactly what the former destination pane
+  /// used; only the entry point changed.
+  void _openActivity() {
+    final s = AppStrings.of(context);
+    _push(
+      Scaffold(
+        appBar: AppBar(title: Text(s.moreActivityTitle)),
+        body: ActivityPane(
+          key: _activityKey,
+          loadFeed: _loadActivity,
+          onOpenItem: _openActivityItem,
         ),
       ),
     );
@@ -1378,14 +1469,13 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
 
   /// Opens the Bot Mode roster and, on a tap, that bot's own chat.
   ///
-  /// The roster rides the gateway's WebSocket transport, which the workspace
-  /// only keeps while a Projects repository owns it — so a caller without one
-  /// (an injected repository, or a connection with no gateway URL) gets its own
-  /// client, exactly like the Files screen builds its own REST client.
+  /// Kept for a caller that wants the roster as a pushed route. The primary
+  /// navigation builds [_BotsPane] as a destination instead, so the roster
+  /// stays mounted across switches — this is the route-only path, still used
+  /// wherever a transient surface is the right shape.
   Future<void> _openBots() async {
     if (!mounted) return;
-    final gateway = _ownedGateway ??
-        DesktopGatewayClient.fromConnection(widget.connection);
+    final gateway = _botsGateway();
 
     final client = BotsGatewayClient(
       (method, params) => gateway.rpc(method, params),
@@ -1405,6 +1495,16 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
     if (_ownedGateway == null) gateway.close();
   }
 
+  /// The gateway the roster talks over.
+  ///
+  /// The Bot Mode `profiles.*` calls ride the same WebSocket transport the
+  /// workspace already keeps for Projects, so a connection that has one reuses
+  /// it; anything else gets its own client, exactly like the Files screen
+  /// builds its own REST client.
+  DesktopGatewayClient _botsGateway() =>
+      _ownedGateway ??
+      DesktopGatewayClient.fromConnection(widget.connection);
+
   /// Opens one bot's own conversation.
   ///
   /// The session carries the bot's stored Bot Chat id, so the gateway resumes
@@ -1422,6 +1522,12 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         ),
       ),
     );
+    if (!mounted) return;
+    // The destination pane is never disposed, so the roster's turn counts and
+    // previews are whatever they were when it was first built unless they are
+    // re-read here. Best-effort: a refresh failure costs a stale row, never
+    // the chat the user just left.
+    unawaited(_botsKey.currentState?.refresh() ?? Future<void>.value());
   }
 
   void _openMoreEntry(MoreEntry entry) {
@@ -1431,10 +1537,14 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         _openWorkspaceSessionView(WorkspaceSessionView.unassigned);
       case 'archived-quick':
         _openWorkspaceSessionView(WorkspaceSessionView.archivedQuick);
+      case 'activity':
+        // Bots took Activity's slot in the primary bar, so the timeline is
+        // reached from here instead. Pushed rather than switched-to because
+        // there is no Activity destination any more — the same shape Home's
+        // Inbox uses, so the two routes stay consistent.
+        _openActivity();
       case 'files':
         unawaited(_openFiles());
-      case 'bots':
-        unawaited(_openBots());
       case 'cron':
         _push(CronScreen(connection: connection));
       case 'skills':
@@ -1490,7 +1600,6 @@ class _WorkspaceScreenState extends State<WorkspaceScreen> {
         // in Projects or More.
         badges: {
           HermesDestination.home: _turnSignals.attention.length,
-          HermesDestination.activity: _activityBlockedCount,
         },
         onDestinationChanged: (destination) =>
             setState(() => _destination = destination),
