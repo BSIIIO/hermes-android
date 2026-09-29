@@ -148,6 +148,10 @@ void main() {
       // theme never overrides `canvasColor`, so that default is near-black
       // under BOTH brightnesses — the report was a black menu in light mode
       // while the chat it opened was white.
+      //
+      // The surface is now painted by a ColoredBox rather than a Scaffold,
+      // because a primary destination must not carry an AppBar of its own.
+      // The regression it guards is the colour, so that is what is asserted.
       await _pump(
         tester,
         bots: _bots,
@@ -155,24 +159,20 @@ void main() {
         onOpenBot: (_) {},
       );
 
-      // The BotsScreen's own Scaffold, not the harness's `home:` wrapper.
-      final scope = find.ancestor(
+      final paint = find.ancestor(
         of: find.byType(RefreshIndicator),
-        matching: find.byType(Scaffold),
+        matching: find.byType(ColoredBox),
       );
-      final scaffold = tester.widget<Scaffold>(scope.first);
-      expect(scaffold.backgroundColor, isNotNull);
-      expect(
-        scaffold.backgroundColor,
-        HermesTokens.forBrightness(Brightness.dark).surface,
-      );
-      expect(find.byType(AppBar), findsOneWidget);
+      expect(paint, findsWidgets);
+      final box = tester.widget<ColoredBox>(paint.first);
+      expect(box.color, HermesTokens.forBrightness(Brightness.dark).surface);
     });
 
-    testWidgets('paints the light surface when the app follows a light theme',
+    testWidgets(
+        'paints the light surface when the app follows a light theme',
         (tester) async {
-      // The same scaffold must follow the theme, not a hardcoded colour, or
-      // the menu is black on a white app.
+      // The same paint must follow the theme, not a hardcoded colour, or the
+      // menu is black on a white app.
       await _pump(
         tester,
         bots: _bots,
@@ -181,16 +181,46 @@ void main() {
         brightness: Brightness.light,
       );
 
-      // The BotsScreen's own Scaffold, not the harness's `home:` wrapper.
-      final scope = find.ancestor(
+      final paint = find.ancestor(
         of: find.byType(RefreshIndicator),
-        matching: find.byType(Scaffold),
+        matching: find.byType(ColoredBox),
       );
-      final scaffold = tester.widget<Scaffold>(scope.first);
-      expect(
-        scaffold.backgroundColor,
-        HermesTokens.forBrightness(Brightness.light).surface,
+      expect(paint, findsWidgets);
+      final box = tester.widget<ColoredBox>(paint.first);
+      expect(box.color, HermesTokens.forBrightness(Brightness.light).surface);
+    });
+
+    testWidgets('carries no AppBar of its own', (tester) async {
+      // A primary destination is hosted by the shell, which already shows one
+      // title bar. This screen used to add its own, and the installed build had
+      // two title bars and two back buttons. The harness also wraps the screen
+      // in a Scaffold, so the assertion is that the *screen* contributes none:
+      // find.byType(AppBar) must be zero with no Scaffold of ours in the way.
+      await _pump(
+        tester,
+        bots: _bots,
+        load: () async => _bots,
+        onOpenBot: (_) {},
       );
+
+      expect(find.byType(AppBar), findsNothing);
+      expect(find.byType(Scaffold), findsOneWidget); // the harness's
+    });
+
+    testWidgets('keeps its own heading and subtitle inside the pane',
+        (tester) async {
+      // The AppBar went away, not the heading: the roster still says what it
+      // is and what it does, as body content, like the other destinations.
+      final s = AppStringsEn();
+      await _pump(
+        tester,
+        bots: _bots,
+        load: () async => _bots,
+        onOpenBot: (_) {},
+      );
+
+      expect(find.text(s.botsTitle), findsOneWidget);
+      expect(find.text(s.botsSubtitle), findsOneWidget);
     });
 
     testWidgets('surfaces a load failure with a retry', (tester) async {

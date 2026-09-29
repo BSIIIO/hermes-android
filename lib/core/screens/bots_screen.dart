@@ -85,15 +85,19 @@ class BotsScreenState extends State<BotsScreen> {
     final s = AppStrings.of(context);
     final tokens = HermesTokens.of(context);
 
-    return Scaffold(
-      // A pushed route paints no background of its own: without this Scaffold
-      // the page inherits the nearest Material's `canvasColor`, and this theme
-      // never overrides `canvasColor` — so it stays the M3 seed default, which
-      // is near-black under either brightness. Every sibling screen declares
-      // its own Scaffold for exactly this reason.
-      backgroundColor: tokens.surface,
-      appBar: AppBar(title: Text(s.botsTitle)),
-      body: RefreshIndicator(
+    // No AppBar and no Scaffold: this is a primary navigation destination now,
+    // so the shell already provides the single title bar every other
+    // destination shows. Keeping its own AppBar stacked a second title bar and
+    // a second back button on top of the shell's.
+    //
+    // The surface colour is still applied, because an unpainted pane inherits
+    // the nearest Material's `canvasColor` and this theme never overrides that
+    // — it would stay the M3 seed default, near-black under either brightness.
+    // Every sibling screen used to solve this with its own Scaffold; a
+    // ColoredBox gives the same paint without the extra bar.
+    return ColoredBox(
+      color: tokens.surface,
+      child: RefreshIndicator(
         onRefresh: _refresh,
         child: ListView(
           children: [
@@ -189,10 +193,7 @@ class _BotRow extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      bot.displayTitle,
-                      style: tokens.typography.section,
-                    ),
+                    Text(bot.displayTitle, style: tokens.typography.section),
                     if (bot.description.isNotEmpty) ...[
                       const SizedBox(height: HermesSpacing.xs),
                       Text(
