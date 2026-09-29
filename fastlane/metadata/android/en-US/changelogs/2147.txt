@@ -1,0 +1,4 @@
+- Upstream v2.1.7 sync: durable desktop reattach and session paging, strict session-binding on resume, and stock-gateway compat for project and folderless chats
+- Turn transport banner distinguishes a background-recovery-capable gateway from the legacy live-transport fallback
+- Session list: search hints and empty-state copy follow the active search mode; chat move/rename/branch actions stay profile-scoped
+- Version 2.1.7 (build 2147), still signed with the fork's own release key
