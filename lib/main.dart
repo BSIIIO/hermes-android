@@ -770,7 +770,8 @@ class HomeScreenState extends State<HomeScreen> {
                       } on CredentialStorageException {
                         if (!ctx.mounted) return;
                         setDialogState(() {
-                          error = s.apiKeyStoreFailed;
+                          error =
+                              '${s.apiKeyStoreFailed}\n\n${s.connectionStoreFailedHint}';
                           validating = false;
                         });
                       } catch (_) {
@@ -1000,7 +1001,8 @@ class HomeScreenState extends State<HomeScreen> {
                         client.close();
                         if (!ctx.mounted) return;
                         setDialogState(() {
-                          error = s.dashboardCredentialsStoreFailed;
+                          error =
+                              '${s.dashboardCredentialsStoreFailed}\n\n${s.connectionStoreFailedHint}';
                           validating = false;
                         });
                       } catch (_) {
@@ -1069,7 +1071,11 @@ class HomeScreenState extends State<HomeScreen> {
               } on CredentialStorageException {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(s.connectionDeleteFailed)),
+                  SnackBar(
+                    content: Text(
+                      '${s.connectionDeleteFailed}\n\n${s.connectionStoreFailedHint}',
+                    ),
+                  ),
                 );
               }
             } else if (v == 'edit') {
@@ -1404,7 +1410,7 @@ class _AddDialogState extends State<_AddDialog> {
     } on CredentialStorageException {
       if (!mounted) return;
       setState(() {
-        _error = s.connectionStoreFailed;
+        _error = '${s.connectionStoreFailed}\n\n${s.connectionStoreFailedHint}';
         _validating = false;
       });
     } catch (_) {

@@ -428,6 +428,42 @@ void main() {
     expect(_storedMetadata(prefs), hasLength(1));
   });
 
+  test('store failures name the recovery action', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final store = _FaultInjectingCredentialStore();
+    final manager = await ConnectionManager.create(
+      prefs,
+      credentialStore: store,
+    );
+    await manager.saveConnection('Home', '192.0.2.10', 8642, 'synthetic-api');
+    final id = manager.getConnections().single.id;
+
+    // The exception carries a machine-readable case so the UI can pick the
+    // matching localized copy instead of a bare "could not be stored".
+    store.throwOnNextRead = StateError('keystore key gone');
+    await expectLater(
+      manager.updateApiKey(id, 'synthetic-api-rejected'),
+      throwsA(
+        isA<CredentialStorageException>()
+            .having((e) => e.message, 'message', 'connectionStoreFailed'),
+      ),
+    );
+
+    // A delete failure surfaces the same case: _commitCredentialAndMetadata
+    // wraps every write path, so the user-visible case is connectionStoreFailed
+    // either way. The point is that it is a stable, machine-readable case the
+    // UI can map to recovery copy, not a sentence nobody can act on.
+    await manager.updateApiKey(id, 'synthetic-api-again');
+    store.throwOnNextRead = StateError('keystore key gone');
+    await expectLater(
+      manager.deleteConnection(id),
+      throwsA(
+        isA<CredentialStorageException>()
+            .having((e) => e.message, 'message', 'connectionStoreFailed'),
+      ),
+    );
+  });
+
   test('migrateWithBackup is disabled so migration resolves the namespaced '
       'key storage', () {
     // flutter_secure_storage 10.3.1 hardcodes "FlutterSecureKeyStorage" in

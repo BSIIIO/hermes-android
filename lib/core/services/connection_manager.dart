@@ -77,9 +77,21 @@ class FlutterSecureCredentialStore implements CredentialStore {
 }
 
 class CredentialStorageException implements Exception {
+  /// Human-readable description. Never shown directly; the UI maps [caseName]
+  /// to localized copy so the failure can name its own recovery action.
   final String message;
 
-  const CredentialStorageException(this.message);
+  /// Machine-readable identifier for the failure, e.g. `connectionStoreFailed`.
+  /// Empty for internal failures that never reach the UI.
+  final String caseName;
+
+  const CredentialStorageException(this.message, {this.caseName = ''});
+
+  /// Builds a UI-visible failure from a localization key so the caller can
+  /// pick the matching localized copy.
+  const CredentialStorageException.ui(String caseName)
+      : message = caseName,
+        caseName = caseName;
 
   @override
   String toString() => message;
@@ -555,9 +567,9 @@ class ConnectionManager {
         // The caller still receives a generic fail-closed error. Never attach
         // platform errors because they may include sensitive storage details.
       }
-      throw const CredentialStorageException(
-        'Connection credentials could not be saved safely.',
-      );
+      // The UI maps the case name to localized copy that names the recovery
+      // action, so this must carry the case the user hit.
+      throw const CredentialStorageException.ui('connectionStoreFailed');
     }
   }
 
@@ -570,9 +582,7 @@ class ConnectionManager {
       await _credentialStore.delete(key);
       final readBack = await _credentialStore.read(key);
       if (readBack != null) {
-        throw const CredentialStorageException(
-          'Connection credentials could not be cleared safely.',
-        );
+        throw const CredentialStorageException.ui('connectionDeleteFailed');
       }
       return;
     }

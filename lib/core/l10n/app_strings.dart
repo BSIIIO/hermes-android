@@ -1633,6 +1633,9 @@ abstract class AppStrings {
   /// The connection could not be stored securely.
   String get connectionStoreFailed;
 
+  /// Recoverable guidance shown when the secure store refuses a write.
+  String get connectionStoreFailedHint;
+
   /// Cannot reach {0}:{1}. Check the host and port.
   String get connectionUnreachable;
 
@@ -3728,6 +3731,12 @@ class AppStringsEn extends AppStrings {
 
   @override
   String get apiKeyStoreFailed => 'The API key could not be stored securely.';
+
+  @override
+  String get connectionStoreFailedHint =>
+      'This phone\'s secure storage is not accepting new credentials. '
+      'Use "Reset local connections" on the home screen, then add the '
+      'connection again.';
 
   @override
   String get dashboardCredentialsStoreFailed =>
@@ -5889,6 +5898,10 @@ class AppStringsZh extends AppStrings {
 
   @override
   String get connectionStoreFailed => '无法安全存储连接。';
+
+  @override
+  String get connectionStoreFailedHint =>
+      '本机的安全存储无法写入新凭据。请先在首页使用「重置本地连接」，然后重新添加连接。';
 
   @override
   String get connectionUnreachable => '无法连接到 {0}:{1}，请检查主机和端口。';
