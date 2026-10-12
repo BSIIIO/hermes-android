@@ -31,10 +31,18 @@ abstract interface class CredentialStore {
 
 class FlutterSecureCredentialStore implements CredentialStore {
   static const AndroidOptions _androidOptions = AndroidOptions(
+    // Do NOT add migrateWithBackup here. flutter_secure_storage 10.3.1
+    // hardcodes "FlutterSecureKeyStorage" in every *WithBackup migration
+    // path, so with storageNamespace set it unwraps the AES key from the
+    // wrong file and fails; resetOnError: false then rethrows forever.
+    // migrateOnAlgorithmChange (default true) still migrates via
+    // migrateNonBiometric, which resolves the namespaced key storage.
     resetOnError: false,
-    migrateWithBackup: true,
     storageNamespace: 'hermes_android_connections',
   );
+
+  /// Exposed so a test can pin the namespace/reset/migrate contract above.
+  static AndroidOptions get androidOptionsForTest => _androidOptions;
 
   final FlutterSecureStorage _storage;
   final Map<String, String> _cache = <String, String>{};

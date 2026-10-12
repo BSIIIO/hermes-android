@@ -346,4 +346,24 @@ void main() {
     expect(store.values, isEmpty);
     expect(store.deletes, 0);
   });
+
+  test('migrateWithBackup is disabled so migration resolves the namespaced '
+      'key storage', () {
+    // flutter_secure_storage 10.3.1 hardcodes "FlutterSecureKeyStorage" in
+    // every *WithBackup migration path, ignoring storageNamespace. With a
+    // namespace set those paths unwrap the AES key from the wrong file and
+    // fail, and resetOnError: false then rethrows forever. Keeping the
+    // namespace while dropping migrateWithBackup routes migration through
+    // migrateNonBiometric, which resolves it correctly.
+    //
+    // AndroidOptions keeps those flags private, so assert on the map that is
+    // actually handed to the platform channel — that is the real contract.
+    final options = FlutterSecureCredentialStore.androidOptionsForTest.toMap();
+    expect(options['storageNamespace'], 'hermes_android_connections');
+    expect(options['resetOnError'], 'false');
+    expect(options['migrateWithBackup'], 'false');
+    // migrateOnAlgorithmChange must stay on: it is what still performs the
+    // migration, now through the path that resolves the namespaced key store.
+    expect(options['migrateOnAlgorithmChange'], 'true');
+  });
 }
