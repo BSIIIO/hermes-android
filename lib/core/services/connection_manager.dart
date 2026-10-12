@@ -162,6 +162,13 @@ class ConnectionManager {
   /// Every legacy credential bundle is written and read back first. The
   /// SharedPreferences list is sanitized only after all read-backs match, so a
   /// partial secure-store failure leaves every legacy profile retryable.
+  ///
+  /// A failure here is recorded in [migrationFailed] rather than thrown: this
+  /// runs only to migrate pre-secure-storage plaintext, and throwing it out of
+  /// [create] blocked the whole app behind the startup-recovery screen, whose
+  /// only action deletes the saved-connections metadata — losing every
+  /// connection while leaving the credential store exactly as broken. The app
+  /// must start either way.
   Future<void> initialize() async {
     final maps = _readConnectionMaps();
     final connections = _connectionsFromMaps(maps);
@@ -190,14 +197,20 @@ class ConnectionManager {
       if (hasLegacyFields) {
         await _saveAll(connections);
       }
+      _migrationFailed = false;
     } on CredentialStorageException {
-      rethrow;
+      _migrationFailed = true;
     } catch (_) {
-      throw const CredentialStorageException(
-        'Connection credentials could not be migrated safely.',
-      );
+      _migrationFailed = true;
     }
   }
+
+  /// True when the credential store could not be read or written during
+  /// [initialize]. The app still starts; the user sees the connections with
+  /// their stored credentials unavailable.
+  bool get migrationFailed => _migrationFailed;
+
+  bool _migrationFailed = false;
 
   List<SavedConnection> getConnections() {
     return _connectionsFromMaps(
