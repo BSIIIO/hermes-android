@@ -463,6 +463,27 @@ class ConnectionManager {
     );
   }
 
+  /// Clears the local connection store so a wedged secure-storage slot can be
+  /// rebuilt from scratch, without a reinstall.
+  ///
+  /// The platform secure store has no self-healing path: `resetOnError` is
+  /// false so the plugin rethrows instead of recovering, and every recovery
+  /// entry point in the UI (settings, config import) needs a working
+  /// connection first — which is exactly what a failed write denies the user.
+  /// This is the escape hatch: it removes the metadata list and every
+  /// credential slot, then lets the next add re-initialize the store.
+  ///
+  /// Connections on the gateway are untouched; only the local copy goes away.
+  Future<void> resetLocalConnectionStorage() async {
+    final ids = _connectionsFromMaps(_readConnectionMaps())
+        .map((connection) => connection.id)
+        .toList();
+    for (final id in ids) {
+      await _credentialStore.delete(_credentialKey(id));
+    }
+    await prefs.remove(_key);
+  }
+
   List<Map<String, dynamic>> _readConnectionMaps() {
     try {
       final jsonList = prefs.getStringList(_key) ?? const <String>[];

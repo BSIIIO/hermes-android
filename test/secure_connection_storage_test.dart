@@ -291,4 +291,59 @@ void main() {
     expect(retained.dashboardPassword, 'synthetic-password-stable');
     _expectNoPlaintextCredentials(prefs);
   });
+
+  test('resetLocalConnectionStorage clears metadata and every credential '
+      'slot', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final store = _FaultInjectingCredentialStore();
+    final manager = await ConnectionManager.create(
+      prefs,
+      credentialStore: store,
+    );
+    await manager.saveConnection(
+      'Home',
+      '192.0.2.10',
+      8642,
+      'synthetic-api-a',
+      dashboardPassword: 'synthetic-password-a',
+    );
+    await manager.saveConnection(
+      'Backup',
+      '192.0.2.11',
+      8642,
+      'synthetic-api-b',
+    );
+    expect(manager.getConnections(), hasLength(2));
+    expect(store.values, hasLength(2));
+
+    await manager.resetLocalConnectionStorage();
+
+    expect(manager.getConnections(), isEmpty);
+    expect(_storedMetadata(prefs), isEmpty);
+    expect(store.values, isEmpty);
+    expect(store.deletes, 2);
+    // A reset store must accept a fresh write — the whole point of the
+    // escape hatch is that adding a connection works again afterwards.
+    await manager.saveConnection('Fresh', '192.0.2.12', 8642, 'synthetic-api-c');
+    final fresh = manager.getConnections().single;
+    expect(fresh.label, 'Fresh');
+    expect(fresh.apiKey, 'synthetic-api-c');
+    expect(store.values, hasLength(1));
+  });
+
+  test('resetLocalConnectionStorage is a no-op on an already empty store',
+      () async {
+    final prefs = await SharedPreferences.getInstance();
+    final store = _FaultInjectingCredentialStore();
+    final manager = await ConnectionManager.create(
+      prefs,
+      credentialStore: store,
+    );
+
+    await manager.resetLocalConnectionStorage();
+
+    expect(manager.getConnections(), isEmpty);
+    expect(store.values, isEmpty);
+    expect(store.deletes, 0);
+  });
 }

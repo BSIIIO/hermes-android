@@ -404,6 +404,47 @@ class HomeScreenState extends State<HomeScreen> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  /// Confirms, then clears the local connection store.
+  ///
+  /// Offered only when the connection list is empty, where a failed secure
+  /// write otherwise leaves no way forward.
+  Future<void> _confirmResetConnectionStorage() async {
+    final s = AppStrings.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(s.homeResetLocalConnections),
+        content: Text(s.homeResetLocalConnectionsBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(s.commonCancel),
+          ),
+          FilledButton(
+            key: const Key('home_reset_storage_confirm_button'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(s.homeResetLocalConnectionsConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    try {
+      await widget.connManager.resetLocalConnectionStorage();
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(s.homeResetLocalConnectionsFailed)),
+      );
+      return;
+    }
+    if (!mounted) return;
+    _refresh();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(s.homeResetLocalConnectionsDone)),
+    );
+  }
+
   Future<void> _closeDialogAndRefresh(BuildContext dialogContext) async {
     // Let editable controls detach from the IME before removing their route.
     // Rebuilding HomeScreen while the dialog still owns focus can deactivate
@@ -1050,6 +1091,18 @@ class HomeScreenState extends State<HomeScreen> {
                     onPressed: _showRestoreConfig,
                     icon: const Icon(Icons.settings_backup_restore),
                     label: Text(s.restoreConfiguration),
+                  ),
+                  // Escape hatch for a secure store that refuses every write.
+                  // Without it a failed credential write is unrecoverable in
+                  // the app: settings and config import both need a working
+                  // connection first, so the user's only option was a
+                  // reinstall. See ConnectionManager
+                  // .resetLocalConnectionStorage.
+                  TextButton.icon(
+                    key: const Key('home_reset_storage_button'),
+                    onPressed: _confirmResetConnectionStorage,
+                    icon: const Icon(Icons.delete_forever_outlined),
+                    label: Text(s.homeResetLocalConnections),
                   ),
                 ],
               ),
