@@ -14,6 +14,12 @@ class _FaultInjectingCredentialStore implements CredentialStore {
   int? failReadNumber;
   bool failNextRead = false;
 
+  /// Thrown by the next `read`, like a Keystore that lost its key.
+  Object? throwOnNextRead;
+
+  /// When true, every `read` throws, like a permanently dead Keystore.
+  bool throwOnRead = false;
+
   @override
   Future<void> delete(String key) async {
     deletes += 1;
@@ -23,6 +29,14 @@ class _FaultInjectingCredentialStore implements CredentialStore {
 
   @override
   Future<String?> read(String key) async {
+    if (throwOnRead) {
+      throw StateError('credential store unavailable');
+    }
+    final pending = throwOnNextRead;
+    if (pending != null) {
+      throwOnNextRead = null;
+      throw pending;
+    }
     reads += 1;
     if (failNextRead || reads == failReadNumber) {
       failNextRead = false;
@@ -185,15 +199,12 @@ void main() {
     final store = _FaultInjectingCredentialStore()..failReadNumber = 2;
     final manager = ConnectionManager(prefs, credentialStore: store);
 
-    Object? migrationError;
-    try {
-      await manager.initialize();
-    } catch (error) {
-      migrationError = error;
-    }
-    expect(migrationError, isA<CredentialStorageException>());
-    expect(migrationError.toString(), isNot(contains('synthetic-api')));
-    expect(migrationError.toString(), isNot(contains('synthetic-password')));
+    // initialize() no longer throws a credential-store failure; it records it
+    // in migrationFailed so the app can start. The important guarantees are
+    // unchanged: nothing is sanitized while the store is failing, and retrying
+    // completes the migration idempotently.
+    await manager.initialize();
+    expect(manager.migrationFailed, isTrue);
     expect(prefs.getStringList('saved_connections'), legacy);
     expect(store.values, hasLength(2));
     expect(manager.getConnections(), hasLength(2));
@@ -345,5 +356,131 @@ void main() {
     expect(manager.getConnections(), isEmpty);
     expect(store.values, isEmpty);
     expect(store.deletes, 0);
+  });
+
+  test('a failed delete leaves the connection intact and retryable',
+      () async {
+    final prefs = await SharedPreferences.getInstance();
+    final store = _FaultInjectingCredentialStore();
+    final manager = await ConnectionManager.create(
+      prefs,
+      credentialStore: store,
+    );
+    await manager.saveConnection(
+      'Home',
+      '192.0.2.10',
+      8642,
+      'synthetic-api-stable',
+    );
+    final id = manager.getConnections().single.id;
+
+    // A Keystore that lost its key throws on the read-back that verifies the
+    // credential was cleared.
+    store.throwOnNextRead = StateError('keystore key gone');
+    await expectLater(
+      manager.deleteConnection(id),
+      throwsA(isA<CredentialStorageException>()),
+    );
+
+    // The connection must survive the failure: the metadata list is still on
+    // disk and still lists it.
+    final retained = manager.getConnections();
+    expect(retained, hasLength(1));
+    expect(retained.single.id, id);
+    expect(retained.single.apiKey, 'synthetic-api-stable');
+    expect(_storedMetadata(prefs), hasLength(1));
+
+    // Retrying with a healthy store completes the delete.
+    await manager.deleteConnection(id);
+    expect(manager.getConnections(), isEmpty);
+    expect(_storedMetadata(prefs), isEmpty);
+  });
+
+  test('a dead credential store does not block startup', () async {
+    // Regression test for the reported wedge. initialize() exists only to
+    // migrate legacy plaintext credentials, but a Keystore failure there was
+    // propagated out of ConnectionManager.create(), so main() showed the
+    // startup-recovery screen whose only button deletes saved_connections —
+    // destroying the metadata while leaving the Keystore just as broken.
+    // The failure must be recorded and the app allowed to start.
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final store = _FaultInjectingCredentialStore();
+
+    // Store a connection while the store is healthy.
+    final healthy = await ConnectionManager.create(
+      prefs,
+      credentialStore: store,
+    );
+    await healthy.saveConnection('Home', '192.0.2.10', 8642, 'synthetic-api');
+    expect(healthy.migrationFailed, isFalse);
+
+    // Relaunch with a store that throws on every read.
+    store.throwOnRead = true;
+    final relaunched = await ConnectionManager.create(
+      prefs,
+      credentialStore: store,
+    );
+
+    expect(relaunched.migrationFailed, isTrue);
+    // The metadata is intact and the connection is still listed.
+    expect(relaunched.getConnections(), hasLength(1));
+    expect(_storedMetadata(prefs), hasLength(1));
+  });
+
+  test('store failures name the recovery action', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final store = _FaultInjectingCredentialStore();
+    final manager = await ConnectionManager.create(
+      prefs,
+      credentialStore: store,
+    );
+    await manager.saveConnection('Home', '192.0.2.10', 8642, 'synthetic-api');
+    final id = manager.getConnections().single.id;
+
+    // The exception carries a machine-readable case so the UI can pick the
+    // matching localized copy instead of a bare "could not be stored".
+    store.throwOnNextRead = StateError('keystore key gone');
+    await expectLater(
+      manager.updateApiKey(id, 'synthetic-api-rejected'),
+      throwsA(
+        isA<CredentialStorageException>()
+            .having((e) => e.message, 'message', 'connectionStoreFailed'),
+      ),
+    );
+
+    // A delete failure surfaces the same case: _commitCredentialAndMetadata
+    // wraps every write path, so the user-visible case is connectionStoreFailed
+    // either way. The point is that it is a stable, machine-readable case the
+    // UI can map to recovery copy, not a sentence nobody can act on.
+    await manager.updateApiKey(id, 'synthetic-api-again');
+    store.throwOnNextRead = StateError('keystore key gone');
+    await expectLater(
+      manager.deleteConnection(id),
+      throwsA(
+        isA<CredentialStorageException>()
+            .having((e) => e.message, 'message', 'connectionStoreFailed'),
+      ),
+    );
+  });
+
+  test('migrateWithBackup is disabled so migration resolves the namespaced '
+      'key storage', () {
+    // flutter_secure_storage 10.3.1 hardcodes "FlutterSecureKeyStorage" in
+    // every *WithBackup migration path, ignoring storageNamespace. With a
+    // namespace set those paths unwrap the AES key from the wrong file and
+    // fail, and resetOnError: false then rethrows forever. Keeping the
+    // namespace while dropping migrateWithBackup routes migration through
+    // migrateNonBiometric, which resolves it correctly.
+    //
+    // AndroidOptions keeps those flags private, so assert on the map that is
+    // actually handed to the platform channel — that is the real contract.
+    final options = FlutterSecureCredentialStore.androidOptionsForTest.toMap();
+    expect(options['storageNamespace'], 'hermes_android_connections');
+    expect(options['resetOnError'], 'false');
+    expect(options['migrateWithBackup'], 'false');
+    // migrateOnAlgorithmChange must stay on: it is what still performs the
+    // migration, now through the path that resolves the namespaced key store.
+    expect(options['migrateOnAlgorithmChange'], 'true');
   });
 }

@@ -98,6 +98,66 @@ class _StartupRecoveryApp extends StatelessWidget {
                 const SizedBox(height: 24),
                 FilledButton.icon(
                   onPressed: () async {
+                    // Retry first. Deleting saved_connections here used to be
+                    // the only action, which destroyed the connection list
+                    // while leaving the credential store just as broken.
+                    try {
+                      final retry = await ConnectionManager.create(prefs);
+                      runApp(
+                        HermesApp(
+                          connManager: retry,
+                          shareIntents: shareIntents,
+                          launchIntents: launchIntents,
+                        ),
+                      );
+                      return;
+                    } catch (retryError) {
+                      // Re-read the key after the await: the recovery
+                      // screen may already have been replaced by the
+                      // retried app.
+                      final context = _rootKey.currentContext;
+                      if (context == null) return;
+                      // ignore: use_build_context_synchronously
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Startup failed again: $retryError.',
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.restart_alt),
+                  label: const Text('Try again'),
+                ),
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  onPressed: () async {
+                    final confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (dialogContext) => AlertDialog(
+                        title: const Text('Reset saved connections?'),
+                        content: const Text(
+                          'This deletes every saved connection on this phone. '
+                          'Your chats on the gateway are not affected, but you '
+                          'will have to add the connections again. Only do '
+                          'this if "Try again" keeps failing.',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.of(dialogContext).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () =>
+                                Navigator.of(dialogContext).pop(true),
+                            child: const Text('Reset'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (confirmed != true) return;
                     await prefs.remove('saved_connections');
                     try {
                       final retry = await ConnectionManager.create(prefs);
@@ -126,7 +186,7 @@ class _StartupRecoveryApp extends StatelessWidget {
                       }
                     }
                   },
-                  icon: const Icon(Icons.restart_alt),
+                  icon: const Icon(Icons.delete_outline),
                   label: const Text('Reset saved connections'),
                 ),
               ],
@@ -710,7 +770,8 @@ class HomeScreenState extends State<HomeScreen> {
                       } on CredentialStorageException {
                         if (!ctx.mounted) return;
                         setDialogState(() {
-                          error = s.apiKeyStoreFailed;
+                          error =
+                              '${s.apiKeyStoreFailed}\n\n${s.connectionStoreFailedHint}';
                           validating = false;
                         });
                       } catch (_) {
@@ -940,7 +1001,8 @@ class HomeScreenState extends State<HomeScreen> {
                         client.close();
                         if (!ctx.mounted) return;
                         setDialogState(() {
-                          error = s.dashboardCredentialsStoreFailed;
+                          error =
+                              '${s.dashboardCredentialsStoreFailed}\n\n${s.connectionStoreFailedHint}';
                           validating = false;
                         });
                       } catch (_) {
@@ -1009,7 +1071,11 @@ class HomeScreenState extends State<HomeScreen> {
               } on CredentialStorageException {
                 if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(s.connectionDeleteFailed)),
+                  SnackBar(
+                    content: Text(
+                      '${s.connectionDeleteFailed}\n\n${s.connectionStoreFailedHint}',
+                    ),
+                  ),
                 );
               }
             } else if (v == 'edit') {
@@ -1344,7 +1410,7 @@ class _AddDialogState extends State<_AddDialog> {
     } on CredentialStorageException {
       if (!mounted) return;
       setState(() {
-        _error = s.connectionStoreFailed;
+        _error = '${s.connectionStoreFailed}\n\n${s.connectionStoreFailedHint}';
         _validating = false;
       });
     } catch (_) {

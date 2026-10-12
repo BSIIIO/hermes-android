@@ -31,10 +31,18 @@ abstract interface class CredentialStore {
 
 class FlutterSecureCredentialStore implements CredentialStore {
   static const AndroidOptions _androidOptions = AndroidOptions(
+    // Do NOT add migrateWithBackup here. flutter_secure_storage 10.3.1
+    // hardcodes "FlutterSecureKeyStorage" in every *WithBackup migration
+    // path, so with storageNamespace set it unwraps the AES key from the
+    // wrong file and fails; resetOnError: false then rethrows forever.
+    // migrateOnAlgorithmChange (default true) still migrates via
+    // migrateNonBiometric, which resolves the namespaced key storage.
     resetOnError: false,
-    migrateWithBackup: true,
     storageNamespace: 'hermes_android_connections',
   );
+
+  /// Exposed so a test can pin the namespace/reset/migrate contract above.
+  static AndroidOptions get androidOptionsForTest => _androidOptions;
 
   final FlutterSecureStorage _storage;
   final Map<String, String> _cache = <String, String>{};
@@ -69,9 +77,21 @@ class FlutterSecureCredentialStore implements CredentialStore {
 }
 
 class CredentialStorageException implements Exception {
+  /// Human-readable description. Never shown directly; the UI maps [caseName]
+  /// to localized copy so the failure can name its own recovery action.
   final String message;
 
-  const CredentialStorageException(this.message);
+  /// Machine-readable identifier for the failure, e.g. `connectionStoreFailed`.
+  /// Empty for internal failures that never reach the UI.
+  final String caseName;
+
+  const CredentialStorageException(this.message, {this.caseName = ''});
+
+  /// Builds a UI-visible failure from a localization key so the caller can
+  /// pick the matching localized copy.
+  const CredentialStorageException.ui(String caseName)
+      : message = caseName,
+        caseName = caseName;
 
   @override
   String toString() => message;
@@ -154,6 +174,13 @@ class ConnectionManager {
   /// Every legacy credential bundle is written and read back first. The
   /// SharedPreferences list is sanitized only after all read-backs match, so a
   /// partial secure-store failure leaves every legacy profile retryable.
+  ///
+  /// A failure here is recorded in [migrationFailed] rather than thrown: this
+  /// runs only to migrate pre-secure-storage plaintext, and throwing it out of
+  /// [create] blocked the whole app behind the startup-recovery screen, whose
+  /// only action deletes the saved-connections metadata — losing every
+  /// connection while leaving the credential store exactly as broken. The app
+  /// must start either way.
   Future<void> initialize() async {
     final maps = _readConnectionMaps();
     final connections = _connectionsFromMaps(maps);
@@ -182,14 +209,20 @@ class ConnectionManager {
       if (hasLegacyFields) {
         await _saveAll(connections);
       }
+      _migrationFailed = false;
     } on CredentialStorageException {
-      rethrow;
+      _migrationFailed = true;
     } catch (_) {
-      throw const CredentialStorageException(
-        'Connection credentials could not be migrated safely.',
-      );
+      _migrationFailed = true;
     }
   }
+
+  /// True when the credential store could not be read or written during
+  /// [initialize]. The app still starts; the user sees the connections with
+  /// their stored credentials unavailable.
+  bool get migrationFailed => _migrationFailed;
+
+  bool _migrationFailed = false;
 
   List<SavedConnection> getConnections() {
     return _connectionsFromMaps(
@@ -534,9 +567,9 @@ class ConnectionManager {
         // The caller still receives a generic fail-closed error. Never attach
         // platform errors because they may include sensitive storage details.
       }
-      throw const CredentialStorageException(
-        'Connection credentials could not be saved safely.',
-      );
+      // The UI maps the case name to localized copy that names the recovery
+      // action, so this must carry the case the user hit.
+      throw const CredentialStorageException.ui('connectionStoreFailed');
     }
   }
 
@@ -549,9 +582,7 @@ class ConnectionManager {
       await _credentialStore.delete(key);
       final readBack = await _credentialStore.read(key);
       if (readBack != null) {
-        throw const CredentialStorageException(
-          'Connection credentials could not be cleared safely.',
-        );
+        throw const CredentialStorageException.ui('connectionDeleteFailed');
       }
       return;
     }

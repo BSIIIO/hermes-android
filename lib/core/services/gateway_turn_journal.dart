@@ -34,10 +34,14 @@ class FlutterSecureGatewayTurnJournalStore
   static const _key = 'gateway_turn_journal_v2';
   static const _legacyKey = 'gateway_turn_journal_v1';
   static const AndroidOptions _androidOptions = AndroidOptions(
+    // No migrateWithBackup — see FlutterSecureCredentialStore for why the
+    // *WithBackup migration paths are unsafe alongside storageNamespace.
     resetOnError: false,
-    migrateWithBackup: true,
     storageNamespace: 'hermes_android_turn_recovery',
   );
+
+  /// Exposed so a test can pin the namespace/reset/migrate contract above.
+  static AndroidOptions get androidOptionsForTest => _androidOptions;
   static final Object _sharedSerializationAuthority = Object();
 
   final FlutterSecureStorage _storage;
