@@ -142,6 +142,21 @@ abstract class AppStrings {
   /// Explains how to add the first gateway.
   String get homeNoConnectionsHint;
 
+  /// Title of the action that clears the local connection store.
+  String get homeResetLocalConnections;
+
+  /// Body explaining what clearing the local connection store does.
+  String get homeResetLocalConnectionsBody;
+
+  /// Confirm button label for clearing the local connection store.
+  String get homeResetLocalConnectionsConfirm;
+
+  /// Shown when clearing the local connection store succeeded.
+  String get homeResetLocalConnectionsDone;
+
+  /// Shown when clearing the local connection store failed.
+  String get homeResetLocalConnectionsFailed;
+
   // ---- Connection form ----
 
   /// Connection name field.
@@ -2204,6 +2219,27 @@ class AppStringsEn extends AppStrings {
   @override
   String get homeNoConnectionsHint =>
       'Tap + to add a remote Hermes Gateway\n(API Server, port 8642)';
+
+  @override
+  String get homeResetLocalConnections => 'Reset local connections';
+
+  @override
+  String get homeResetLocalConnectionsBody =>
+      'This deletes every connection saved on this phone, including its '
+      'stored credentials. Use it when adding a connection keeps failing '
+      'with a secure-storage error. Your chats on the gateway are not '
+      'affected.';
+
+  @override
+  String get homeResetLocalConnectionsConfirm => 'Reset';
+
+  @override
+  String get homeResetLocalConnectionsDone =>
+      'Local connection store reset. You can add a connection now.';
+
+  @override
+  String get homeResetLocalConnectionsFailed =>
+      'Could not reset the local connection store.';
 
   @override
   String get connectionLabel => 'Label';
@@ -4424,6 +4460,23 @@ class AppStringsZh extends AppStrings {
   @override
   String get homeNoConnectionsHint =>
       '点按 + 添加远程 Hermes 网关\n（API Server，端口 8642）';
+
+  @override
+  String get homeResetLocalConnections => '重置本地连接';
+
+  @override
+  String get homeResetLocalConnectionsBody =>
+      '这会删除本机保存的所有连接及其凭据。当添加连接反复提示安全存储失败时使用。'
+      '网关上的聊天记录不受影响。';
+
+  @override
+  String get homeResetLocalConnectionsConfirm => '重置';
+
+  @override
+  String get homeResetLocalConnectionsDone => '本地连接存储已重置，现在可以添加连接了。';
+
+  @override
+  String get homeResetLocalConnectionsFailed => '无法重置本地连接存储。';
 
   @override
   String get connectionLabel => '名称';
